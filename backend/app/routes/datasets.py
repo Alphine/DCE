@@ -1,4 +1,4 @@
-"""Dataset routes: CSV upload, listing, detail, and approval (docs/api.md section 3)."""
+"""Dataset routes: CSV and GeoJSON upload, listing, detail, approval, and rejection (docs/api.md section 3)."""
 
 from __future__ import annotations
 
@@ -6,18 +6,25 @@ import json
 import sqlite3
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 
 from app import audit
 from app.auth import CurrentUser, current_user, require_role
 from app.container import services_of
-from app.datasets import (MAX_UPLOAD_BYTES, clean_name, dataset_file, parse_csv_bytes, read_table,
-                          typed_row, validate_filename, write_dataset_file)
+from app.datasets import (KIND_CSV, MAX_UPLOAD_BYTES, STORAGE_EXTENSION, clean_name, dataset_file,
+                          dataset_kind_for, parse_csv_bytes, parse_geojson_bytes, read_table, typed_row,
+                          validate_filename, write_dataset_file)
 from app.errors import AppError
 from app.util import new_id, sha256_bytes, utc_now
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
+
+
+class DecisionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    note: str | None = Field(default=None, max_length=500)
 
 
 def _dataset_view(row: sqlite3.Row) -> dict[str, Any]:
@@ -25,6 +32,7 @@ def _dataset_view(row: sqlite3.Row) -> dict[str, Any]:
         "id": row["id"],
         "name": row["name"],
         "filename": row["filename"],
+        "kind": row["kind"],
         "size_bytes": row["size_bytes"],
         "sha256": row["sha256"],
         "status": row["status"],
@@ -65,23 +73,25 @@ def upload_dataset(
 ) -> JSONResponse:
     services = services_of(request)
     filename = validate_filename(file.filename)
+    kind = dataset_kind_for(filename)
     data = file.file.read(MAX_UPLOAD_BYTES + 1)
     display_name = clean_name(name, filename)
-    parsed = parse_csv_bytes(data)
+    parsed = parse_csv_bytes(data) if kind == KIND_CSV else parse_geojson_bytes(data)
 
     dataset_id = new_id()
-    storage_name = f"{dataset_id}.csv"
+    storage_name = f"{dataset_id}.{STORAGE_EXTENSION[kind]}"
     write_dataset_file(services.settings.data_dir, storage_name, data)
     try:
         with services.db.transaction() as conn:
             conn.execute(
                 "INSERT INTO datasets (id, name, filename, size_bytes, sha256, status, owner_id, storage_name, "
-                "profile_json, created_at) VALUES (?, ?, ?, ?, ?, 'PENDING_VALIDATION', ?, ?, ?, ?)",
+                "profile_json, created_at, kind) VALUES (?, ?, ?, ?, ?, 'PENDING_VALIDATION', ?, ?, ?, ?, ?)",
                 (dataset_id, display_name, filename, parsed.size_bytes, parsed.sha256, user.id, storage_name,
-                 _json(parsed.profile), utc_now()),
+                 _json(parsed.profile), utc_now(), kind),
             )
             audit.append(conn, actor=user.username, action="dataset.uploaded", subject=dataset_id, detail={
-                "sha256": parsed.sha256, "size_bytes": parsed.size_bytes, "rows": parsed.profile["rows"],
+                "kind": kind, "sha256": parsed.sha256, "size_bytes": parsed.size_bytes,
+                "rows": parsed.row_count,
             })
             row = _load(conn, dataset_id)
             view = _dataset_view(row)
@@ -109,6 +119,8 @@ def dataset_rows(dataset_id: str, request: Request,
         row = _load(conn, dataset_id)
     if row["status"] != "APPROVED" and row["owner_id"] != user.id:
         raise AppError("NOT_FOUND", "Dataset not found.")
+    if row["kind"] != KIND_CSV:
+        raise AppError("VALIDATION_FAILED", "Rows are available for CSV datasets only.")
     path = dataset_file(services.settings.data_dir, row["storage_name"])
     if not path.is_file():
         raise AppError("NOT_FOUND", "Dataset file is missing.")
@@ -136,6 +148,36 @@ def approve_dataset(dataset_id: str, request: Request,
                      (user.id, now, dataset_id))
         audit.append(conn, actor=user.username, action="dataset.approved", subject=dataset_id,
                      detail={"sha256": row["sha256"]})
+        row = _load(conn, dataset_id)
+        view = _dataset_view(row)
+    return view
+
+
+@router.post("/{dataset_id}/reject")
+def reject_dataset(dataset_id: str, request: Request,
+                   body: DecisionBody | None = Body(default=None),
+                   user: CurrentUser = Depends(require_role("Reviewer"))) -> dict[str, Any]:
+    """Same rules as approve: Reviewer or higher, not the uploader, only from PENDING_VALIDATION.
+
+    A REJECTED dataset cannot be used by the agent (task creation requires APPROVED).
+    """
+    services = services_of(request)
+    note = body.note if body is not None else None
+    with services.db.transaction() as conn:
+        row = _load(conn, dataset_id)
+        if row["owner_id"] == user.id:
+            raise AppError("SELF_APPROVAL_NOT_ALLOWED", "You cannot reject a dataset you uploaded.")
+        if row["status"] != "PENDING_VALIDATION":
+            raise AppError("INVALID_STATE", f"A dataset in {row['status']} cannot be rejected.")
+        now = utc_now()
+        conn.execute(
+            "UPDATE datasets SET status = 'REJECTED', rejected_by = ?, rejected_at = ?, rejection_note = ? "
+            "WHERE id = ?",
+            (user.id, now, note, dataset_id),
+        )
+        audit.append(conn, actor=user.username, action="dataset.rejected", subject=dataset_id, detail={
+            "sha256": row["sha256"], "note_sha256": sha256_bytes(note.encode("utf-8")) if note else None,
+        })
         row = _load(conn, dataset_id)
         view = _dataset_view(row)
     return view

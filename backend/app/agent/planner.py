@@ -34,12 +34,12 @@ class Planner:
         return self._client.model_id
 
     async def create_plan(self, *, instruction: str, requested_outputs: list[str],
-                          dataset_name: str, profile: dict[str, Any]) -> Plan:
+                          dataset_name: str, profile: dict[str, Any], dataset_kind: str = "CSV") -> Plan:
         request = PlanRequest(instruction=instruction, requested_outputs=requested_outputs,
                               dataset_name=dataset_name, profile=profile, limits=dict(self._ceiling))
         try:
             raw = await self._client.plan(request)
-            return validate_plan(raw, self._ceiling)
+            return validate_plan(raw, self._ceiling, dataset_kind)
         except InferenceError as exc:
             logger.warning("planning failed code=%s", exc.code)
             raise PlanningFailed(exc.code) from exc

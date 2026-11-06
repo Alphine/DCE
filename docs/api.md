@@ -17,6 +17,7 @@ Base path: `/api`. Frontend and API share one origin (SDD §5.4).
 Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA_EXCEEDED`, `RATE_LIMITED`, `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLICT`, `INVALID_STATE`, `UNAVAILABLE`, `INTERNAL`.
 
 - Auth: session cookie `dce_session` (HttpOnly, SameSite=Strict, Path=/; `Secure` only when `DCE_COOKIE_SECURE=true`).
+- Automation auth: header `X-API-Key: <token>`. A key acts as its owner with the owner's current role. Keys are created and revoked by an Admin (section 13). Logout, password change, and key management accept only the session cookie, so a key cannot end sessions, change passwords, or mint keys.
 - Roles, lowest to highest: `Viewer` < `Analyst` < `Reviewer` < `Approver` < `Admin`. A role includes all lower roles except where noted.
 - Separation of duties: nobody may approve their own dataset, own observation, or own agent gate. Attempts return `403 SELF_APPROVAL_NOT_ALLOWED`.
 
@@ -26,8 +27,15 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 |---|---|---|---|
 | GET | `/api/health` | public | Liveness: `{"status":"ok"}` only |
 | POST | `/api/auth/login` | public (rate limited) | Start session |
-| POST | `/api/auth/logout` | Viewer | End session (204) |
+| POST | `/api/auth/logout` | Viewer (session cookie only) | End session (204) |
+| POST | `/api/auth/password` | Viewer (session cookie only) | Change own password, revoke other sessions (204) |
 | GET | `/api/auth/me` | Viewer | Current user |
+| GET | `/api/admin/users` | Admin | List users (no password material) |
+| POST | `/api/admin/users` | Admin | Create user (201) |
+| PATCH | `/api/admin/users/{id}` | Admin | Change role and/or disabled flag |
+| GET | `/api/admin/api-keys` | Admin (session cookie only) | List API keys (no tokens) |
+| POST | `/api/admin/api-keys` | Admin (session cookie only) | Create API key (201), token shown once |
+| DELETE | `/api/admin/api-keys/{id}` | Admin (session cookie only) | Revoke API key (204) |
 | GET | `/api/dashboard/summary` | Viewer | Counts, runner status, quota |
 | GET | `/api/datasets` | Viewer | List datasets |
 | POST | `/api/datasets` | Analyst | Upload CSV (multipart) |
@@ -48,7 +56,7 @@ Request bodies (added after the deployment review):
 - `POST /api/auth/login`: JSON `{"username": "...", "password": "..."}`.
 - `POST /api/datasets`: multipart form, file field named `file`, plus optional text field `name`.
 
-Rate limiting: 10 login attempts per IP per minute; 20 agent task creations per user per day (`DCE_QUOTA_TASKS_PER_DAY`); 1 agent task creation per user per 30 seconds.
+Rate limiting: 10 login attempts per client IP per minute (client IP is resolved as in section 9, `DCE_TRUSTED_PROXIES`); 20 agent task creations per user per day (`DCE_QUOTA_TASKS_PER_DAY`); 1 agent task creation per user per 30 seconds.
 
 ## 3. Resource shapes
 
@@ -285,7 +293,7 @@ The backend selects a runner at startup from `DCE_SANDBOX_RUNNER` (`docker` or `
 | `DCE_COOKIE_SECURE` | `false` | `true` in production |
 | `DCE_QUOTA_TASKS_PER_DAY` | `20` | |
 | `DCE_CORS_ORIGINS` | `http://localhost:8000` | Development only |
-| `DCE_TRUSTED_PROXIES` | `127.0.0.1` | Only these peers may set `X-Forwarded-For`. In production, Caddy on the VM is the single trusted proxy. Rate limits use the first untrusted address |
+| `DCE_TRUSTED_PROXIES` | (empty) | Comma-separated IPs or CIDRs (for example `172.18.0.1` or `172.18.0.0/16`). `X-Forwarded-For` is read only when the direct peer is in this list; otherwise the direct peer is the client. The client is the rightmost untrusted entry. Empty means no proxy is trusted. A malformed entry stops startup. In production, set it to the address Caddy connects from (the Docker bridge gateway as seen by the backend container) |
 | `DCE_SESSION_SECRET` | (none) | Secret for signing session identifiers if the backend uses signed cookies. Never committed |
 | `DCE_SEED_PASSWORD` | (none) | Required by `python -m app.seed`. Never committed |
 
@@ -341,6 +349,36 @@ Missing values are reported as unknown, never as zero.
 **Generated code visibility:** the API exposes `code_sha256` only. The script is not an artifact. A reviewer who needs it reads it from the task's audit detail, which stores the hash only. Showing the full script in the UI is out of scope for v1.6.
 
 **Chart.js:** CDN `https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js`. Leaflet 1.9.4 from unpkg. SRI hashes are added at deployment time.
+
+## 13. Account management and API keys (v1.6.2)
+
+These rules are binding. They extend sections 1 and 2.
+
+**Password policy (single source: `app/security.py`).** Length 12 to 256 characters. The seed script uses the same minimum.
+
+**Self-service password change: `POST /api/auth/password`** (session cookie only)
+- Body: `{"current_password": "...", "new_password": "..."}`. Unknown fields are rejected.
+- Wrong current password: `403 FORBIDDEN`, audited as `auth.password_change_failed`.
+- Policy failure, or new password equal to the current one: `422 VALIDATION_FAILED`.
+- Success: `204`. The current session stays valid. Every other session of that user is deleted. Audit `auth.password_changed` records only the number of sessions revoked.
+
+**Admin user management** (Admin role, or an API key owned by an Admin)
+- `GET /api/admin/users`: array of `{"id", "username", "role", "status": "active" | "disabled", "created_at"}`. Never password hashes.
+- `POST /api/admin/users`: body `{"username": "3 to 64 of A-Z a-z 0-9 . _ -", "role": "<role>", "password": "..."}`. Returns `201` with the user object. Duplicate username: `409 CONFLICT`. Audit `admin.user_created` (detail: role only).
+- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}` and/or `{"disabled": true | false}`. At least one field is required (`422` otherwise). Unknown user: `404`.
+  - An Admin cannot disable their own account: `403 FORBIDDEN`.
+  - The last active Admin cannot be disabled or demoted: `409 CONFLICT`. Disabled accounts do not count as active Admins. The check runs inside the write transaction.
+  - Disabling deletes the user's sessions. Re-enabling does not restore them.
+  - Each change writes one audit row: `admin.user_role_changed` (from, to), `admin.user_disabled` (sessions_revoked), or `admin.user_enabled`.
+- Role changes apply on the next request, because the role is read from the database on every call.
+
+**API keys** (Admin; session cookie only for create, list, and revoke)
+- `POST /api/admin/api-keys`: body `{"user_id": "uuid (optional, default: the caller)"}`. Returns `201` with the key metadata and `"token"`. The token is shown once. Owner unknown: `404`. Owner disabled: `409`.
+- Token format: `dce_` followed by 32 random bytes encoded as URL-safe base64 (256 bits). Only its SHA-256 hash is stored, in `api_keys.key_hash`. The token never appears in the database, the audit log, or any later response.
+- `GET /api/admin/api-keys`: array of `{"id", "owner": {"id", "username"}, "role", "scope", "status": "active" | "revoked", "created_at", "expires_at", "revoked_at"}`. No token and no hash.
+- `DELETE /api/admin/api-keys/{id}`: `204`. Sets `revoked_at`; the row is kept for the audit trail. Revoking an already revoked key: `409`. Unknown: `404`. Audit `api_key.created` and `api_key.revoked` store IDs only.
+- Authentication with `X-API-Key`: the key must exist, not be revoked, not be expired, and belong to an active user. The request then acts as the owner with the owner's **current** role. A key therefore never exceeds its owner's role, and it stops working when the owner is disabled or demoted below the route's minimum role. An invalid key gets `401 UNAUTHENTICATED`.
+- `scope` is always `automation` in this version. It is informational; the owner's role is the only permission source.
 
 ## 11. Frontend ↔ backend rules
 

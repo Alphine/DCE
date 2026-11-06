@@ -36,4 +36,17 @@ Columns:
 | `capacity` | integer | Empty means unknown. Units are not defined. |
 | `status` | string | `ACTIVE`, `STANDBY`, `FULL` or `MAINTENANCE`. |
 
-The backend has no dataset kind field. A dataset is logistics when its profile includes a `facility_type` column. Any other approved dataset is treated as a disaster dataset.
+The dataset `kind` field (`CSV` or `GEOJSON`) describes the file format only. A dataset is logistics when its profile includes a `facility_type` column. Any other approved dataset is treated as a disaster dataset.
+
+## Blocked roads (`blocked_roads` tool)
+
+The `blocked_roads` tool writes `blocked_roads.csv` with one row per blocked road. It reads one of these columns, in this order of preference:
+
+| Column | Accepted values | Meaning |
+| --- | --- | --- |
+| `road_status` | `blocked`, `closed`, `yes`, `true`, `1` count as blocked. Any other non-empty value counts as open. | Text status of the road |
+| `road_blocked` | `1` or `true`/`yes` means blocked. `0` or `false`/`no` means open. | Flag per row, as in `flood_incidents_sample.csv` |
+
+Empty cells are unknown. An unknown road status is not listed as blocked. A dataset with neither column cannot be used by `blocked_roads`; the task fails with a clear sandbox error.
+
+`flood_incidents_sample.csv` uses the `road_blocked` column (0 or 1). Its `road_status` column is absent, so the tool reads `road_blocked`.

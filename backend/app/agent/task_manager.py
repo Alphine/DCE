@@ -18,12 +18,14 @@ from app.agent.events import EventBus
 from app.agent.outputs import OutputRejected, store_outputs, validate_outputs
 from app.agent.planner import Planner, PlanningFailed
 from app.agent.schemas import Plan
+from app.agent.tools import DATASET_INPUT_NAMES, RULE_PACK_INPUT, inputs_for_tools
 from app.agent.views import task_view
 from app.auth import CurrentUser
 from app.config import Settings
 from app.datasets import dataset_file
 from app.db import Db
 from app.errors import AppError
+from app.rules.engine import PACK_HASH_FIELD, RulePackError, load_default_pack
 from app.util import new_id, sha256_bytes, utc_now
 
 logger = logging.getLogger("dce.tasks")
@@ -225,7 +227,7 @@ class TaskManager:
         try:
             with self.db.read() as conn:
                 row = _get_task(conn, task_id)
-                dataset = conn.execute("SELECT name, profile_json FROM datasets WHERE id = ?",
+                dataset = conn.execute("SELECT name, profile_json, kind FROM datasets WHERE id = ?",
                                        (row["dataset_id"],)).fetchone()
             self.bus.publish(task_id, "log", _line("Planning started.", "system"))
             plan = await self.planner.create_plan(
@@ -233,6 +235,7 @@ class TaskManager:
                 requested_outputs=json.loads(row["requested_outputs_json"]),
                 dataset_name=dataset["name"],
                 profile=json.loads(dataset["profile_json"]),
+                dataset_kind=dataset["kind"],
             )
             self._apply(task_id, "AWAITING_APPROVAL", actor="system",
                         plan_json=json.dumps(plan.model_dump(mode="json"), sort_keys=True))
@@ -254,7 +257,7 @@ class TaskManager:
                 if row["state"] != "QUEUED" or row["plan_json"] is None:
                     return
                 plan = Plan.model_validate(json.loads(row["plan_json"]))
-                dataset = conn.execute("SELECT profile_json, storage_name FROM datasets WHERE id = ?",
+                dataset = conn.execute("SELECT profile_json, storage_name, kind FROM datasets WHERE id = ?",
                                        (row["dataset_id"],)).fetchone()
             profile = json.loads(dataset["profile_json"])
             script = await self.planner.create_script(plan, profile)
@@ -277,28 +280,42 @@ class TaskManager:
                 self._apply(task_id, "RUNNING", actor="system", requires=frozenset({"QUEUED"}))
             except AppError:
                 return  # cancelled while waiting for a slot
-            result = await self._run_sandbox(task_id, plan, script, dataset_storage=dataset["storage_name"])
-        await self._after_run(task_id, plan, result)
+            result, pack_sha = await self._run_sandbox(task_id, plan, script, dataset_storage=dataset["storage_name"],
+                                                       dataset_kind=dataset["kind"])
+        await self._after_run(task_id, plan, result, pack_sha256=pack_sha)
 
-    async def _run_sandbox(self, task_id: str, plan: Plan, script: str, *, dataset_storage: str) -> Any:
+    async def _run_sandbox(self, task_id: str, plan: Plan, script: str, *, dataset_storage: str,
+                           dataset_kind: str = "CSV") -> tuple[Any, str | None]:
+        """Stage inputs and run. Returns (result, rule pack sha256 or None when no pack was staged)."""
         timeout = plan.limits.timeout_s
         try:
             data = dataset_file(self.settings.data_dir, dataset_storage).read_bytes()
         except OSError:
-            return _synthetic_result(task_id, self.runner.name, "FAILED_SANDBOX", "DATASET_MISSING")
+            return _synthetic_result(task_id, self.runner.name, "FAILED_SANDBOX", "DATASET_MISSING"), None
+        inputs: dict[str, bytes] = {DATASET_INPUT_NAMES[dataset_kind]: data}
+        pack_sha: str | None = None
+        if inputs_for_tools(plan.tools):
+            # The server stages the rule pack. A pack whose hash does not match is never staged, so nothing runs.
+            try:
+                pack_bytes, pack = load_default_pack()
+            except RulePackError as exc:
+                logger.warning("rule pack refused for task %s", task_id)
+                return _synthetic_result(task_id, self.runner.name, "FAILED_SANDBOX", exc.code), None
+            inputs[RULE_PACK_INPUT] = pack_bytes
+            pack_sha = pack[PACK_HASH_FIELD]
         self._audit_only(task_id, "sandbox.run_started", {"runner": self.runner.name, "timeout_s": timeout})
         self.bus.publish(task_id, "log", _line("Sandbox run started.", "system"))
         try:
             result = await asyncio.wait_for(
-                self.runner.run(task_id, script, {"dataset.csv": data}, timeout), timeout=timeout + 15)
+                self.runner.run(task_id, script, inputs, timeout), timeout=timeout + 15)
         except TimeoutError:
             result = _synthetic_result(task_id, self.runner.name, "TIMED_OUT", "SANDBOX_TIMEOUT", timed_out=True)
         except Exception:
             logger.exception("sandbox run crashed for task %s", task_id)
             result = _synthetic_result(task_id, self.runner.name, "FAILED_SANDBOX", "SANDBOX_ERROR")
-        return result
+        return result, pack_sha
 
-    async def _after_run(self, task_id: str, plan: Plan, result: Any) -> None:
+    async def _after_run(self, task_id: str, plan: Plan, result: Any, pack_sha256: str | None = None) -> None:
         if task_id in self._cancelling:
             return  # the cancel request owns the final state
         summary = _sandbox_summary(result)
@@ -321,7 +338,8 @@ class TaskManager:
         except AppError:
             return
         try:
-            verified = validate_outputs(result.artifacts, plan.expected_outputs, self.settings.data_dir)
+            verified = validate_outputs(result.artifacts, plan.expected_outputs, self.settings.data_dir,
+                                        pack_sha256=pack_sha256)
             stored = store_outputs(verified, self.settings.data_dir, task_id)
         except OutputRejected as exc:
             logger.info("output rejected for task %s code=%s", task_id, exc.code)
