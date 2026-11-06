@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Disaster Commander Edge: mission control for flood incident analysis with a sandboxed AI agent.">
+  <meta name="color-scheme" content="dark">
+  <title>Disaster Commander Edge</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#view">Skip to content</a>
+
+  <header class="topbar" id="topbar" hidden>
+    <a class="brand" href="#/" aria-label="Disaster Commander Edge, go to Command Center">
+      <img src="assets/logo.svg" alt="" width="30" height="30">
+      <span class="brand-text">
+        <span class="brand-name">Disaster Commander</span>
+        <span class="brand-sub">EDGE</span>
+      </span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="userbox">
+      <span class="role-chip" id="role-chip"></span>
+      <span class="username" id="username"></span>
+      <button class="btn btn-ghost btn-sm" id="logout" type="button" aria-label="Log out of Disaster Commander Edge">Log out</button>
+    </div>
+  </header>
+
+  <main id="view" class="view" tabindex="-1"></main>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <!-- CDN dependencies (see frontend/README.md). Chart.js is loaded as a classic script so the global Chart exists for ES modules. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

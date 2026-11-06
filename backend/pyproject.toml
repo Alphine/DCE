@@ -1,0 +1,11 @@
+[project]
+name = "dce-backend"
+version = "1.6.0"
+requires-python = ">=3.13"
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

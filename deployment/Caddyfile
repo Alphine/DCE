@@ -1,0 +1,69 @@
+# Disaster Commander Edge - production Caddy configuration (SDD section 5.4, ADR-005).
+# Install to /etc/caddy/Caddyfile on the Vultr VM. Validate first: caddy validate --config <path>
+#
+# One origin serves everything:
+#   /         static frontend from /srv/dce/frontend
+#   /api/*    FastAPI backend on 127.0.0.1:8000 (docker-compose publishes it on loopback only)
+#
+# REQUIRED in production: DCE_SERVE_FRONTEND=false and DCE_ENV=production in the backend .env.
+# Caddy already serves the frontend; if FastAPI also served it, two servers would own "/".
+# DCE_COOKIE_SECURE=true is also required, because the site is HTTPS-only.
+
+commander.basyid.dev {
+	# Automatic HTTPS (Let's Encrypt) is on by default for this site address.
+	# The DNS A record must point at the VM public IPv4 before the first start.
+
+	encode gzip
+
+	# Security headers. The CSP string MUST stay identical to CSP in backend/app/middleware.py.
+	# The backend header is the one meant for /api responses, and this one is meant for the
+	# static frontend. Caddy-only header: HSTS (both sides send X-Frame-Options: DENY).
+	# Intended behavior, not yet verified on a live Caddy: the backend's CSP on /api responses
+	# is kept, because reverse_proxy copies upstream headers after this header is applied.
+	# Confirm it with the curl checks in docs/deployment.md, G31.
+	# 'unsafe-inline' is in style-src on both sides. The current frontend has no inline style
+	# blocks, so removing it from BOTH files is a follow-up (docs/security.md, item 6).
+	# Check after every change: curl -sI https://commander.basyid.dev/ and /api/health.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://unpkg.com; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	# Access log without query strings (query strings can carry tokens or filters).
+	# The regexp filter strips everything from "?" onward in request.uri.
+	log {
+		output file /var/log/caddy/dce-access.log {
+			roll_size 20mb
+			roll_keep 7
+		}
+		format filter {
+			wrap json
+			fields {
+				request>uri regexp "\?.*$" ""
+			}
+		}
+	}
+
+	# Upload size limit for dataset uploads (api.md section 3: 10 MB file; 12 MB leaves room for multipart overhead).
+	@dataset_upload path /api/datasets
+	request_body @dataset_upload {
+		max_size 12MB
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8000 {
+			# Caddy is the only proxy in front of FastAPI, so the backend can trust
+			# X-Forwarded-For set here for per-IP rate limiting (SDD section 5.4).
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	handle {
+		root * /srv/dce/frontend
+		file_server
+	}
+}

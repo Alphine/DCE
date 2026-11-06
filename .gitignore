@@ -1,0 +1,45 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Runtime data (SQLite, uploads, artifacts, backups)
+data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Backup and session leftovers (scripts/backup.sh writes *.partial; containment tests write cookie jars)
+*.partial
+*.cookies
+*.log.*
+scratch/
+
+# Python
+backend/.venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node (frontend tooling, if any)
+node_modules/
+
+# Keys and certificates
+*.key
+*.pem
+
+# Logs
+logs/
+*.log
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Raw upstream world map (about 13.6 MB), fetched by scripts/build_world_map.py
+scripts/.cache/

@@ -1,0 +1,5 @@
+# Pinned packages for the sandbox worker image. Keep this list minimal.
+# The worker itself uses only the standard library. Analysis uses the standard library by default.
+# matplotlib is optional and used only by chart generation. Pin exact versions, and before production
+# add a full lock with hashes (pip-compile --generate-hashes) so transitive dependencies are pinned too.
+matplotlib==3.9.2

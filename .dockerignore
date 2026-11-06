@@ -1,0 +1,26 @@
+# Build context is the repo root (deployment/docker-compose.yml sets context: ..).
+# Keep secrets, local data, virtualenvs and caches out of the image and out of the build context.
+.git
+.env
+.env.*
+!.env.example
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend/data
+backend/tests
+data
+logs
+**/*.log
+**/*.sqlite3
+**/*.sqlite3-wal
+**/*.sqlite3-shm
+**/*.partial
+**/*.key
+**/*.pem
+datasets
+frontend

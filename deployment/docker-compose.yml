@@ -1,0 +1,128 @@
+# Disaster Commander Edge - production compose (SDD sections 5.4, 9.3, 9.3a).
+#
+# Services:
+#   api                  FastAPI backend, published on 127.0.0.1:8000 only (Caddy proxies /api/* to it).
+#   docker-socket-proxy  Restricted Docker API. The ONLY container that mounts /var/run/docker.sock.
+#
+# Preferred alternative (SDD 9.3a): rootless Docker under the dce-sandbox user. See
+# deployment/vultr/rootless-docker.md. NOT WIRED YET: the api container cannot reach the rootless
+# daemon of dce-sandbox. That needs the dispatcher IPC, which is an open item (docs/security.md,
+# section 7, item 2). Until it exists, this file is the deployable path (socket proxy).
+#
+# Host prerequisite (both paths): the worker seccomp profile must exist at the same absolute path
+# on the host and in the api container, because the dispatcher passes that path to the Docker
+# daemon. Install it first (setup-vm.sh does this when the repo is already cloned):
+#   sudo install -D -m 0644 /srv/dce/app/sandbox/seccomp/profile.json /srv/sandbox/seccomp/profile.json
+#
+# Usage (from the repo root on the VM):
+#   docker compose -f deployment/docker-compose.yml --env-file .env up -d --build
+#
+# Inside the container uvicorn binds 0.0.0.0. The host-side bind to 127.0.0.1 is what keeps it
+# private: Docker publishes the port on loopback only, so the public interface never reaches it.
+
+name: dce
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.backend
+    image: dce-api:local
+    restart: unless-stopped
+    # .env holds the secrets (DCE_VULTR_INFERENCE_KEY and so on). It is never baked into the image.
+    env_file:
+      - ../.env
+    environment:
+      # Production overrides. These win over the values in .env.
+      DCE_ENV: production
+      DCE_SERVE_FRONTEND: "false"
+      DCE_COOKIE_SECURE: "true"
+      DCE_SANDBOX_RUNNER: docker
+      DCE_DATA_DIR: /data
+      DCE_DATABASE_PATH: /data/dce.sqlite3
+      # Dispatcher talks to the Docker API only through the proxy on the internal network.
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      # No --proxy-headers here on purpose. Caddy reaches the container through Docker's bridge
+      # gateway, so uvicorn sees that gateway as the peer, not 127.0.0.1. The backend must decide how
+      # to trust X-Forwarded-For from Caddy (open item in docs/security.md).
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # Host path owned by the uid the container runs as (10001). See docs/deployment.md.
+      - /srv/dce/data:/data
+      # Seccomp profile, read-only, at the path DockerRunner computes (see the header comment).
+      - /srv/sandbox/seccomp/profile.json:/srv/sandbox/seccomp/profile.json:ro
+    networks:
+      - dce_internal   # reaches the Docker proxy
+      - dce_egress     # outbound internet (Docker cannot restrict this to one host; the backend must)
+    depends_on:
+      - docker-socket-proxy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+    memswap_limit: 512m     # equal to mem_limit: no swap
+    pids_limit: 128
+    cpus: 1.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  docker-socket-proxy:
+    # Pin by digest in production: tecnativa/docker-socket-proxy:0.3@sha256:<digest>.
+    # Tag shown here must be verified before first deploy, and the digest recorded.
+    image: tecnativa/docker-socket-proxy:0.3
+    restart: unless-stopped
+    environment:
+      # Only the sections the dispatcher needs. Everything else stays at the proxy default (off).
+      # CONTAINERS=1 covers create, start, wait, logs, archive, inspect, and remove.
+      # IMAGES=1 covers the image inspection needed by the dispatcher.
+      # POST=1 is required because create and start use POST.
+      # ALLOW_RESTARTS, PRIVILEGED, and similar options stay disabled. SDD 9.3a forbids them.
+      CONTAINERS: 1
+      IMAGES: 1
+      POST: 1
+      ALLOW_RESTARTS: 0
+      NETWORKS: 0
+      VOLUMES: 0
+      EXEC: 0
+      BUILD: 0
+      SWARM: 0
+      SYSTEM: 0
+      AUTH: 0
+      SECRETS: 0
+    # The proxy must read the Docker socket. This is the only container that mounts it, read-only.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - dce_internal   # no egress network: the proxy cannot reach the internet
+    read_only: true
+    tmpfs:
+      - /run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 128m
+    memswap_limit: 128m
+    pids_limit: 64
+    cpus: 0.5
+
+networks:
+  dce_internal:
+    internal: true     # no route to the outside world
+  dce_egress:
+    driver: bridge

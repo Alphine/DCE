@@ -1,0 +1,37 @@
+# Backend API image. Built from the repo root so it can copy backend/ and deployment/ paths.
+# Build: docker compose -f deployment/docker-compose.yml build api
+#
+# Pin the base image by digest before production:
+#   FROM python:3.12-slim@sha256:<digest>
+FROM python:3.12-slim
+
+# Docker CLI only (static binary, no daemon). The sandbox dispatcher shells out to `docker`, and it
+# reaches the daemon through DOCKER_HOST (the socket proxy in docker-compose.yml). Pin by digest.
+COPY --from=docker:27-cli /usr/local/bin/docker /usr/local/bin/docker
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /srv/app
+
+# Install pinned dependencies first for layer caching.
+COPY backend/requirements.txt /srv/app/requirements.txt
+RUN pip install --no-cache-dir -r /srv/app/requirements.txt
+
+# Application code only. No .env, no data, no frontend.
+COPY backend/ /srv/app/
+
+# Non-root user. uid 10001 matches the host directory /srv/dce/data (docs/deployment.md).
+RUN groupadd --system --gid 10001 dce \
+ && useradd --system --uid 10001 --gid dce --home-dir /nonexistent --shell /usr/sbin/nologin dce \
+ && mkdir -p /data \
+ && chown dce:dce /data
+
+USER 10001:10001
+
+EXPOSE 8000
+
+# The compose file overrides the command with the production flags.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
