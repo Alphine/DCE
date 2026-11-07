@@ -66,8 +66,9 @@ class MissionIn(BaseModel):
 
 
 class DecisionBody(BaseModel):
+    """Optional note for POST /approve and POST /reject. The decision is in the path, not the body."""
+
     model_config = ConfigDict(extra="forbid")
-    decision: Literal["approve", "reject"]
     note: str | None = Field(default=None, max_length=500)
 
     @field_validator("note")
@@ -208,10 +209,7 @@ def get_mission(mission_id: str, request: Request, user: CurrentUser = Depends(c
     return _view(row)
 
 
-@router.post("/{mission_id}/decision")
-def decide_mission(mission_id: str, body: DecisionBody, request: Request,
-                   user: CurrentUser = Depends(require_role("Approver"))) -> dict[str, Any]:
-    """Approver or Admin (same roles as gate A, SDD 15.3 and 20.5). The proposer may not decide (SDD 15.4)."""
+def _decide(request: Request, user: CurrentUser, mission_id: str, decision: str, note: str | None) -> dict[str, Any]:
     services = services_of(request)
     with services.db.transaction() as conn:
         row = _load(conn, mission_id)
@@ -226,8 +224,7 @@ def decide_mission(mission_id: str, body: DecisionBody, request: Request,
         if content_sha != row["content_sha256"]:
             raise AppError("CONFLICT", "Mission content no longer matches its proposal hash.")
         now = utc_now()
-        note = body.note
-        if body.decision == "approve":
+        if decision == "approve":
             conn.execute(
                 "UPDATE missions SET status = 'APPROVED', decided_by = ?, decided_role = ?, decided_at = ?, "
                 "decision_note = ?, approved_content_sha256 = ? WHERE id = ?",
@@ -247,3 +244,17 @@ def decide_mission(mission_id: str, body: DecisionBody, request: Request,
         })
         view = _view(_load(conn, mission_id))
     return view
+
+
+@router.post("/{mission_id}/approve")
+def approve_mission(mission_id: str, request: Request, body: DecisionBody | None = None,
+                    user: CurrentUser = Depends(require_role("Approver"))) -> dict[str, Any]:
+    """SDD 18.1 and 15.4: Approver (not the requester). Admin also passes via require_role, as for gate A."""
+    return _decide(request, user, mission_id, "approve", body.note if body else None)
+
+
+@router.post("/{mission_id}/reject")
+def reject_mission(mission_id: str, request: Request, body: DecisionBody | None = None,
+                   user: CurrentUser = Depends(require_role("Approver"))) -> dict[str, Any]:
+    """Not in SDD 18.1. Kept so a proposal can be closed without approval. Same rules as approve."""
+    return _decide(request, user, mission_id, "reject", body.note if body else None)

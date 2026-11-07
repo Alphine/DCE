@@ -45,7 +45,7 @@ def _error_code(response: Any) -> str:
 def test_analyst_creates_report_and_viewer_cannot(env: Env) -> None:
     created = _create(env)
     assert created["status"] == "OBSERVATION"
-    assert created["submitter"]["username"] == "analyst"
+    assert "username" not in created["submitter"]
     assert created["review"] is None
 
     denied = env.api("POST", "/api/reports", env.token("viewer"), json=_valid())
@@ -192,7 +192,7 @@ def test_reviewer_verifies_and_separation_of_duties_holds(env: Env) -> None:
 
     verified = _verify(env, report["id"])
     assert verified["status"] == "VERIFIED_OBSERVATION"
-    assert verified["review"]["reviewer"]["username"] == "reviewer"
+    assert "username" not in verified["review"]["reviewer"]
 
     again = env.api("POST", f"/api/reports/{report['id']}/review", env.token("reviewer"),
                     json={"decision": "reject"})

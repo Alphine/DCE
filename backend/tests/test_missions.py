@@ -28,10 +28,10 @@ def _propose(env: Env, username: str = "analyst", **overrides: Any) -> dict[str,
 
 
 def _decide(env: Env, mission_id: str, username: str, decision: str = "approve", note: str | None = None) -> Any:
-    body: dict[str, Any] = {"decision": decision}
+    body: dict[str, Any] = {}
     if note is not None:
         body["note"] = note
-    return env.api("POST", f"/api/missions/{mission_id}/decision", env.token(username), json=body)
+    return env.api("POST", f"/api/missions/{mission_id}/{decision}", env.token(username), json=body)
 
 
 def _error_code(response: Any) -> str:

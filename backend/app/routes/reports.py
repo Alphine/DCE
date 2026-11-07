@@ -86,15 +86,14 @@ class ReviewBody(BaseModel):
         return _clean_text(value, allow_newlines=True)
 
 
-_SELECT = ("SELECT r.*, u.username AS submitter_username, rv.username AS reviewer_username "
-           "FROM reports r JOIN users u ON u.id = r.submitter_id LEFT JOIN users rv ON rv.id = r.reviewed_by ")
+# Reports never carry usernames (per product decision). Identity is the internal user id only.
+_SELECT = "SELECT r.* FROM reports r "
 
 
 def _view(row: sqlite3.Row) -> dict[str, Any]:
     review = None
     if row["reviewed_by"] is not None:
-        review = {"reviewer": {"id": row["reviewed_by"], "username": row["reviewer_username"]},
-                  "at": row["reviewed_at"], "note": row["review_note"]}
+        review = {"reviewer": {"id": row["reviewed_by"]}, "at": row["reviewed_at"], "note": row["review_note"]}
     return {
         "id": row["id"],
         "hazard_type": row["hazard_type"],
@@ -105,7 +104,7 @@ def _view(row: sqlite3.Row) -> dict[str, Any]:
         "source_reference": row["source_reference"],
         "notes": row["notes"],
         "status": row["status"],
-        "submitter": {"id": row["submitter_id"], "username": row["submitter_username"]},
+        "submitter": {"id": row["submitter_id"]},
         "review": review,
         "created_at": row["created_at"],
     }
