@@ -41,6 +41,7 @@ OUTPUT_RULES: dict[str, OutputRule] = {
     "blocked_roads.csv": OutputRule("csv", 5 * MB, "text"),
     "hazard_results.json": OutputRule("json", 5 * MB, "json"),
     "resource_estimate.json": OutputRule("json", 1 * MB, "json"),
+    "tsunami_results.json": OutputRule("json", 5 * MB, "json"),
 }
 
 
@@ -54,7 +55,7 @@ class VerifiedOutput:
 
 
 def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Path,
-                     pack_sha256: str | None = None) -> list[VerifiedOutput]:
+                     pack_sha256: str | None = None, tsunami_sha256: str | None = None) -> list[VerifiedOutput]:
     """Validate sandbox output files. `artifacts` are ArtifactFile-like objects with name/path/sha256/size_bytes.
 
     `pack_sha256` is the hash of the rule pack the server staged for this run. Hazard output must
@@ -86,6 +87,8 @@ def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Pat
         _check_content(source, rule)
         if name == "hazard_results.json":
             _check_hazard_result(source, pack_sha256)
+        if name == "tsunami_results.json":
+            _check_hazard_result(source, tsunami_sha256)
         seen[name] = VerifiedOutput(name=name, type=rule.type, size_bytes=size, sha256=digest, source_path=source)
 
     for name in expected:

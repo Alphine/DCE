@@ -177,7 +177,8 @@ if __name__ == "__main__":
 # mirrors app/rules/engine.py; tests check that both produce identical output for the same CSV.
 # ---------------------------------------------------------------------------------------------------------
 
-TOOL_ORDER = ("geojson_analyzer", "hazard_analyzer", "resource_estimator", "blocked_roads", "report_generator")
+TOOL_ORDER = ("geojson_analyzer", "hazard_analyzer", "tsunami_analyzer", "resource_estimator", "blocked_roads",
+              "report_generator")
 
 TOOL_PREAMBLE = r'''"""DCE registry tools (mock planner output). Standard library only."""
 import csv
@@ -557,9 +558,119 @@ def write_pdf(path, lines):
     log("wrote " + os.path.basename(path))
 '''
 
+TSUNAMI_SECTION = r'''
+
+TSUNAMI_CONDITIONS = {
+    "magnitude_gte": "magnitude",
+    "depth_km_lt": "depth_km",
+    "coast_distance_km_lte": "coast_distance_km",
+}
+
+
+def tsunami_records():
+    # Same normalisation as app/rules/tsunami.py records_from_csv_bytes.
+    with open("dataset.csv", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        fields = reader.fieldnames or []
+        name_col = find_column(fields, ["area", "area_name", "district", "location"])
+        columns = {
+            "magnitude": find_column(fields, ["magnitude"]),
+            "depth_km": find_column(fields, ["depth_km"]),
+            "coast_distance_km": find_column(fields, ["coast_distance_km"]),
+        }
+        records = []
+        for number, row in enumerate(reader, start=1):
+            name = (row.get(name_col) or "").strip() if name_col else ""
+            item = {"row": number, "area": name or "unknown"}
+            for key, column in columns.items():
+                item[key] = to_number(row.get(column)) if column else None
+            records.append(item)
+    return records
+
+
+def load_tsunami_pack():
+    # The server verified the pack hash before staging it. The sandbox reads the pack and never edits it.
+    with open("tsunami_pack.json", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def tsunami_condition(key, threshold, record):
+    value = record[TSUNAMI_CONDITIONS[key]]
+    if value is None:
+        return None
+    if key == "magnitude_gte":
+        return value >= threshold
+    if key == "depth_km_lt":
+        return value < threshold
+    return value <= threshold
+
+
+def evaluate_tsunami(records, pack):
+    order = pack["severity_order"]
+    rank = {level: index for index, level in enumerate(order)}
+    counts = {level: 0 for level in order}
+    counts["UNKNOWN"] = 0
+    results = []
+    for record in sorted(records, key=lambda item: item["row"]):
+        fired = None
+        flags = set()
+        undecided = False
+        for rule in pack["rules"]:
+            outcomes = [tsunami_condition(key, threshold, record) for key, threshold in rule["when"].items()]
+            if all(outcome is True for outcome in outcomes):
+                action = rule["then"]
+                if "flag" in action:
+                    flags.add(action["flag"])
+                if "severity" in action and (fired is None or rank[action["severity"]] > rank[fired]):
+                    fired = action["severity"]
+            elif any(outcome is None for outcome in outcomes):
+                undecided = True
+        if fired is not None:
+            severity = fired
+        elif undecided:
+            severity = "UNKNOWN"
+        else:
+            severity = order[0]
+        counts[severity] += 1
+        results.append({
+            "row": record["row"],
+            "area": record["area"],
+            "magnitude": record["magnitude"],
+            "depth_km": record["depth_km"],
+            "coast_distance_km": record["coast_distance_km"],
+            "severity": severity,
+            "flags": sorted(flags),
+        })
+    return {
+        "data_class": "INFERRED_FACT",
+        "tool": "tsunami_analyzer",
+        "rule_pack": {"pack_id": pack["pack_id"], "version": pack["version"], "sha256": pack["pack_sha256"]},
+        "thresholds": {"label": pack["thresholds_label"], "status": ILLUSTRATIVE_STATUS, "rules": pack["rules"]},
+        "rows_evaluated": len(results),
+        "counts_by_severity": dict(sorted(counts.items())),
+        "watch_candidates": sum(1 for item in results if "tsunami_watch_candidate" in item["flags"]),
+        "results": results,
+        "not_for_operational_use": True,
+    }
+
+
+def run_tsunami_analyzer():
+    pack = load_tsunami_pack()
+    result = evaluate_tsunami(tsunami_records(), pack)
+    write_json("tsunami_results.json", result)
+    REPORT.append("## Earthquake-tsunami screening (INFERRED_FACT, illustrative thresholds)")
+    REPORT.append("- Rule pack: %s v%s, sha256 %s" % (pack["pack_id"], pack["version"], pack["pack_sha256"]))
+    REPORT.append("- Rows evaluated: %d" % result["rows_evaluated"])
+    REPORT.append("- Tsunami watch candidates (illustrative, not a warning): %d" % result["watch_candidates"])
+    for level, count in sorted(result["counts_by_severity"].items()):
+        REPORT.append("- Severity %s: %d" % (level, count))
+    REPORT.append("")
+'''
+
 _TOOL_SECTIONS = {
     "geojson_analyzer": GEOJSON_SECTION,
     "hazard_analyzer": HAZARD_SECTION,
+    "tsunami_analyzer": TSUNAMI_SECTION,
     "resource_estimator": RESOURCE_SECTION,
     "blocked_roads": BLOCKED_SECTION,
     "report_generator": REPORT_SECTION,
@@ -568,6 +679,7 @@ _TOOL_SECTIONS = {
 _TOOL_DESCRIPTIONS = {
     "geojson_analyzer": "Summarise GeoJSON features, geometry types, bounding box and properties",
     "hazard_analyzer": "Evaluate flood rows with the illustrative rule pack",
+    "tsunami_analyzer": "Screen earthquake rows with the illustrative earthquake-tsunami rule pack",
     "resource_estimator": "Estimate illustrative resource needs from affected rows",
     "blocked_roads": "List rows with blocked roads",
     "report_generator": "Write the situation report",

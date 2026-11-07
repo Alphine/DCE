@@ -41,6 +41,14 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | POST | `/api/datasets` | Analyst | Upload CSV (multipart) |
 | GET | `/api/datasets/{id}` | Viewer | Dataset with profile |
 | POST | `/api/datasets/{id}/approve` | Reviewer (not uploader) | Set status APPROVED |
+| POST | `/api/reports` | Analyst | Submit structured field report (SDD 10.7); validated, status OBSERVATION (201) |
+| GET | `/api/reports` | Viewer (Viewers see VERIFIED_OBSERVATION only) | List reports (`?limit=`, max 500) |
+| GET | `/api/reports/{id}` | Viewer (Viewers see VERIFIED_OBSERVATION only) | Report detail, status and review |
+| POST | `/api/reports/{id}/review` | Reviewer (not submitter) | Promote to VERIFIED_OBSERVATION or REJECTED (from OBSERVATION only) |
+| POST | `/api/missions` | Analyst | Propose mission from an approved CSV dataset or a verified report (201, status PROPOSED) |
+| GET | `/api/missions` | Viewer (Viewers see APPROVED only) | List missions (`?limit=`, max 500) |
+| GET | `/api/missions/{id}` | Viewer (Viewers see APPROVED only) | Mission detail, target areas, content hash and decision |
+| POST | `/api/missions/{id}/decision` | Approver or Admin (not proposer) | Approve or reject a PROPOSED mission (SDD 15.4). Never starts a sandbox run or changes an agent task |
 | POST | `/api/agent/tasks` | Analyst (quota) | Create agent task |
 | GET | `/api/agent/tasks` | Viewer | List own tasks (Reviewer+ sees all) |
 | GET | `/api/agent/tasks/{id}` | Owner or Reviewer+ | Task detail |
@@ -55,6 +63,11 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 Request bodies (added after the deployment review):
 - `POST /api/auth/login`: JSON `{"username": "...", "password": "..."}`.
 - `POST /api/datasets`: multipart form, file field named `file`, plus optional text field `name`.
+- `POST /api/reports`: JSON. `hazard_type` required (`EARTHQUAKE`, `TSUNAMI`, `EXTREME_RAINFALL`, `FLOOD`, `LANDSLIDE`, `WILDFIRE`, `SMOKE`). Optional, each may be `null`: `location_name` (1-120 chars), `latitude` (-90..90) and `longitude` (-180..180), which must be given together, `observed_at` (ISO 8601 with offset or Z, not in the future, stored as UTC), `reporter_role` (`CIVILIAN`, `VOLUNTEER`, `OFFICIAL`, `RESPONDER`, `OTHER`), `severity_reported` (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`), `source_reference` (1-120 chars), `notes` (max 2000 chars). Unknown values stay `null`; coordinates are never inferred from a place name. Unknown fields are refused.
+- `POST /api/reports/{id}/review`: `{"decision": "approve" | "reject", "note": "optional, max 500 chars"}`.
+- `POST /api/missions`: `{"source_type": "DATASET" | "REPORT", "source_id": "uuid", "title": "1-120 chars", "objective": "1-1000 chars", "area_column": "CSV column, required for DATASET"}`. Target areas are the distinct non-empty values of that column (max 50), or the report's `location_name` for a REPORT source. The caller never types them in.
+- `POST /api/missions/{id}/decision`: `{"decision": "approve" | "reject", "note": "optional, max 500 chars"}`. Approval stores the approver ID, role, timestamp, and the SHA-256 of the approved content. If the stored content no longer matches its hash, the decision is refused with `409 CONFLICT`.
+- Audit: report submission and review, and mission proposal and decisions, are audit records (`report.submitted`, `report.reviewed`, `mission.proposed`, `mission.approved`, `mission.rejected`). Free text such as notes and decision notes is stored as a SHA-256 only.
 
 Rate limiting: 10 login attempts per client IP per minute (client IP is resolved as in section 9, `DCE_TRUSTED_PROXIES`); 20 agent task creations per user per day (`DCE_QUOTA_TASKS_PER_DAY`); 1 agent task creation per user per 30 seconds.
 

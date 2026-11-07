@@ -12,6 +12,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 RULE_PACK_INPUT = "rule_pack.json"
+TSUNAMI_PACK_INPUT = "tsunami_pack.json"
 DATASET_INPUT_NAMES = MappingProxyType({"CSV": "dataset.csv", "GEOJSON": "dataset.geojson"})
 
 
@@ -79,6 +80,23 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
                                               "thresholds{label: illustrative, rules[]}, counts_by_severity, "
                                               "road_blocked_candidates, per_district{}, results[]"},
         data_class="INFERRED_FACT",
+    ),
+    "tsunami_analyzer": ToolSpec(
+        name="tsunami_analyzer",
+        description="Screen approved earthquake rows (magnitude, depth, distance to coast) with the hash-checked "
+                    "earthquake-tsunami rule pack (illustrative thresholds). Not a tsunami warning. "
+                    "Deterministic: same rows and pack give the same output.",
+        input_kinds=("CSV",),
+        input_files=(TSUNAMI_PACK_INPUT,),
+        outputs=("tsunami_results.json",),
+        required_outputs=("tsunami_results.json",),
+        output_schema={"tsunami_results.json": "data_class INFERRED_FACT, rule_pack{pack_id,version,sha256}, "
+                                               "thresholds{label: illustrative, rules[]}, counts_by_severity, "
+                                               "watch_candidates, results[] with severity UNKNOWN when inputs are "
+                                               "missing"},
+        data_class="INFERRED_FACT",
+        input_schema="Approved CSV with columns area, magnitude, depth_km, coast_distance_km (see "
+                     "datasets/samples/earthquake_sample.csv).",
     ),
     "resource_estimator": ToolSpec(
         name="resource_estimator",

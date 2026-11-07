@@ -49,6 +49,7 @@ ARTIFACT_RULES: dict[str, ArtifactRule] = {
     "situation_report.pdf": ArtifactRule("pdf", 10 * MIB),
     "hazard_results.json": ArtifactRule("json", 5 * MIB),
     "resource_estimate.json": ArtifactRule("json", 1 * MIB),
+    "tsunami_results.json": ArtifactRule("json", 5 * MIB),
 }
 
 

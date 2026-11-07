@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Callable
 
 import pytest
@@ -183,3 +184,46 @@ def test_tampered_rule_pack_refuses_to_run(make_env: Callable[..., Env], tmp_pat
     assert task["state"] == "FAILED_SANDBOX"
     assert task["error_reason"] == "RULE_PACK_INTEGRITY"
     assert env.runner.calls == [], "no sandbox run may start with a tampered rule pack"
+
+
+def test_tsunami_analyzer_matches_engine_end_to_end(tool_env: Callable[..., Env]) -> None:
+    from app.rules import tsunami
+
+    sample = Path(__file__).resolve().parents[2] / "datasets" / "samples" / "earthquake_sample.csv"
+    data = sample.read_bytes()
+    env = tool_env(["tsunami_analyzer", "report_generator"], want_pdf=False)
+    dataset_id = _approved(env, data, "earthquake_sample.csv")
+    task = _run_to_review(env, dataset_id)
+    assert task["state"] == "AWAITING_REVIEW", task.get("error_reason")
+    assert env.api("POST", f"/api/agent/tasks/{task['id']}/approve", env.token("reviewer"),
+                   json={"gate": "B", "decision": "approve"}).json()["state"] == "COMPLETED"
+
+    artifacts = _artifacts(env.api("GET", f"/api/agent/tasks/{task['id']}", env.token("analyst")).json())
+    assert "tsunami_results.json" in artifacts
+    sandbox_doc = json.loads(_download(env, artifacts["tsunami_results.json"]["id"]).content)
+
+    pack = tsunami.load_default_tsunami_pack()[1]
+    expected = tsunami.evaluate_tsunami(tsunami.records_from_csv_bytes(data), pack)
+    assert sandbox_doc["data_class"] == "INFERRED_FACT"
+    assert sandbox_doc["rule_pack"]["sha256"] == pack["pack_sha256"]
+    assert sandbox_doc["results"] == expected["results"]
+    assert sandbox_doc["counts_by_severity"] == expected["counts_by_severity"]
+    assert sandbox_doc["watch_candidates"] == expected["watch_candidates"] == 2
+    assert sandbox_doc["counts_by_severity"]["UNKNOWN"] == 2
+
+
+def test_tsunami_output_refused_without_the_staged_pack_hash(tmp_path: Path) -> None:
+    from app.agent.outputs import OutputRejected, validate_outputs
+    from app.rules import tsunami
+
+    doc = {"data_class": "INFERRED_FACT", "rule_pack": {"sha256": "0" * 64}}
+    path = tmp_path / "tsunami_results.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    digest = __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+
+    artifact = SimpleNamespace(name="tsunami_results.json", path=str(path), sha256=digest,
+                               size_bytes=path.stat().st_size)
+    with pytest.raises(OutputRejected) as exc:
+        validate_outputs([artifact], ["tsunami_results.json"], tmp_path,
+                         tsunami_sha256=tsunami.load_default_tsunami_pack()[1]["pack_sha256"])
+    assert exc.value.code == "OUTPUT_HASH_MISMATCH"
