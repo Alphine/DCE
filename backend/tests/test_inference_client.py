@@ -262,6 +262,21 @@ def test_plan_keeps_planner_interface() -> None:
     assert plan == {"tools": ["csv_analyzer"]}
 
 
+def test_plan_uses_the_full_output_ceiling_for_reasoning_models() -> None:
+    # A reasoning model spends max_tokens on reasoning first; a 1500 cap returned empty content live.
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return _ok(json.dumps({"tools": ["csv_analyzer"]}))
+
+    request = PlanRequest(instruction="x", requested_outputs=[], dataset_name="d", profile={},
+                          limits={"timeout_s": 30, "memory_mb": 512, "pids": 64})
+    asyncio.run(_client(handler).plan(request))
+    body = json.loads(seen[0].content)
+    assert body["max_tokens"] == InferencePolicy().output_budget_tokens
+
+
 def test_mock_mode_never_touches_the_network(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def forbidden(*args: Any, **kwargs: Any) -> None:
         raise AssertionError("network client constructed in mock mode")
