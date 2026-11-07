@@ -1,11 +1,24 @@
 """Runtime configuration. Every value comes from a DCE_* environment variable (docs/api.md section 9)."""
 
+import ipaddress
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+IPNetwork = ipaddress.IPv4Network | ipaddress.IPv6Network
+
+
+def parse_trusted_proxies(raw: str) -> tuple[IPNetwork, ...]:
+    """Parse DCE_TRUSTED_PROXIES: comma-separated IP addresses or CIDR ranges. Empty means no trusted peers."""
+    networks: list[IPNetwork] = []
+    for item in raw.split(","):
+        entry = item.strip()
+        if entry:
+            networks.append(ipaddress.ip_network(entry, strict=False))
+    return tuple(networks)
 
 
 class Settings(BaseSettings):
@@ -21,6 +34,14 @@ class Settings(BaseSettings):
     inference_base_url: str = "https://api.vultrinference.com/v1"
     inference_model: str = ""
     vultr_inference_key: SecretStr = SecretStr("")
+    inference_connect_timeout_s: float = Field(default=5.0, gt=0, le=60)
+    inference_read_timeout_s: float = Field(default=15.0, gt=0, le=120)
+    inference_total_timeout_s: float = Field(default=20.0, gt=0, le=120)
+    inference_max_retries: int = Field(default=2, ge=0, le=2)
+    inference_retry_after_cap_s: float = Field(default=5.0, ge=0, le=30)
+    inference_model_list_ttl_s: float = Field(default=600.0, ge=0, le=86400)
+    inference_budget_input_tokens: int = Field(default=12_000, ge=1)
+    inference_budget_output_tokens: int = Field(default=4_000, ge=1)
 
     sandbox_runner: Literal["docker", "local"] = "local"
     sandbox_image: str = "dce-worker:local"
@@ -32,11 +53,17 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     quota_tasks_per_day: int = Field(default=20, ge=0)
     cors_origins: str = "http://localhost:8000"  # comma-separated
+    # Comma-separated IPs or CIDRs. Only these direct peers may supply X-Forwarded-For (docs/api.md section 9).
+    trusted_proxies: str = ""
     seed_password: SecretStr | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def trusted_proxy_networks(self) -> tuple[IPNetwork, ...]:
+        return parse_trusted_proxies(self.trusted_proxies)
 
     @property
     def frontend_enabled(self) -> bool:
@@ -46,6 +73,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _check_production_rules(self) -> "Settings":
+        _ = self.trusted_proxy_networks  # raises ValueError for a malformed DCE_TRUSTED_PROXIES entry
         if self.env == "production" and self.sandbox_runner == "local":
             raise ValueError("DCE_SANDBOX_RUNNER=local is refused when DCE_ENV=production")
         if self.inference_mode == "vultr" and (not self.vultr_inference_key.get_secret_value() or not self.inference_model):

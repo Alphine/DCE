@@ -16,19 +16,26 @@
   <a class="skip-link" href="#view">Skip to content</a>
 
   <header class="topbar" id="topbar" hidden>
-    <a class="brand" href="#/" aria-label="Disaster Commander Edge, go to Command Center">
-      <img src="assets/logo.svg" alt="" width="30" height="30">
-      <span class="brand-text">
-        <span class="brand-name">Disaster Commander</span>
-        <span class="brand-sub">EDGE</span>
-      </span>
-    </a>
-    <nav class="nav" id="nav" aria-label="Main"></nav>
-    <div class="userbox">
-      <span class="role-chip" id="role-chip"></span>
-      <span class="username" id="username"></span>
-      <button class="btn btn-ghost btn-sm" id="logout" type="button" aria-label="Log out of Disaster Commander Edge">Log out</button>
+    <div class="topbar-main">
+      <a class="brand" href="#/" aria-label="Disaster Commander Edge, go to Command Center">
+        <img src="assets/logo.svg" alt="" width="34" height="34">
+        <span class="brand-text">
+          <span class="brand-name">Disaster Commander Edge</span>
+          <span class="brand-sub">Multi-Hazard Intelligence and Response System</span>
+        </span>
+      </a>
+      <nav class="nav nav--primary" id="nav" aria-label="Main"></nav>
+      <div class="userbox">
+        <span class="status-pill" id="conn-pill" data-state="online" role="status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="conn-text">Online</span>
+        </span>
+        <span class="role-chip" id="role-chip"></span>
+        <span class="username" id="username"></span>
+        <button class="btn btn-ghost btn-sm btn-logout" id="logout" type="button" aria-label="Log out of Disaster Commander Edge">Log out</button>
+      </div>
     </div>
+    <nav class="nav nav--tools" id="nav-tools" aria-label="Tools"></nav>
   </header>
 
   <main id="view" class="view" tabindex="-1"></main>

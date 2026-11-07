@@ -49,10 +49,11 @@ class Plan(BaseModel):
         return items
 
 
-def validate_plan(raw: Any, ceiling: dict[str, int]) -> Plan:
+def validate_plan(raw: Any, ceiling: dict[str, int], dataset_kind: str = "CSV") -> Plan:
     """Validate a planner output against the schema, the tool registry, and the limit ceiling.
 
     Limits may be lowered by the planner, never raised above the configured ceiling (SDD 8.5).
+    Every planned tool must accept the kind of the dataset the task was created on.
     """
     if not isinstance(raw, dict):
         raise PlanError("PLAN_INVALID_SCHEMA", "Plan must be a JSON object.")
@@ -64,6 +65,8 @@ def validate_plan(raw: Any, ceiling: dict[str, int]) -> Plan:
     for tool in plan.tools:
         if tool not in TOOL_REGISTRY:
             raise PlanError("PLAN_UNKNOWN_TOOL", f"Tool is not in the registry: {tool[:64]}")
+        if dataset_kind not in TOOL_REGISTRY[tool].input_kinds:
+            raise PlanError("PLAN_INPUT_KIND_MISMATCH", f"Tool {tool} does not accept {dataset_kind} datasets.")
     step_ids: set[str] = set()
     for step in plan.steps:
         if step.tool not in plan.tools or step.tool not in TOOL_REGISTRY:

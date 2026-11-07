@@ -107,11 +107,16 @@ services:
     # The proxy must read the Docker socket. This is the only container that mounts it, read-only.
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker-socket-proxy/haproxy.cfg.template:/usr/local/etc/haproxy/haproxy.cfg.template:ro
+      - ./docker-socket-proxy/errors:/usr/local/etc/haproxy/errors:ro
     networks:
       - dce_internal   # no egress network: the proxy cannot reach the internet
     read_only: true
     tmpfs:
       - /run
+      # The entrypoint writes haproxy.cfg at startup, so this dir must be writable despite read_only: true.
+      # The template is bind-mounted back on top (taken from the image, see docker-socket-proxy/).
+      - /usr/local/etc/haproxy
     security_opt:
       - no-new-privileges:true
     cap_drop:

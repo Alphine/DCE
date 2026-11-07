@@ -1,35 +1,65 @@
 import { api } from '../api.js';
-import { h, clear, fmtDate, short, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox, kv } from '../dom.js';
-import { STATE_META, datasetKind, mapPoints, depthByDistrict, depthFromSummary, toNumber } from '../domain.js';
-import { stateBadge, dataClassBadge, badge } from '../components/badges.js';
+import { h, clear, fmtDate, fmtClock, short, spinner, errorState, listOf, pageHead, panel, emptyState, kv } from '../dom.js';
+import { datasetKind, mapPoints, depthByDistrict, depthFromSummary } from '../domain.js';
+import { stateBadge, dataClassBadge } from '../components/badges.js';
 import { createWorldMap, worldMapLegend, pointDescription } from '../components/world-map.js';
 import { createBarChart } from '../components/chart.js';
 import { verifyBlob, hashStatus } from '../components/hash.js';
+import { icon } from '../components/icons.js';
 import { toast } from '../components/toast.js';
-import { go } from '../router.js';
+import { hasRole } from '../session.js';
 
-// Command Center: summary tiles, world map (disaster and logistics layers), depth chart, recent task feed.
+const FAILED_STATES = new Set(['FAILED_PLANNING', 'FAILED_SANDBOX', 'TIMED_OUT', 'REJECTED_OUTPUT', 'ORPHANED']);
+
+// Quick tools: working pages only. Each one is shown only to roles that can open it.
+const QUICK_TOOLS = [
+  { href: '#/datasets', label: 'Datasets', icon: 'datasets', min: 'Viewer' },
+  { href: '#/agent', label: 'Agent', icon: 'agent', min: 'Analyst' },
+  { href: '#/artifacts', label: 'Artifacts', icon: 'artifacts', min: 'Viewer' },
+  { href: '#/audit', label: 'Audit', icon: 'audit', min: 'Reviewer' },
+  { href: '#/about', label: 'Architecture', icon: 'architecture', min: 'Viewer' },
+  { href: '#/simulation', label: 'Simulation', icon: 'simulation', min: 'Viewer' },
+];
+
+// ctx: { user, signal, navigate }.
+// Command Center: live indicators, map (disaster and logistics layers), depth chart,
+// Command Assistant (rule-based checks on live data), recent agent tasks, quick tools.
 export async function mount(root, ctx) {
-  const { signal } = ctx;
+  const { signal, user } = ctx;
   let map = null;
   let chart = null;
   let pointCard = null;
 
-  const tilesSlot = h('div', { class: 'tiles' }, spinner('Loading summary…'));
+  const asOfSlot = h('p', { class: 'small muted', 'aria-live': 'polite' });
+  const tilesSlot = h('div', { class: 'indicators' }, spinner('Loading summary…'));
   const mapSlot = h('div', { class: 'stack' });
   const chartSlot = h('div', { class: 'stack' });
   const feedSlot = h('div', null, spinner('Loading tasks…'));
+  const assistantSlot = h('div', { class: 'stack' }, spinner('Checking live data…'));
   const refreshBtn = h('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: () => load() }, 'Refresh');
+
+  const quickLinks = QUICK_TOOLS.filter((t) => hasRole(user, t.min)).map((t) =>
+    h('a', { class: 'quick-tool', href: t.href }, icon(t.icon), h('span', null, t.label)));
 
   root.append(
     pageHead('Command Center',
-      'Datasets, agent tasks, sandbox status and quota at a glance. Map and chart use the first approved dataset.',
+      'Live overview of datasets, agent tasks, sandbox status and quota. The map and chart use approved datasets only.',
       refreshBtn),
-    tilesSlot,
-    h('div', { class: 'grid-2' },
-      panel({ title: 'Disaster and logistics map', sub: 'Incident points and logistics sites from approved datasets, only where coordinates are present.', cls: '', style: '--i:3' }, mapSlot),
-      panel({ title: 'Water depth by district', sub: 'Mean depth in cm, drawn from validated data.', style: '--i:4' }, chartSlot)),
-    panel({ title: 'Recent agent tasks', sub: 'Your tasks. Reviewers see all tasks.', style: '--i:5' }, feedSlot));
+    h('div', { class: 'cc-grid' },
+      h('div', { class: 'cc-col cc-left' },
+        panel({ title: 'Situational overview', sub: 'Counts and status from the server.', cls: 'panel--overview' },
+          asOfSlot,
+          tilesSlot)),
+      h('div', { class: 'cc-col cc-centre' },
+        panel({ title: 'Disaster and logistics map', sub: 'Incident points and logistics sites from approved datasets, only where coordinates are present.', cls: 'panel--map' }, mapSlot),
+        panel({ title: 'Water depth by district', sub: 'Mean depth in cm, drawn from validated data.' }, chartSlot)),
+      h('div', { class: 'cc-col cc-right' },
+        panel({ title: 'Command Assistant', sub: 'Checks on live data only. Not an AI model, and no generated replies.', cls: 'panel--assistant' },
+          assistantSlot),
+        panel({ title: 'Recent agent tasks', sub: 'Your tasks. Reviewers see all tasks.' }, feedSlot))),
+    h('section', { class: 'quick-strip', 'aria-labelledby': 'quick-title' },
+      h('h2', { id: 'quick-title', class: 'quick-title' }, 'Quick tools'),
+      h('div', { class: 'quick-tools' }, quickLinks)));
 
   function renderTiles(s) {
     const by = (s.tasks && s.tasks.by_state) || {};
@@ -66,10 +96,10 @@ export async function mount(root, ctx) {
         h('div', { class: 'tile-value' }, `${sandbox.running ?? 0}/${sandbox.max_concurrent ?? 0}`),
         h('div', { class: 'tile-sub' },
           h('span', null, `Runner: ${sandbox.runner || 'unknown'}`),
-          isLocal ? h('span', { class: 'badge badge--bad', style: 'margin-left:8px' }, 'DEV ONLY') : null)),
+          isLocal ? h('span', { class: 'badge badge--bad' }, 'DEV ONLY') : null)),
       h('article', { class: 'tile', style: '--i:4' },
         h('div', { class: 'tile-label' }, 'Inference'),
-        h('div', { class: 'tile-value', style: 'font-size:1.35rem' }, inference.mode || 'unknown'),
+        h('div', { class: 'tile-value tile-value--text' }, inference.mode || 'unknown'),
         h('div', { class: 'tile-sub' },
           inference.mode === 'mock'
             ? 'Mock planner: deterministic outputs, not a live model.'
@@ -90,6 +120,88 @@ export async function mount(root, ctx) {
         h('span', { class: 'mono' }, short(t.id, 8)),
         h('span', null, `by ${(t.owner && t.owner.username) || 'unknown'}`),
         h('span', null, fmtDate(t.created_at)))))));
+  }
+
+  // Command Assistant. Every item is a rule over data already on this page. No model is called.
+  function renderAssistant({ summary, tasks, pendingDatasets, hasDisaster, hasLogistics }) {
+    const items = [];
+    const by = (summary.tasks && summary.tasks.by_state) || {};
+    const gateA = tasks.filter((t) => t.state === 'AWAITING_APPROVAL');
+    const gateB = tasks.filter((t) => t.state === 'AWAITING_REVIEW');
+    const failed = tasks.filter((t) => FAILED_STATES.has(t.state));
+    const used = (summary.quota && summary.quota.used_today) || 0;
+    const limit = (summary.quota && summary.quota.limit) || 0;
+    const sandbox = summary.sandbox || {};
+    const inference = summary.inference || {};
+
+    if (pendingDatasets > 0) {
+      items.push({ tone: 'action', kind: 'Action', text: `${pendingDatasets} dataset${pendingDatasets === 1 ? '' : 's'} waiting for reviewer approval. The agent cannot read them until approved.`,
+        href: '#/datasets', link: 'Open Datasets' });
+    }
+    if (gateA.length) {
+      items.push({ tone: 'action', kind: 'Gate A', text: `${gateA.length} task${gateA.length === 1 ? '' : 's'} waiting at gate A. An approver must decide before any code is generated.`,
+        href: `#/tasks/${encodeURIComponent(gateA[0].id)}`, link: 'Open first task' });
+    }
+    if (gateB.length) {
+      items.push({ tone: 'action', kind: 'Gate B', text: `${gateB.length} task${gateB.length === 1 ? '' : 's'} waiting at gate B. Outputs are not results until a reviewer releases them.`,
+        href: `#/tasks/${encodeURIComponent(gateB[0].id)}`, link: 'Open first task' });
+    }
+    if (failed.length) {
+      items.push({ tone: 'warn', kind: 'Check', text: `${failed.length} recent task${failed.length === 1 ? '' : 's'} ended in a failure state. Read the sandbox evidence before retrying.`,
+        href: `#/tasks/${encodeURIComponent(failed[0].id)}`, link: 'Open first failed task' });
+    }
+    if (summary.datasets && summary.datasets.total > 0 && !hasDisaster) {
+      items.push({ tone: 'warn', kind: 'Data', text: 'No approved disaster dataset yet. Incidents are not plotted until one is approved.',
+        href: '#/datasets', link: 'Open Datasets' });
+    }
+    if (limit && used >= limit) {
+      items.push({ tone: 'warn', kind: 'Quota', text: 'Daily agent quota is used up. New tasks are blocked until the quota resets.' });
+    }
+    if (sandbox.runner === 'local') {
+      items.push({ tone: 'bad', kind: 'Safety', text: 'The sandbox runner is local. It is for development only and has no container isolation.',
+        href: '#/about', link: 'Read the honest limits' });
+    }
+    if (inference.mode === 'mock') {
+      items.push({ tone: 'info', kind: 'Info', text: 'Inference is in mock mode. Plans are deterministic stand-ins, not live model output.' });
+    }
+    if (by.RUNNING) {
+      items.push({ tone: 'info', kind: 'Live', text: `${by.RUNNING} task${by.RUNNING === 1 ? ' is' : 's are'} running in the sandbox now.` });
+    }
+
+    if (!items.length) {
+      assistantSlot.replaceChildren(emptyState('No open items', 'Live checks found nothing that needs attention. Nothing here is generated by a model.'));
+      return;
+    }
+    const badgeTone = { action: 'warn', warn: 'warn', bad: 'bad', info: 'neutral' };
+    assistantSlot.replaceChildren(h('ul', { class: 'assistant-list', 'aria-label': 'Command Assistant checks' },
+      items.map((it) => h('li', { class: `assistant-item assistant-item--${it.tone}` },
+        h('span', { class: `badge badge--${badgeTone[it.tone] || 'neutral'}` }, it.kind),
+        h('div', { class: 'assistant-text' },
+          h('span', null, it.text),
+          it.href ? h('a', { class: 'assistant-link', href: it.href }, it.link) : null)))));
+  }
+
+  // Approved datasets, classified by their profile: a facility_type column marks logistics, anything else is disaster.
+  // Also counts datasets still waiting for review, for the Command Assistant.
+  async function loadApproved() {
+    const datasetsRes = await api.get('datasets', { signal });
+    if (signal.aborted) return null;
+    const all = listOf(datasetsRes);
+    const pendingDatasets = all.filter((d) => d.status === 'PENDING_VALIDATION').length;
+    const approved = all.filter((d) => d.status === 'APPROVED').slice(0, 8);
+    const details = await Promise.all(approved.map((d) => api.get(`datasets/${encodeURIComponent(d.id)}`, { signal })));
+    if (signal.aborted) return null;
+    const datasets = details.map((detail) => {
+      const columns = (detail.profile && detail.profile.columns) || [];
+      return { id: detail.id, name: detail.name, columns, kind: datasetKind(columns) };
+    });
+    return { datasets, pendingDatasets };
+  }
+
+  async function loadRows(ds) {
+    // Full rows (contract §12), not the 5-row preview, so every located point can be plotted.
+    const res = await api.get(`datasets/${encodeURIComponent(ds.id)}/rows?limit=1000`, { signal });
+    return (res && res.items) || [];
   }
 
   // Find the newest summary.json among recent completed tasks. Its hash is checked before use.
@@ -114,25 +226,6 @@ export async function mount(root, ctx) {
     return null;
   }
 
-  // Approved datasets, classified by their profile: a facility_type column marks logistics, anything else is disaster.
-  async function loadApproved() {
-    const datasetsRes = await api.get('datasets', { signal });
-    if (signal.aborted) return null;
-    const approved = listOf(datasetsRes).filter((d) => d.status === 'APPROVED').slice(0, 8);
-    const details = await Promise.all(approved.map((d) => api.get(`datasets/${encodeURIComponent(d.id)}`, { signal })));
-    if (signal.aborted) return null;
-    return details.map((detail) => {
-      const columns = (detail.profile && detail.profile.columns) || [];
-      return { id: detail.id, name: detail.name, columns, kind: datasetKind(columns) };
-    });
-  }
-
-  async function loadRows(ds) {
-    // Full rows (contract §12), not the 5-row preview, so every located point can be plotted.
-    const res = await api.get(`datasets/${encodeURIComponent(ds.id)}/rows?limit=1000`, { signal });
-    return (res && res.items) || [];
-  }
-
   function showPointCard(point) {
     if (!point) {
       pointCard.replaceChildren(h('p', { class: 'small muted' },
@@ -149,16 +242,18 @@ export async function mount(root, ctx) {
         ...(point.details || []).map((line) => kv(line.label, line.value))));
   }
 
+  // Returns what was found, for the Command Assistant. Returns null when the page was left mid-load.
   async function renderSpatial(tasks) {
-    const datasets = await loadApproved();
-    if (!datasets) return;
+    const loaded = await loadApproved();
+    if (!loaded) return null;
+    const { datasets, pendingDatasets } = loaded;
     const disasterDs = datasets.find((d) => d.kind === 'DISASTER') || null;
     const logisticsDs = datasets.find((d) => d.kind === 'LOGISTICS') || null;
     const [disasterRows, logisticsRows] = await Promise.all([
       disasterDs ? loadRows(disasterDs) : [],
       logisticsDs ? loadRows(logisticsDs) : [],
     ]);
-    if (signal.aborted) return;
+    if (signal.aborted) return null;
     const rows = disasterRows;
 
     // Map
@@ -190,7 +285,8 @@ export async function mount(root, ctx) {
         : h('p', { class: 'small' },
             'No approved logistics dataset yet. Upload a CSV with a facility_type column on the ',
             h('a', { href: '#/datasets' }, 'Datasets page'), ', then approve it.');
-      mapSlot.replaceChildren(
+      // replaceChildren() turns null into the text "null", so optional nodes are filtered out first.
+      mapSlot.replaceChildren(...[
         h('div', { class: 'wm-toolbar', role: 'group', 'aria-label': 'Map layers' },
           toggle('disaster', 'Disaster incidents', disCount),
           toggle('logistics', 'Logistics sites', logCount)),
@@ -203,7 +299,8 @@ export async function mount(root, ctx) {
           dis && !dis.hasCoordinates ? 'That dataset has no latitude and longitude columns, so no points are plotted.' : null),
         unknownList,
         logisticsNotice,
-        pointCard);
+        pointCard,
+      ].filter(Boolean));
       showPointCard(null);
       const points = [...(dis ? dis.points : []), ...(log ? log.points : [])];
       map = createWorldMap(mapHost, {
@@ -218,7 +315,7 @@ export async function mount(root, ctx) {
     if (chart) chart.destroy();
     chart = null;
     const fromSummary = await findSummary(tasks);
-    if (signal.aborted) return;
+    if (signal.aborted) return null;
     let series = null;
     let sourceNode;
     if (fromSummary) {
@@ -236,19 +333,25 @@ export async function mount(root, ctx) {
 
     if (!series || !series.length) {
       chartSlot.replaceChildren(sourceNode, emptyState('No water depth data', 'The approved dataset has no district and water_depth_cm values.'));
-      return;
+    } else {
+      const canvas = h('canvas', { role: 'img', 'aria-label': `Bar chart of water depth in centimetres for ${series.length} districts` });
+      const box = h('div', { class: 'chart-box' }, canvas);
+      chartSlot.replaceChildren(sourceNode, box);
+      chart = createBarChart(canvas, {
+        labels: series.map((s) => s.district),
+        values: series.map((s) => s.value),
+        label: 'Water depth (cm)',
+        unit: 'cm',
+      });
+      if (!chart) box.replaceChildren(h('div', { class: 'state-msg' }, 'Chart library did not load. Values are listed below.'),
+        h('ul', { class: 'about-list' }, series.map((s) => h('li', null, `${s.district}: ${s.value} cm`))));
     }
-    const canvas = h('canvas', { role: 'img', 'aria-label': `Bar chart of water depth in centimetres for ${series.length} districts` });
-    const box = h('div', { class: 'chart-box' }, canvas);
-    chartSlot.replaceChildren(sourceNode, box);
-    chart = createBarChart(canvas, {
-      labels: series.map((s) => s.district),
-      values: series.map((s) => s.value),
-      label: 'Water depth (cm)',
-      unit: 'cm',
-    });
-    if (!chart) box.replaceChildren(h('div', { class: 'state-msg' }, 'Chart library did not load. Values are listed below.'),
-      h('ul', { class: 'about-list' }, series.map((s) => h('li', null, `${s.district}: ${s.value} cm`))));
+
+    return {
+      pendingDatasets,
+      hasDisaster: !!disasterDs,
+      hasLogistics: !!logisticsDs,
+    };
   }
 
   async function load() {
@@ -262,10 +365,14 @@ export async function mount(root, ctx) {
       const tasks = listOf(tasksRes);
       renderTiles(summary);
       renderFeed(tasks);
-      await renderSpatial(tasks);
+      asOfSlot.textContent = `Updated ${fmtClock(new Date().toISOString())}`;
+      const spatial = await renderSpatial(tasks);
+      if (signal.aborted || !spatial) return;
+      renderAssistant({ summary, tasks, ...spatial });
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       tilesSlot.replaceChildren(errorState(err, load));
+      assistantSlot.replaceChildren(emptyState('Assistant unavailable', 'Live checks could not load. Try again.'));
       toast(err.message, { kind: 'error' });
     } finally {
       refreshBtn.disabled = false;

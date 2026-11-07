@@ -23,7 +23,7 @@ from app.db import Db
 from app.errors import AppError, install_error_handlers
 from app.middleware import RequestContextMiddleware
 from app.ratelimit import SlidingWindowLimiter
-from app.routes import agent, artifacts, auth, datasets, governance
+from app.routes import admin, agent, artifacts, auth, datasets, governance, missions, reports
 
 logger = logging.getLogger("dce.app")
 LOGIN_LIMIT_PER_MINUTE = 10
@@ -80,8 +80,11 @@ def create_app(settings: Settings | None = None, *, runner: Any | None = None,
     api.include_router(governance.router)
     api.include_router(auth.router)
     api.include_router(datasets.router)
+    api.include_router(reports.router)
+    api.include_router(missions.router)
     api.include_router(agent.router)
     api.include_router(artifacts.router)
+    api.include_router(admin.router)
 
     @api.api_route("/{rest:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"], include_in_schema=False)
     def _unknown(rest: str) -> None:

@@ -4,11 +4,23 @@ import { createRouter, go } from './router.js';
 import { hasRole } from './session.js';
 import { toast } from './components/toast.js';
 import { h, errorState } from './dom.js';
+import { icon } from './components/icons.js';
+
+// Screens that are not built yet. Each one routes to an honest "Coming soon" view (views/coming-soon.js).
+const soon = (key, title) => ({ name: key, title, minRole: 'Viewer',
+  match: (p) => (p[0] === key ? { key } : null), load: () => import('./views/coming-soon.js') });
 
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },
   { name: 'command', title: 'Command Center', minRole: 'Viewer',
     match: (p) => (p.length === 0 || p[0] === 'dashboard' ? {} : null), load: () => import('./views/command-center.js') },
+  soon('situation', 'Situation'),
+  soon('analysis', 'Analysis'),
+  soon('planning', 'Planning'),
+  soon('resources', 'Resources'),
+  soon('missions', 'Missions'),
+  soon('simulation', 'Simulation'),
+  soon('reports', 'Reports'),
   { name: 'datasets', title: 'Datasets', minRole: 'Viewer',
     match: (p) => (p[0] === 'datasets' ? { id: p[1] || null } : null), load: () => import('./views/datasets.js') },
   { name: 'agent', title: 'Agent', minRole: 'Analyst',
@@ -24,22 +36,37 @@ const ROUTES = [
   { name: 'notfound', title: 'Not found', match: () => null, load: null },
 ];
 
-const NAV = [
-  { route: 'command', label: 'Command Center', href: '#/', minRole: 'Viewer' },
-  { route: 'datasets', label: 'Datasets', href: '#/datasets', minRole: 'Viewer' },
-  { route: 'agent', label: 'Agent', href: '#/agent', minRole: 'Analyst' },
-  { route: 'artifacts', label: 'Artifacts', href: '#/artifacts', minRole: 'Viewer' },
-  { route: 'audit', label: 'Audit', href: '#/audit', minRole: 'Reviewer' },
-  { route: 'about', label: 'Architecture', href: '#/about', minRole: 'Viewer' },
+// Primary navigation: the operating picture. Labels match the design reference.
+const PRIMARY_NAV = [
+  { route: 'command', label: 'Command', href: '#/', icon: 'command', minRole: 'Viewer' },
+  { route: 'situation', label: 'Situation', href: '#/situation', icon: 'situation', minRole: 'Viewer' },
+  { route: 'analysis', label: 'Analysis', href: '#/analysis', icon: 'analysis', minRole: 'Viewer' },
+  { route: 'planning', label: 'Planning', href: '#/planning', icon: 'planning', minRole: 'Viewer' },
+  { route: 'resources', label: 'Resources', href: '#/resources', icon: 'resources', minRole: 'Viewer' },
+  { route: 'missions', label: 'Missions', href: '#/missions', icon: 'missions', minRole: 'Viewer' },
+  { route: 'simulation', label: 'Simulation', href: '#/simulation', icon: 'simulation', minRole: 'Viewer' },
+  { route: 'reports', label: 'Reports', href: '#/reports', icon: 'reports', minRole: 'Viewer' },
+];
+
+// Tools: pages that already work today. Kept visible in a second row so nothing is lost.
+const TOOLS_NAV = [
+  { route: 'datasets', label: 'Datasets', href: '#/datasets', icon: 'datasets', minRole: 'Viewer' },
+  { route: 'agent', label: 'Agent', href: '#/agent', icon: 'agent', minRole: 'Analyst' },
+  { route: 'artifacts', label: 'Artifacts', href: '#/artifacts', icon: 'artifacts', minRole: 'Viewer' },
+  { route: 'audit', label: 'Audit', href: '#/audit', icon: 'audit', minRole: 'Reviewer' },
+  { route: 'about', label: 'Architecture', href: '#/about', icon: 'architecture', minRole: 'Viewer' },
 ];
 
 const $ = (id) => document.getElementById(id);
 const main = $('view');
 const topbar = $('topbar');
 const nav = $('nav');
+const toolsNav = $('nav-tools');
 const roleChip = $('role-chip');
 const usernameEl = $('username');
 const logoutBtn = $('logout');
+const connPill = $('conn-pill');
+const connText = $('conn-text');
 
 const state = { user: null };
 let booting = true;
@@ -60,24 +87,43 @@ function teardown() {
   }
 }
 
+function navLinks(items, routeName, className) {
+  return items.filter((item) => hasRole(state.user, item.minRole)).map((item) =>
+    h('a', {
+      href: item.href,
+      class: className,
+      'aria-current': item.route === routeName ? 'page' : undefined,
+    }, icon(item.icon), h('span', { class: 'nav-label' }, item.label)));
+}
+
 function renderChrome(routeName) {
   topbar.hidden = !state.user;
   if (!state.user) return;
   roleChip.textContent = state.user.role;
   usernameEl.textContent = state.user.username;
-  nav.replaceChildren(...NAV.filter((item) => hasRole(state.user, item.minRole)).map((item) =>
-    h('a', { href: item.href, 'aria-current': item.route === routeName ? 'page' : undefined }, item.label)));
+  nav.replaceChildren(...navLinks(PRIMARY_NAV, routeName, 'nav-item'));
+  toolsNav.replaceChildren(...navLinks(TOOLS_NAV, routeName, 'nav-tool'));
 }
 
+// Connection state from the browser. The API cannot be reached while offline, so the pill says so.
+function renderConnection() {
+  const online = navigator.onLine !== false;
+  connPill.dataset.state = online ? 'online' : 'offline';
+  connText.textContent = online ? 'Online' : 'Offline';
+}
+window.addEventListener('online', renderConnection);
+window.addEventListener('offline', renderConnection);
+renderConnection();
+
 function forbidden(route) {
-  return h('section', { class: 'state-msg empty', role: 'alert', style: 'padding-top:64px' },
+  return h('section', { class: 'state-msg empty state-msg--page', role: 'alert' },
     h('strong', null, 'Not available for your role'),
     h('span', null, `This screen needs the ${route.minRole} role or higher. You are signed in as ${state.user.role}.`),
     h('a', { href: '#/' }, 'Back to Command Center'));
 }
 
 function notFound() {
-  return h('section', { class: 'state-msg empty', style: 'padding-top:64px' },
+  return h('section', { class: 'state-msg empty state-msg--page' },
     h('strong', null, 'Page not found'),
     h('a', { href: '#/' }, 'Back to Command Center'));
 }

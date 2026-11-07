@@ -1,0 +1,46 @@
+{
+  "pack_id": "dce-flood-illustrative",
+  "version": "1.0.0",
+  "hazard": "flood",
+  "author": "Disaster Commander Edge project",
+  "status_note": "ILLUSTRATIVE. Every threshold and ratio in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions.",
+  "sources": [
+    "Project illustrative assumptions for demonstration. Replace with an authoritative source before any operational use."
+  ],
+  "thresholds_label": "illustrative",
+  "severity_order": ["LOW", "MEDIUM", "HIGH"],
+  "rules": [
+    {
+      "id": "FLOOD-R1",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: road blocked candidate.",
+      "when": {"water_depth_cm_gte": 50},
+      "then": {"flag": "road_blocked_candidate"}
+    },
+    {
+      "id": "FLOOD-R2",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: at least MEDIUM severity.",
+      "when": {"water_depth_cm_gte": 50},
+      "then": {"severity": "MEDIUM"}
+    },
+    {
+      "id": "FLOOD-R3",
+      "label": "illustrative",
+      "description": "Water depth at or above 100 cm: HIGH severity.",
+      "when": {"water_depth_cm_gte": 100},
+      "then": {"severity": "HIGH"}
+    }
+  ],
+  "resource_ratios": {
+    "label": "ILLUSTRATIVE",
+    "affected_depth_cm_gte": 50,
+    "people_per_household": 4,
+    "water_packs_per_household": 1,
+    "food_packs_per_household": 1,
+    "shelter_kits_per_household": 0.5,
+    "drinking_water_litres_per_person_per_day": 3,
+    "planning_days": 3
+  },
+  "pack_sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+}

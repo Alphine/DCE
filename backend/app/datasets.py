@@ -1,9 +1,14 @@
-"""CSV dataset validation, profiling (standard library only), and storage (docs/api.md section 3)."""
+"""Dataset validation, profiling (standard library only), and storage (docs/api.md section 3).
+
+Two kinds are accepted: CSV (.csv) and GeoJSON (.geojson, or .json whose content is a FeatureCollection).
+Both are validated in full on upload. Nothing here touches the network or executes content.
+"""
 
 from __future__ import annotations
 
 import csv
 import io
+import json
 import math
 import os
 import re
@@ -17,10 +22,20 @@ from app.util import sha256_bytes
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_COLUMNS = 200
 PREVIEW_ROWS = 5
+MAX_FEATURES = 50_000
+PREVIEW_STRING_CHARS = 200
+
+KIND_CSV = "CSV"
+KIND_GEOJSON = "GEOJSON"
+STORAGE_EXTENSION = {KIND_CSV: "csv", KIND_GEOJSON: "geojson"}
+
 _BOOL_VALUES = {"true", "false", "yes", "no"}
 _INT_RE = re.compile(r"^[+-]?\d+$")
 _NAME_RE = re.compile(r"^[A-Za-z0-9 _().-]{1,120}$")
-_STORAGE_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.csv$")
+_STORAGE_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(csv|geojson)$")
+# Coordinate nesting below the coordinates list at which a position (a list of numbers) appears.
+_GEOMETRY_DEPTH = {"Point": 0, "MultiPoint": 1, "LineString": 1, "MultiLineString": 2,
+                   "Polygon": 2, "MultiPolygon": 3}
 
 
 @dataclass(frozen=True)
@@ -28,15 +43,22 @@ class ParsedDataset:
     size_bytes: int
     sha256: str
     profile: dict[str, Any]
+    kind: str = KIND_CSV
+    row_count: int = 0
 
 
 def validate_filename(filename: str | None) -> str:
     base = os.path.basename(filename or "")
-    if not base or not base.lower().endswith(".csv") or len(base) > 200:
-        raise AppError("VALIDATION_FAILED", "Only .csv files are accepted.")
+    if not base or not base.lower().endswith((".csv", ".geojson", ".json")) or len(base) > 200:
+        raise AppError("VALIDATION_FAILED", "Only .csv, .geojson or .json files are accepted.")
     if any(ord(ch) < 32 for ch in base):
         raise AppError("VALIDATION_FAILED", "Invalid file name.")
     return base
+
+
+def dataset_kind_for(filename: str) -> str:
+    """CSV for .csv files; GEOJSON otherwise. The content is validated in full in both cases."""
+    return KIND_CSV if filename.lower().endswith(".csv") else KIND_GEOJSON
 
 
 def clean_name(name: str | None, filename: str) -> str:
@@ -140,7 +162,121 @@ def parse_csv_bytes(data: bytes) -> ParsedDataset:
         })
     preview = [typed_row(columns, row) for row in rows[:PREVIEW_ROWS]]
     profile = {"rows": len(rows), "columns": columns_profile, "preview": preview}
-    return ParsedDataset(size_bytes=len(data), sha256=sha256_bytes(data), profile=profile)
+    return ParsedDataset(size_bytes=len(data), sha256=sha256_bytes(data), profile=profile,
+                         kind=KIND_CSV, row_count=len(rows))
+
+
+def _geo_fail(message: str) -> AppError:
+    return AppError("VALIDATION_FAILED", message)
+
+
+def _reject_constant(name: str) -> Any:
+    raise ValueError(f"non-finite JSON constant: {name}")
+
+
+def _check_position(value: Any) -> None:
+    if not isinstance(value, list) or not 2 <= len(value) <= 3:
+        raise _geo_fail("Coordinates must be positions of 2 or 3 numbers.")
+    for number in value:
+        if isinstance(number, bool) or not isinstance(number, (int, float)) or not math.isfinite(number):
+            raise _geo_fail("Coordinates must be finite numbers.")
+
+
+def _check_coordinates(value: Any, depth: int) -> None:
+    if depth == 0:
+        _check_position(value)
+        return
+    if not isinstance(value, list) or not value:
+        raise _geo_fail("Coordinates are malformed for this geometry type.")
+    for item in value:
+        _check_coordinates(item, depth - 1)
+
+
+def _check_geometry(geometry: Any, nested: bool = False) -> str:
+    """Validate one geometry object and return its type. A null geometry is reported as 'null'."""
+    if geometry is None:
+        return "null"
+    if not isinstance(geometry, dict):
+        raise _geo_fail("Geometry must be an object or null.")
+    gtype = geometry.get("type")
+    if gtype == "GeometryCollection":
+        members = geometry.get("geometries")
+        if nested or not isinstance(members, list) or not members:
+            raise _geo_fail("GeometryCollection needs a non-empty geometries list (not nested).")
+        for member in members:
+            if not isinstance(member, dict) or member.get("type") not in _GEOMETRY_DEPTH:
+                raise _geo_fail("GeometryCollection members must be simple geometries.")
+            _check_geometry(member, nested=True)
+        return gtype
+    if gtype not in _GEOMETRY_DEPTH:
+        raise _geo_fail("Unsupported or missing geometry type.")
+    if "coordinates" not in geometry:
+        raise _geo_fail("Geometry is missing coordinates.")
+    _check_coordinates(geometry["coordinates"], _GEOMETRY_DEPTH[gtype])
+    return gtype
+
+
+def _preview_value(value: Any) -> Any:
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    if isinstance(value, str):
+        return value[:PREVIEW_STRING_CHARS]
+    return "<nested>"
+
+
+def parse_geojson_bytes(data: bytes) -> ParsedDataset:
+    """Validate a GeoJSON FeatureCollection and compute its profile. Raises AppError(VALIDATION_FAILED).
+
+    The profile lists the feature count, geometry types with counts, and each property key with the
+    number of features where it is non-null. Non-finite numbers are rejected.
+    """
+    if len(data) == 0:
+        raise _geo_fail("The file is empty.")
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise AppError("VALIDATION_FAILED", "File exceeds the 10 MB limit.", status=413)
+    if b"\x00" in data:
+        raise _geo_fail("Binary content is not accepted.")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise _geo_fail("The file must be UTF-8 encoded.") from exc
+    try:
+        document = json.loads(text, parse_constant=_reject_constant)
+    except (ValueError, RecursionError) as exc:
+        raise _geo_fail("The file is not valid JSON.") from exc
+    if not isinstance(document, dict) or document.get("type") != "FeatureCollection":
+        raise _geo_fail("GeoJSON must be a FeatureCollection.")
+    features = document.get("features")
+    if not isinstance(features, list) or not features:
+        raise _geo_fail("FeatureCollection needs a non-empty features list.")
+    if len(features) > MAX_FEATURES:
+        raise _geo_fail(f"FeatureCollection exceeds {MAX_FEATURES} features.")
+
+    geometry_types: dict[str, int] = {}
+    key_present: dict[str, int] = {}
+    preview: list[dict[str, Any]] = []
+    for index, feature in enumerate(features):
+        if not isinstance(feature, dict) or feature.get("type") != "Feature" or "geometry" not in feature:
+            raise _geo_fail(f"Feature {index} is not a GeoJSON Feature with a geometry member.")
+        gtype = _check_geometry(feature["geometry"])
+        geometry_types[gtype] = geometry_types.get(gtype, 0) + 1
+        properties = feature.get("properties")
+        if properties is not None and not isinstance(properties, dict):
+            raise _geo_fail(f"Feature {index} has invalid properties.")
+        properties = properties or {}
+        for key, value in properties.items():
+            key_present[key] = key_present.get(key, 0) + (1 if value is not None else 0)
+        if index < PREVIEW_ROWS:
+            preview.append({key: _preview_value(value) for key, value in properties.items()})
+
+    profile = {
+        "feature_count": len(features),
+        "geometry_types": dict(sorted(geometry_types.items())),
+        "property_keys": [{"name": key, "present": key_present[key]} for key in sorted(key_present)],
+        "preview": preview,
+    }
+    return ParsedDataset(size_bytes=len(data), sha256=sha256_bytes(data), profile=profile,
+                         kind=KIND_GEOJSON, row_count=len(features))
 
 
 def dataset_file(data_dir: Path, storage_name: str) -> Path:

@@ -8,6 +8,7 @@ import uuid
 from app import audit
 from app.config import get_settings
 from app.db import Db
+from app.security import PASSWORD_MIN_LENGTH as MIN_PASSWORD_LENGTH
 from app.security import hash_password
 from app.util import utc_now
 
@@ -17,7 +18,6 @@ SEED_USERS: tuple[tuple[str, str], ...] = (
     ("reviewer", "Reviewer"),
     ("approver", "Approver"),
 )
-MIN_PASSWORD_LENGTH = 12
 
 
 def main() -> int:

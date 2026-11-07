@@ -14,6 +14,7 @@ from app.util import sha256_file
 
 MB = 1024 * 1024
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+PDF_MAGIC = b"%PDF"
 
 
 class OutputRejected(Exception):
@@ -34,9 +35,13 @@ class OutputRule:
 OUTPUT_RULES: dict[str, OutputRule] = {
     "summary.json": OutputRule("json", 1 * MB, "json"),
     "situation_report.md": OutputRule("md", 10 * MB, "text"),
+    "situation_report.pdf": OutputRule("pdf", 10 * MB, "pdf"),
     "chart.png": OutputRule("png", 5 * MB, "png"),
     "affected_areas.csv": OutputRule("csv", 5 * MB, "text"),
     "blocked_roads.csv": OutputRule("csv", 5 * MB, "text"),
+    "hazard_results.json": OutputRule("json", 5 * MB, "json"),
+    "resource_estimate.json": OutputRule("json", 1 * MB, "json"),
+    "tsunami_results.json": OutputRule("json", 5 * MB, "json"),
 }
 
 
@@ -49,8 +54,13 @@ class VerifiedOutput:
     source_path: Path
 
 
-def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Path) -> list[VerifiedOutput]:
-    """Validate sandbox output files. `artifacts` are ArtifactFile-like objects with name/path/sha256/size_bytes."""
+def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Path,
+                     pack_sha256: str | None = None, tsunami_sha256: str | None = None) -> list[VerifiedOutput]:
+    """Validate sandbox output files. `artifacts` are ArtifactFile-like objects with name/path/sha256/size_bytes.
+
+    `pack_sha256` is the hash of the rule pack the server staged for this run. Hazard output must
+    echo that hash, so output can never claim to come from a different rule pack.
+    """
     root = data_dir.resolve()
     seen: dict[str, VerifiedOutput] = {}
     for item in artifacts:
@@ -75,6 +85,10 @@ def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Pat
         if digest != str(item.sha256):
             raise OutputRejected("OUTPUT_HASH_MISMATCH", "Output hash does not match the sandbox record.")
         _check_content(source, rule)
+        if name == "hazard_results.json":
+            _check_hazard_result(source, pack_sha256)
+        if name == "tsunami_results.json":
+            _check_hazard_result(source, tsunami_sha256)
         seen[name] = VerifiedOutput(name=name, type=rule.type, size_bytes=size, sha256=digest, source_path=source)
 
     for name in expected:
@@ -83,11 +97,28 @@ def validate_outputs(artifacts: Iterable, expected: Iterable[str], data_dir: Pat
     return list(seen.values())
 
 
+def _check_hazard_result(path: Path, pack_sha256: str | None) -> None:
+    """Hazard output is INFERRED_FACT and must cite the rule pack the server staged (SDD 11.3, 16.3)."""
+    try:
+        doc = json.loads(path.read_bytes().decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise OutputRejected("OUTPUT_TYPE_MISMATCH", "Hazard output does not parse.") from exc
+    rule_pack = doc.get("rule_pack") if isinstance(doc, dict) else None
+    if not isinstance(doc, dict) or doc.get("data_class") != "INFERRED_FACT" or not isinstance(rule_pack, dict):
+        raise OutputRejected("OUTPUT_TYPE_MISMATCH", "Hazard output has the wrong shape or data class.")
+    if pack_sha256 is None or rule_pack.get("sha256") != pack_sha256:
+        raise OutputRejected("OUTPUT_HASH_MISMATCH", "Hazard output does not cite the staged rule pack.")
+
+
 def _check_content(path: Path, rule: OutputRule) -> None:
     if rule.kind == "png":
         with path.open("rb") as fh:
             if fh.read(len(PNG_MAGIC)) != PNG_MAGIC:
                 raise OutputRejected("OUTPUT_TYPE_MISMATCH", "File is not a PNG.")
+    elif rule.kind == "pdf":
+        with path.open("rb") as fh:
+            if fh.read(len(PDF_MAGIC)) != PDF_MAGIC:
+                raise OutputRejected("OUTPUT_TYPE_MISMATCH", "File is not a PDF.")
     elif rule.kind == "json":
         try:
             json.loads(path.read_bytes().decode("utf-8"))

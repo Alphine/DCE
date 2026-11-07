@@ -46,6 +46,10 @@ ARTIFACT_RULES: dict[str, ArtifactRule] = {
     "chart.png": ArtifactRule("png", 5 * MIB),
     "affected_areas.csv": ArtifactRule("csv", 5 * MIB),
     "blocked_roads.csv": ArtifactRule("csv", 5 * MIB),
+    "situation_report.pdf": ArtifactRule("pdf", 10 * MIB),
+    "hazard_results.json": ArtifactRule("json", 5 * MIB),
+    "resource_estimate.json": ArtifactRule("json", 1 * MIB),
+    "tsunami_results.json": ArtifactRule("json", 5 * MIB),
 }
 
 

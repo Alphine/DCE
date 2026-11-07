@@ -1,0 +1,59 @@
+{
+  "pack_id": "dce-earthquake-tsunami-illustrative",
+  "version": "1.0.0",
+  "hazard": "earthquake_tsunami",
+  "author": "Disaster Commander Edge project",
+  "status_note": "ILLUSTRATIVE. Every threshold in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions or tsunami warnings.",
+  "sources": [
+    "Project illustrative assumptions for demonstration (SDD decision D3). Replace with an authoritative tsunami warning source before any operational use."
+  ],
+  "thresholds_label": "illustrative",
+  "severity_order": [
+    "LOW",
+    "MEDIUM",
+    "HIGH"
+  ],
+  "rules": [
+    {
+      "id": "TSU-R1",
+      "label": "illustrative",
+      "description": "Shallow magnitude 7.0 or larger within 100 km of the coast: tsunami watch candidate, HIGH.",
+      "when": {
+        "magnitude_gte": 7.0,
+        "depth_km_lt": 70,
+        "coast_distance_km_lte": 100
+      },
+      "then": {
+        "flag": "tsunami_watch_candidate",
+        "severity": "HIGH"
+      }
+    },
+    {
+      "id": "TSU-R2",
+      "label": "illustrative",
+      "description": "Shallow magnitude 6.5 or larger within 50 km of the coast: MEDIUM.",
+      "when": {
+        "magnitude_gte": 6.5,
+        "depth_km_lt": 70,
+        "coast_distance_km_lte": 50
+      },
+      "then": {
+        "severity": "MEDIUM"
+      }
+    },
+    {
+      "id": "TSU-R3",
+      "label": "illustrative",
+      "description": "Shallow magnitude 5.5 or larger within 10 km of the coast: LOW.",
+      "when": {
+        "magnitude_gte": 5.5,
+        "depth_km_lt": 70,
+        "coast_distance_km_lte": 10
+      },
+      "then": {
+        "severity": "LOW"
+      }
+    }
+  ],
+  "pack_sha256": "c9307282a221ddc751a3da462b7ba00634795590f0c24bc37fa7b0eead91bae4"
+}
