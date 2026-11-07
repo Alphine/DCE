@@ -1329,3 +1329,12 @@ details[open] > summary { margin-bottom: 8px; }
   }
   .radar { animation: none; }
 }
+
+/* Reports and missions forms (frontend/js/views/reports.js, missions.js). */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; align-items: start; }
+.form-grid .field--wide { grid-column: 1 / -1; }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+.kv-list { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 14px; }
+.kv-list dt { color: var(--text-2); font-size: 13px; }
+.kv-list dd { margin: 0; overflow-wrap: anywhere; }
+.pre-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }

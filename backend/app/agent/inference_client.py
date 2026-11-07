@@ -277,7 +277,10 @@ class VultrInference:
                 _data_block("limit_ceiling", request.limits),
             ])},
         ]
-        result = await self.complete(messages, max_tokens=1500, op="plan", retries=self._policy.max_retries)
+        # qwen3.8-flash-next is a reasoning model: its reasoning tokens count against max_tokens, so a small
+        # cap returns empty content with finish_reason "length". Use the per-call ceiling for plans.
+        result = await self.complete(messages, max_tokens=self._policy.output_budget_tokens, op="plan",
+                                     retries=self._policy.max_retries)
         return self._parse_object(result.text)
 
     async def generate_code(self, plan: dict[str, Any], profile: dict[str, Any]) -> str:
