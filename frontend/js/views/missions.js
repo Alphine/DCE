@@ -152,7 +152,7 @@ export async function mount(root, ctx) {
         objective: values.objective.trim(), area_column: values.source_type === 'DATASET' ? values.area_column : null };
       submit.disabled = true;
       try {
-        const created = await api.post('missions', { json: body, signal });
+        const created = await api.post('missions', body, { signal });
         toast('Mission proposed. It waits for an approver.');
         form.reset();
         refillSources();
@@ -196,7 +196,7 @@ export async function mount(root, ctx) {
     const decide = async (action) => {
       decideErr.replaceChildren();
       try {
-        await api.post(`missions/${encodeURIComponent(m.id)}/${action}`, { json: { note: note.value.trim() || null }, signal });
+        await api.post(`missions/${encodeURIComponent(m.id)}/${action}`, { note: note.value.trim() || null }, { signal });
         toast(action === 'approve' ? 'Mission approved.' : 'Mission rejected.');
         await refreshList();
         await renderDetail(m.id);

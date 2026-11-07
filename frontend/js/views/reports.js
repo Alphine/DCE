@@ -136,7 +136,7 @@ export async function mount(root, ctx) {
       if (problem) { err.replaceChildren(alertBox('error', problem)); return; }
       submit.disabled = true;
       try {
-        const created = await api.post('reports', { json: toReportBody(values), signal });
+        const created = await api.post('reports', toReportBody(values), { signal });
         toast('Report submitted. It waits for review.');
         form.reset();
         await refreshList();
@@ -182,7 +182,7 @@ export async function mount(root, ctx) {
     const act = async (decision) => {
       reviewErr.replaceChildren();
       try {
-        await api.post(`reports/${encodeURIComponent(r.id)}/review`, { json: { decision, note: note.value.trim() || null }, signal });
+        await api.post(`reports/${encodeURIComponent(r.id)}/review`, { decision, note: note.value.trim() || null }, { signal });
         toast(decision === 'approve' ? 'Report verified.' : 'Report rejected.');
         await refreshList();
         await renderDetail(r.id);

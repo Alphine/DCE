@@ -1338,3 +1338,11 @@ details[open] > summary { margin-bottom: 8px; }
 .kv-list dt { color: var(--text-2); font-size: 13px; }
 .kv-list dd { margin: 0; overflow-wrap: anywhere; }
 .pre-wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Situation, Hazard Intelligence and Resource Planner (frontend/js/views/situation.js, hazards.js, resources.js). */
+.situation-map { min-height: 420px; }
+.situation-map .wm { height: 420px; }
+.situation-detail { margin-top: 14px; }
+.result-label { color: var(--text-2); margin: 0 0 14px; overflow-wrap: anywhere; }
+.assumption-list { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); overflow-wrap: anywhere; }
+@media (max-width: 640px) { .situation-map, .situation-map .wm { min-height: 320px; height: 320px; } }

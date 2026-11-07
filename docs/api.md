@@ -50,6 +50,9 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | GET | `/api/missions/{id}` | Viewer (Viewers see APPROVED only) | Mission detail, target areas, content hash and decision |
 | POST | `/api/missions/{id}/approve` | Approver or Admin (not proposer) | Approve a PROPOSED mission (SDD 18.1, 15.4). Never starts a sandbox run or changes an agent task |
 | POST | `/api/missions/{id}/reject` | Approver or Admin (not proposer) | Reject a PROPOSED mission. Not in SDD 18.1; added so a proposal can be closed without approval |
+| GET | `/api/hazards?dataset_id=&pack=` | Viewer | Rule results for an APPROVED CSV dataset. `pack` is `flood` (default) or `tsunami`. Read-only, no audit row. Not-approved datasets return 404; GeoJSON returns 422; a hash mismatch returns 409 |
+| GET | `/api/situation?limit=` | Viewer | Map points: VERIFIED_OBSERVATION reports with coordinates (`kind` REPORT) and rows of approved CSV datasets with valid `lat` and `lon` (`kind` DATASET_ROW, with 1-based `row`). Max `limit` 2000, default 500. Returns `points`, `counts`, `truncated`. Unreadable datasets are skipped silently |
+| POST | `/api/resources/estimate` | Analyst | Illustrative resource estimate for an APPROVED flood CSV (`data_class` SIMULATED_FACT). Refused with 422 when the dataset has no `water_depth_cm` values. Read-only, no audit row |
 | POST | `/api/agent/tasks` | Analyst (quota) | Create agent task |
 | GET | `/api/agent/tasks` | Viewer | List own tasks (Reviewer+ sees all) |
 | GET | `/api/agent/tasks/{id}` | Owner or Reviewer+ | Task detail |
@@ -68,6 +71,7 @@ Request bodies (added after the deployment review):
 - `POST /api/reports/{id}/review`: `{"decision": "approve" | "reject", "note": "optional, max 500 chars"}`.
 - Report responses carry internal user IDs only (`submitter.id`, `review.reviewer.id`). Usernames are never included.
 - `POST /api/missions`: `{"source_type": "DATASET" | "REPORT", "source_id": "uuid", "title": "1-120 chars", "objective": "1-1000 chars", "area_column": "CSV column, required for DATASET"}`. Target areas are the distinct non-empty values of that column (max 50), or the report's `location_name` for a REPORT source. The caller never types them in.
+- `POST /api/resources/estimate`: `{"dataset_id": "uuid", "pack": "flood"}`. `pack` accepts only `flood` (any other value is `422`), and unknown fields are refused. The result carries the engine's `data_class` (`SIMULATED_FACT`), `label` (`ILLUSTRATIVE ratios`) and `assumptions`, plus `dataset` `{id, name}`.
 - `POST /api/missions/{id}/approve` and `POST /api/missions/{id}/reject`: body `{"note": "optional, max 500 chars"}` or no body. Approval stores the approver ID, role, timestamp, and the SHA-256 of the approved content. If the stored content no longer matches its hash, the decision is refused with `409 CONFLICT`.
 - Audit: report submission and review, and mission proposal and decisions, are audit records (`report.submitted`, `report.reviewed`, `mission.proposed`, `mission.approved`, `mission.rejected`). Free text such as notes and decision notes is stored as a SHA-256 only.
 
