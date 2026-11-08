@@ -78,9 +78,11 @@ The PWA stores it and refreshes it when online.
 
 ## 6. Tauri (desktop)
 
-- `src-tauri/` with Tauri 2. `frontendDist` points to `frontend/`, so the same code runs in the browser and the app.
-- The API base URL is configurable on first launch and stored in the app data folder. Default:
-  `https://commander.basyid.dev`.
+- `src-tauri/` with Tauri 2. The window loads `https://commander.basyid.dev`, the same origin as the API.
+  This is required: the session cookie is `SameSite=strict`, so a page served from `tauri://localhost` could not
+  send it to the API. Because it is the same origin, the service worker (section 5) caches the shell, and the app
+  works offline after the first successful online start.
+- The first launch needs the network once. Offline cold start (no cached shell) is out of scope for this stage.
 - Build: `npm run tauri build` on Windows, producing an NSIS `.exe` and an `.msi`.
 - Requires Visual Studio Build Tools (MSVC) and WebView2. Both are present on the owner's laptop.
 - Code signing is not included in this stage. The installer will show an unknown-publisher warning.
