@@ -6,12 +6,25 @@ import { hasRole } from '../session.js';
 
 // Resource Planner. An illustrative estimate from affected rows and the flood rule pack ratios (SDD 19.x).
 // Estimates are SIMULATED_FACT. Viewers can read this page; Analysts run estimates.
+// On open, an Analyst's estimate runs for the newest approved flood dataset, and coverage shows the newest simulation run.
 
 const PACK = 'flood';
+const FLOOD_COLUMN = 'water_depth_cm';
 
 // Only approved CSV datasets can be used.
 export function approvedCsvDatasets(list) {
   return listOf(list).filter((d) => d && d.status === 'APPROVED' && d.kind === 'CSV');
+}
+
+// Newest first. The sort is stable, so equal timestamps keep the server's order.
+export function newestFirst(list) {
+  return [...list].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+}
+
+// True when the dataset profile has the water depth column the flood estimate needs.
+export function hasFloodColumns(dataset) {
+  const cols = dataset && dataset.profile && Array.isArray(dataset.profile.columns) ? dataset.profile.columns : [];
+  return cols.some((c) => c && String(c.name || '').trim().toLowerCase() === FLOOD_COLUMN);
 }
 
 // Key names carry the unit (for example drinking_water_litres), so only underscores are replaced.
@@ -29,6 +42,20 @@ export function formatValue(value) {
 
 export function assumptionList(assumptions) {
   return Array.isArray(assumptions) ? assumptions.filter((a) => a !== null && a !== undefined).map(String) : [];
+}
+
+// The six headline tiles. The drinking water total has a different key in the estimate response and in the allocation.
+export function estimateTiles(est) {
+  const e = (est && est.estimates) || {};
+  const drinking = e.drinking_water_litres_total !== undefined ? e.drinking_water_litres_total : e.drinking_water_litres;
+  return [
+    { label: 'Households', value: e.households_affected },
+    { label: 'People', value: e.people_estimated },
+    { label: 'Water packs', value: e.water_packs },
+    { label: 'Food packs', value: e.food_packs },
+    { label: 'Shelter kits', value: e.shelter_kits },
+    { label: 'Drinking water (litres)', value: drinking },
+  ];
 }
 
 export async function mount(root, ctx) {
@@ -52,6 +79,8 @@ export async function mount(root, ctx) {
   const formErr = h('div', { 'aria-live': 'polite' });
   const runBtn = h('button', { class: 'btn btn-primary', type: 'submit', disabled: true }, 'Run estimate');
   const resultSlot = h('div', { class: 'stack' });
+  let datasets = [];
+  let seq = 0; // Each run gets a number, so a slow older response cannot replace a newer one.
 
   const form = h('form', { class: 'form-grid', novalidate: true, 'aria-label': 'Run a resource estimate', onsubmit: (e) => {
     e.preventDefault();
@@ -62,20 +91,42 @@ export async function mount(root, ctx) {
     formErr,
     h('div', { class: 'field--wide row' }, runBtn));
 
-  estimateSlot.append(panel({ title: 'Run an estimate', sub: 'Analyst role. Only approved CSV datasets can be used.', style: '--i:1' }, form), resultSlot);
+  pick.addEventListener('change', () => {
+    if (pick.value) run();
+  });
+
+  estimateSlot.append(panel({ title: 'Run an estimate', sub: 'Analyst role. Only approved flood datasets with a water depth column can be used.', style: '--i:1' }, form), resultSlot);
+
+  // Datasets without the water depth column stay visible but disabled, since the estimate refuses them.
+  function fillOptions(selectedId) {
+    pick.replaceChildren(h('option', { value: '' }, 'Choose a dataset'),
+      ...datasets.map((d) => {
+        const ok = hasFloodColumns(d);
+        const name = d.name || d.filename;
+        return h('option', { value: d.id, disabled: !ok }, ok ? name : `${name} (needs ${FLOOD_COLUMN})`);
+      }));
+    pick.value = selectedId || '';
+  }
 
   async function loadDatasets() {
     try {
-      const datasets = approvedCsvDatasets(await api.get('datasets', { signal }));
+      datasets = newestFirst(approvedCsvDatasets(await api.get('datasets', { signal })));
       if (signal.aborted) return;
       if (!datasets.length) {
         pick.replaceChildren(h('option', { value: '' }, 'No approved CSV datasets yet'));
         resultSlot.replaceChildren(emptyState('No approved datasets', 'Approve a CSV dataset on the Datasets screen first.'));
         return;
       }
-      pick.replaceChildren(h('option', { value: '' }, 'Choose a dataset'),
-        datasets.map((d) => h('option', { value: d.id }, d.name || d.filename)));
+      const newest = datasets.find(hasFloodColumns);
+      if (!newest) {
+        fillOptions('');
+        resultSlot.replaceChildren(emptyState('No approved flood dataset',
+          `An estimate needs a CSV with a ${FLOOD_COLUMN} column. Approve one on the Datasets screen first.`));
+        return;
+      }
+      fillOptions(newest.id);
       runBtn.disabled = false;
+      run();
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       pick.replaceChildren(h('option', { value: '' }, 'Could not load datasets'));
@@ -90,18 +141,19 @@ export async function mount(root, ctx) {
       formErr.replaceChildren(alertBox('error', 'Choose an approved dataset first.'));
       return;
     }
+    const mine = ++seq;
     runBtn.disabled = true;
     resultSlot.replaceChildren(panel({ title: 'Estimate', style: '--i:2' }, spinner('Running the estimate…')));
     try {
       // api.post(path, json, opts): the body is the second argument, and the signal goes in opts.
       const est = await api.post('resources/estimate', { dataset_id: datasetId, pack: PACK }, { signal });
-      if (signal.aborted) return;
+      if (signal.aborted || mine !== seq) return;
       resultSlot.replaceChildren(estimatePanel(est || {}));
     } catch (err) {
-      if (signal.aborted || err.name === 'AbortError') return;
+      if (signal.aborted || err.name === 'AbortError' || mine !== seq) return;
       resultSlot.replaceChildren(panel({ title: 'Estimate', style: '--i:2' }, errorState(err, run)));
     } finally {
-      runBtn.disabled = false;
+      if (mine === seq) runBtn.disabled = false;
     }
   }
 
@@ -110,17 +162,24 @@ export async function mount(root, ctx) {
 
 function estimatePanel(est) {
   const datasetName = (est.dataset && (est.dataset.name || est.dataset.id)) || '—';
-  return h('div', { class: 'stack' },
+  return h('div', { class: 'stack analysis' },
     panel({ title: 'Estimate', sub: `Dataset: ${datasetName} · rule pack ${PACK}`,
       actions: [dataClassBadge('SIMULATED_FACT')], style: '--i:2' },
       alertBox('warn', 'Illustrative estimate, not for operational use.'),
       est.label ? h('p', { class: 'result-label' }, String(est.label)) : null,
+      h('div', { class: 'analysis-tiles analysis-tiles--six' }, estimateTiles(est).map(({ label, value }) =>
+        h('div', { class: 'analysis-tile' },
+          h('span', { class: 'analysis-tile-label' }, label),
+          h('strong', { class: 'analysis-tile-value mono' }, formatValue(value)),
+          h('span', { class: 'hint' }, 'SIMULATED_FACT')))),
+      h('h3', { class: 'panel-title' }, 'Assumptions'),
+      assumptionsView(est.assumptions)),
+    h('details', { class: 'analysis-details' },
+      h('summary', null, 'Inputs and the full estimate table'),
       h('h3', { class: 'panel-title' }, 'Estimates'),
       pairTable(est.estimates, 'Estimates', 'Item'),
       h('h3', { class: 'panel-title' }, 'Inputs'),
-      pairTable(est.inputs, 'Inputs', 'Input'),
-      h('h3', { class: 'panel-title' }, 'Assumptions'),
-      assumptionsView(est.assumptions)));
+      pairTable(est.inputs, 'Inputs', 'Input')));
 }
 
 // Two-column table for a flat object. Numbers are grouped, and an empty object shows a note.
@@ -139,6 +198,7 @@ function pairTable(obj, caption, head) {
 }
 
 // Every role can read coverage. It needs a stored simulation run, and it uses the same planning endpoint as Planning.
+// The newest run is chosen and its coverage is shown on open.
 function coverageSection(root, { signal }) {
   const runSelect = h('select', { id: 'rs-run' }, h('option', { value: '' }, 'Loading runs…'));
   const err = h('div', { 'aria-live': 'polite' });
@@ -160,7 +220,7 @@ function coverageSection(root, { signal }) {
 
   async function loadRuns() {
     try {
-      const runs = listOf(await api.get('simulations', { signal }));
+      const runs = newestFirst(listOf(await api.get('simulations', { signal })));
       if (signal.aborted) return;
       if (!runs.length) {
         runSelect.replaceChildren(h('option', { value: '' }, 'No simulation runs yet'));
@@ -168,8 +228,10 @@ function coverageSection(root, { signal }) {
         return;
       }
       runSelect.replaceChildren(h('option', { value: '' }, 'Choose a run'),
-        runs.map((r) => h('option', { value: r.id }, `${r.name} · ${fmtDate(r.created_at)}`)));
+        ...runs.map((r) => h('option', { value: r.id }, `${r.name} · ${fmtDate(r.created_at)}`)));
+      runSelect.value = runs[0].id;
       showBtn.disabled = false;
+      show();
     } catch (loadErr) {
       if (signal.aborted || loadErr.name === 'AbortError') return;
       runSelect.replaceChildren(h('option', { value: '' }, 'Could not load runs'));

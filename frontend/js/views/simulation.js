@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { h, fmtDate, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox, kv, short } from '../dom.js';
+import { h, fmtDate, spinner, errorState, pageHead, panel, emptyState, alertBox, kv, short } from '../dom.js';
 import { dataClassBadge } from '../components/badges.js';
 import { copyButton } from '../components/copy.js';
 import { toast } from '../components/toast.js';
@@ -10,6 +10,7 @@ import { loadList, cacheNotice } from '../offline/read-cache.js';
 
 // What-if simulation (SDD 14). Every run is SIMULATED_FACT with illustrative parameters (SDD 14.5).
 // Analysts create runs. Everyone can read them. Limits here mirror the server, which checks again.
+// On open the newest run is shown in detail. The run form sits below the list, closed unless there is no run yet.
 
 export const SIM_LABEL = 'Simulation — illustrative parameters';
 export const LIMITS = Object.freeze({
@@ -61,40 +62,54 @@ export function sampleTimeline(timeline, maxBars = 72) {
   return timeline.filter((_, i) => i % step === 0 || i === timeline.length - 1);
 }
 
+// Newest first by created_at (ISO strings sort as text). Returns a new array.
+export function newestFirst(runs) {
+  return (Array.isArray(runs) ? runs.slice() : [])
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+}
+
 export async function mount(root, ctx) {
   const { user, params, signal } = ctx;
   const selectedId = params.id || null;
+  const canRun = hasRole(user, 'Analyst');
+  let runs = [];
 
   root.append(pageHead('Simulation',
     'Explore how flooding could develop under stated assumptions. Results are illustrative and never observations.'));
 
-  if (hasRole(user, 'Analyst')) root.append(newRunPanel());
+  const detailSlot = h('div', { class: 'stack' });
+  root.append(detailSlot);
 
   const listSlot = h('div', null, spinner('Loading runs…'));
   root.append(panel({ title: 'Scenario runs',
     sub: 'Newest first. Each run keeps its inputs and the hash of its output.', style: '--i:2' }, listSlot));
-  const detailSlot = h('div', { class: 'stack' });
-  root.append(detailSlot);
+
+  const newRun = canRun ? newRunPanel() : null;
+  if (newRun) root.append(newRun);
 
   async function refreshList() {
     try {
-      const { items: runs, savedAt } = await loadList('simulations', 'simulations', { signal });
-      if (signal.aborted) return;
-      renderList(runs);
+      const { items, savedAt } = await loadList('simulations', 'simulations', { signal });
+      if (signal.aborted) return null;
+      runs = newestFirst(items);
+      renderList(runs, selectedId || (runs[0] && runs[0].id));
       if (savedAt) listSlot.prepend(cacheNotice(savedAt));
+      return runs;
     } catch (err) {
-      if (signal.aborted || err.name === 'AbortError') return;
-      listSlot.replaceChildren(errorState(err, refreshList));
+      if (signal.aborted || err.name === 'AbortError') return null;
+      listSlot.replaceChildren(errorState(err, () => refreshList().then(openTarget)));
+      return null;
     }
   }
 
-  function renderList(runs) {
-    if (!runs.length) {
+  function renderList(list, activeId) {
+    if (!list.length) {
       listSlot.replaceChildren(emptyState('No runs yet',
-        hasRole(user, 'Analyst')
-          ? 'Start a scenario above. It will appear here with its inputs and output hash.'
+        canRun
+          ? 'Start a scenario in the form below. It will open here with its inputs and output hash.'
           : 'Scenario runs created by an Analyst will appear here.',
         { icon: 'simulation', actions: [{ label: 'Open Planning', href: '#/planning' }] }));
+      if (newRun) newRun.open = true;
       return;
     }
     listSlot.replaceChildren(h('div', { class: 'table-wrap' },
@@ -106,8 +121,9 @@ export async function mount(root, ctx) {
           h('th', { scope: 'col', class: 'num' }, 'Peak hour'),
           h('th', { scope: 'col', class: 'num' }, 'Peak affected'),
           h('th', { scope: 'col' }, 'Created'))),
-        h('tbody', null, runs.map((r) => h('tr', { class: r.id === selectedId ? 'row-link is-selected' : 'row-link' },
-          h('td', { class: 'wrap-any' }, h('a', { href: `#/simulation/${encodeURIComponent(r.id)}` }, r.name)),
+        h('tbody', null, list.map((r) => h('tr', { class: r.id === activeId ? 'row-link is-selected' : 'row-link' },
+          h('td', { class: 'wrap-any' }, h('a', { href: `#/simulation/${encodeURIComponent(r.id)}` }, r.name),
+            r.id === activeId ? h('span', { class: 'run-current' }, 'Open') : null),
           h('td', { class: 'wrap-any' }, (r.dataset && r.dataset.name) || '—'),
           h('td', { class: 'num' }, String(r.peak.hour)),
           h('td', { class: 'num' }, String(r.peak.affected_rows)),
@@ -148,7 +164,7 @@ export async function mount(root, ctx) {
         return;
       }
       pick.replaceChildren(h('option', { value: '' }, 'Choose a dataset'),
-        sets.map((d) => h('option', { value: d.id }, d.name || d.filename)));
+        ...sets.map((d) => h('option', { value: d.id }, d.name || d.filename)));
       submit.disabled = false;
     }).catch((error) => {
       if (signal.aborted || error.name === 'AbortError') return;
@@ -192,33 +208,47 @@ export async function mount(root, ctx) {
       err,
       h('div', { class: 'field--wide row' }, submit));
 
-    return panel({ title: 'New scenario', sub: 'Analyst role. Only approved CSV datasets with water depths can be used.',
-      style: '--i:1' }, form);
+    // Closed by default so the newest run is what opens. refreshList opens it when there are no runs.
+    return h('details', { class: 'run-new', id: 'sm-new' },
+      h('summary', null, 'New scenario'),
+      h('p', { class: 'small muted' }, 'Analyst role. Only approved CSV datasets with water depths can be used.'),
+      form);
   }
 
   async function renderDetail(id) {
-    detailSlot.replaceChildren(panel({ title: 'Run', style: '--i:3' }, spinner('Loading run…')));
+    detailSlot.replaceChildren(panel({ title: 'Run', style: '--i:1' }, spinner('Loading run…')));
     try {
       const run = await api.get(`simulations/${encodeURIComponent(id)}`, { signal });
       if (signal.aborted) return;
       detailSlot.replaceChildren(runDetail(run, user));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
-      detailSlot.replaceChildren(panel({ title: 'Run', style: '--i:3' }, errorState(err, () => renderDetail(id))));
+      detailSlot.replaceChildren(panel({ title: 'Run', style: '--i:1' }, errorState(err, () => renderDetail(id))));
     }
   }
 
-  await refreshList();
-  if (selectedId) await renderDetail(selectedId);
+  // Opens the URL's run, or the newest run when the URL names none.
+  async function openTarget() {
+    if (selectedId) return renderDetail(selectedId);
+    if (runs.length) return renderDetail(runs[0].id);
+    detailSlot.replaceChildren();
+    return undefined;
+  }
+
+  const list = await refreshList();
+  if (list !== null) await openTarget();
+  else if (selectedId) await renderDetail(selectedId);
 }
 
 export function runDetail(run) {
   const out = run.output || {};
-  const last = out.timeline && out.timeline.length ? out.timeline[out.timeline.length - 1] : null;
-  const peakPoint = out.timeline ? out.timeline[run.peak.hour] : null;
+  const timeline = Array.isArray(out.timeline) ? out.timeline : [];
+  const last = timeline.length ? timeline[timeline.length - 1] : null;
+  const peakPoint = timeline.find((p) => p.hour === run.peak.hour) || null;
   const unknown = out.rows_unknown_base_depth || 0;
   const total = out.rows_total || 0;
   const roadBlocked = peakPoint ? peakPoint.road_blocked_candidates : 0;
+  const datasetName = (run.dataset && run.dataset.name) || 'Dataset';
 
   const tiles = h('div', { class: 'tiles' },
     tile('Peak hour', `${run.peak.hour} h`, 'First hour with the most affected rows'),
@@ -226,23 +256,23 @@ export function runDetail(run) {
     tile('Road blocked candidates', String(roadBlocked), 'At the peak hour, from the flood pack'),
     tile('Unknown base depth', String(unknown), last ? 'Not counted as affected' : ''));
 
-  return h('div', { class: 'stack' },
-    panel({ title: run.name, sub: `${run.dataset.name || 'Dataset'} · created ${fmtDate(run.created_at)}`,
-      actions: [dataClassBadge('SIMULATED_FACT')], style: '--i:3' },
+  return h('div', { class: 'stack run-detail' },
+    panel({ title: run.name, sub: `${datasetName} · created ${fmtDate(run.created_at)}`,
+      actions: [dataClassBadge('SIMULATED_FACT')], style: '--i:1' },
       alertBox('warn', SIM_LABEL + '. Not for operational use.'),
       tiles,
       h('h3', { class: 'panel-title' }, 'Hour by hour'),
-      timelineChart(out.timeline || [], run.peak.hour),
+      timelineChart(timeline, run.peak.hour),
       h('p', { class: 'small muted' }, 'The amber bar marks the peak hour: the first hour with the most affected rows.'),
-      timelineTable(out.timeline || [])),
-    panel({ title: 'Peak by district', sub: `Snapshot at hour ${run.peak.hour}`, style: '--i:4' },
+      timelineTable(timeline)),
+    panel({ title: 'Peak by district', sub: `Snapshot at hour ${run.peak.hour}`, style: '--i:2' },
       perDistrictTable(out.peak ? out.peak.per_district : {})),
-    panel({ title: 'Inputs and reproducibility', sub: 'Everything needed to rerun this scenario and check its output.', style: '--i:5' },
+    panel({ title: 'Inputs and reproducibility', sub: 'Everything needed to rerun this scenario and check its output.', style: '--i:3' },
       h('dl', { class: 'kv-list' },
         kv('Depth multiplier', String(run.parameters.depth_multiplier)),
         kv('Rise per hour', `${run.parameters.rise_cm_per_hour} cm`),
         kv('Horizon', `${run.parameters.hours} hours`),
-        kv('Dataset', run.dataset.name || '—'),
+        kv('Dataset', datasetName),
         kv('Dataset hash', hashCell(run.dataset_sha256)),
         kv('Rule pack', `${run.pack.id} · ${hashShort(run.pack.sha256)}`),
         kv('Simulator', run.simulator_version),
@@ -252,7 +282,7 @@ export function runDetail(run) {
       h('h3', { class: 'panel-title' }, 'Assumptions'),
       assumptionsView(out.assumptions),
       h('div', { class: 'row' },
-        h('a', { class: 'btn', href: `#/planning/${encodeURIComponent(run.id)}` }, 'Plan a response from this run'))));
+        h('a', { class: 'btn btn-primary', href: `#/planning/${encodeURIComponent(run.id)}` }, 'Plan a response from this run'))));
 }
 
 function tile(label, value, sub) {
