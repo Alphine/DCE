@@ -46,3 +46,4 @@ scripts/.cache/
 
 # Desktop build (Tauri)
 src-tauri/target/
+!frontend/data/
