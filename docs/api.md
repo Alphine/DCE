@@ -29,10 +29,13 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | POST | `/api/auth/login` | public (rate limited) | Start session |
 | POST | `/api/auth/logout` | Viewer (session cookie only) | End session (204) |
 | POST | `/api/auth/password` | Viewer (session cookie only) | Change own password, revoke other sessions (204) |
+| POST | `/api/auth/forgot` | Public, rate limited | Email a reset link (202). The answer is the same for every address. No mail is sent unless SMTP is configured and the address belongs to an active account |
+| POST | `/api/auth/reset` | Public (token) | Set a new password with the emailed token (204). Token works once, expires after 30 minutes, and ends all sessions of the account |
 | GET | `/api/auth/me` | Viewer | Current user |
 | GET | `/api/admin/users` | Admin | List users (no password material) |
 | POST | `/api/admin/users` | Admin | Create user (201) |
-| PATCH | `/api/admin/users/{id}` | Admin | Change role and/or disabled flag |
+| PATCH | `/api/admin/users/{id}` | Admin | Change role, disabled flag, and/or email (`null` clears it) |
+| POST | `/api/admin/users/{id}/password` | Admin | Set a new password for any account (204). Revokes that account's sessions. Audit `admin.user_password_set` |
 | GET | `/api/admin/api-keys` | Admin (session cookie only) | List API keys (no tokens) |
 | POST | `/api/admin/api-keys` | Admin (session cookie only) | Create API key (201), token shown once |
 | DELETE | `/api/admin/api-keys/{id}` | Admin (session cookie only) | Revoke API key (204) |
@@ -53,6 +56,10 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | GET | `/api/hazards?dataset_id=&pack=` | Viewer | Rule results for an APPROVED CSV dataset. `pack` is `flood` (default) or `tsunami`. Read-only, no audit row. Not-approved datasets return 404; GeoJSON returns 422; a hash mismatch returns 409 |
 | GET | `/api/situation?limit=` | Viewer | Map points: VERIFIED_OBSERVATION reports with coordinates (`kind` REPORT) and rows of approved CSV datasets with valid `lat` and `lon` (`kind` DATASET_ROW, with 1-based `row`). Max `limit` 2000, default 500. Returns `points`, `counts`, `truncated`. Unreadable datasets are skipped silently |
 | POST | `/api/resources/estimate` | Analyst | Illustrative resource estimate for an APPROVED flood CSV (`data_class` SIMULATED_FACT). Refused with 422 when the dataset has no `water_depth_cm` values. Read-only, no audit row |
+| GET | `/api/simulations` | Viewer | Newest 100 simulation runs, summaries only (no `output`). Creators are ids, never usernames |
+| GET | `/api/simulations/{id}` | Viewer | One run with its full `output` (`data_class` SIMULATED_FACT, labelled "Simulation — illustrative parameters") and `output_sha256`. Unknown id returns 404 |
+| POST | `/api/simulations` | Analyst | Run a what-if scenario on an APPROVED flood CSV. Stores inputs, dataset and pack hashes, and the output hash. Writes one `simulation.created` audit row. 201 with the full run. Limits: depth multiplier 0.1–3, rise 0–100 cm per hour, horizon 1–72 hours, and rows × (hours + 1) at most 1,000,000 (else 422) |
+| GET | `/api/planning/allocation?simulation_id=` | Viewer | Response allocation per district from a stored run's peak hour, using the flood pack ratios. Read-only, nothing saved. 409 if the rule pack has changed since the run |
 | POST | `/api/agent/tasks` | Analyst (quota) | Create agent task |
 | GET | `/api/agent/tasks` | Viewer | List own tasks (Reviewer+ sees all) |
 | GET | `/api/agent/tasks/{id}` | Owner or Reviewer+ | Task detail |
@@ -71,6 +78,7 @@ Request bodies (added after the deployment review):
 - `POST /api/reports/{id}/review`: `{"decision": "approve" | "reject", "note": "optional, max 500 chars"}`.
 - Report responses carry internal user IDs only (`submitter.id`, `review.reviewer.id`). Usernames are never included.
 - `POST /api/missions`: `{"source_type": "DATASET" | "REPORT", "source_id": "uuid", "title": "1-120 chars", "objective": "1-1000 chars", "area_column": "CSV column, required for DATASET"}`. Target areas are the distinct non-empty values of that column (max 50), or the report's `location_name` for a REPORT source. The caller never types them in.
+- `POST /api/simulations`: `{"dataset_id": "uuid", "name": "text", "depth_multiplier": 1.0, "rise_cm_per_hour": 0, "hours": 24}`. Only `pack: "flood"` is accepted. At hour t each known depth is `base × depth_multiplier + rise_cm_per_hour × t`. Severity and road flags come from the verified flood pack. There is no randomness, so the same inputs give the same `output_sha256`.
 - `POST /api/resources/estimate`: `{"dataset_id": "uuid", "pack": "flood"}`. `pack` accepts only `flood` (any other value is `422`), and unknown fields are refused. The result carries the engine's `data_class` (`SIMULATED_FACT`), `label` (`ILLUSTRATIVE ratios`) and `assumptions`, plus `dataset` `{id, name}`.
 - `POST /api/missions/{id}/approve` and `POST /api/missions/{id}/reject`: body `{"note": "optional, max 500 chars"}` or no body. Approval stores the approver ID, role, timestamp, and the SHA-256 of the approved content. If the stored content no longer matches its hash, the decision is refused with `409 CONFLICT`.
 - Audit: report submission and review, and mission proposal and decisions, are audit records (`report.submitted`, `report.reviewed`, `mission.proposed`, `mission.approved`, `mission.rejected`). Free text such as notes and decision notes is stored as a SHA-256 only.
@@ -315,6 +323,12 @@ The backend selects a runner at startup from `DCE_SANDBOX_RUNNER` (`docker` or `
 | `DCE_TRUSTED_PROXIES` | (empty) | Comma-separated IPs or CIDRs (for example `172.18.0.1` or `172.18.0.0/16`). `X-Forwarded-For` is read only when the direct peer is in this list; otherwise the direct peer is the client. The client is the rightmost untrusted entry. Empty means no proxy is trusted. A malformed entry stops startup. In production, set it to the address Caddy connects from (the Docker bridge gateway as seen by the backend container) |
 | `DCE_SESSION_SECRET` | (none) | Secret for signing session identifiers if the backend uses signed cookies. Never committed |
 | `DCE_SEED_PASSWORD` | (none) | Required by `python -m app.seed`. Never committed |
+| `DCE_SMTP_HOST` | (none) | SMTP server for reset emails, for example `smtp.gmail.com`. Password reset by email is off when host, user, or password is empty |
+| `DCE_SMTP_PORT` | `587` | STARTTLS port |
+| `DCE_SMTP_USER` | (none) | Sending account, for example a Gmail address |
+| `DCE_SMTP_PASSWORD` | (none) | App password for that account. Never committed. Keep it in `.env` on the VM only |
+| `DCE_SMTP_FROM` | same as user | Sender address shown in the email |
+| `DCE_PUBLIC_BASE_URL` | `http://localhost:8000` | Base of the reset link, for example `https://commander.basyid.dev` |
 
 ## 10. Seed accounts (development and demo)
 
@@ -384,7 +398,8 @@ These rules are binding. They extend sections 1 and 2.
 **Admin user management** (Admin role, or an API key owned by an Admin)
 - `GET /api/admin/users`: array of `{"id", "username", "role", "status": "active" | "disabled", "created_at"}`. Never password hashes.
 - `POST /api/admin/users`: body `{"username": "3 to 64 of A-Z a-z 0-9 . _ -", "role": "<role>", "password": "..."}`. Returns `201` with the user object. Duplicate username: `409 CONFLICT`. Audit `admin.user_created` (detail: role only).
-- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}` and/or `{"disabled": true | false}`. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}`, `{"disabled": true | false}`, and/or `{"email": "name@example.com" | null}`. Email is stored lowercase and must be unique (`409` if taken). `null` clears it. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `POST /api/admin/users/{id}/password`: body `{"new_password": "..."}`, 12 to 256 characters. Used for recovery when no email delivery exists. The password is never returned or logged.
   - An Admin cannot disable their own account: `403 FORBIDDEN`.
   - The last active Admin cannot be disabled or demoted: `409 CONFLICT`. Disabled accounts do not count as active Admins. The check runs inside the write transaction.
   - Disabling deletes the user's sessions. Re-enabling does not restore them.

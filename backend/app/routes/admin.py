@@ -31,10 +31,20 @@ class CreateUserBody(BaseModel):
     password: str = Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)
 
 
+EMAIL_PATTERN = r"(?i)^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"  # stored lowercase
+
+
 class UpdateUserBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     role: Role | None = None
     disabled: bool | None = None
+    # Sent as null, the email is cleared. Not sent at all, it is left unchanged.
+    email: str | None = Field(default=None, max_length=254, pattern=EMAIL_PATTERN)
+
+
+class SetPasswordBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    new_password: str = Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)
 
 
 class CreateApiKeyBody(BaseModel):
@@ -43,13 +53,13 @@ class CreateApiKeyBody(BaseModel):
 
 
 def _user_json(row: Any) -> dict[str, Any]:
-    return {"id": row["id"], "username": row["username"], "role": row["role"],
+    return {"id": row["id"], "username": row["username"], "role": row["role"], "email": row["email"],
             "status": row["status"], "created_at": row["created_at"]}
 
 
 def _load_user(conn: Any, user_id: str) -> Any:
     return conn.execute(
-        "SELECT u.id, u.username, u.status, u.created_at, r.role FROM users u "
+        "SELECT u.id, u.username, u.email, u.status, u.created_at, r.role FROM users u "
         "JOIN user_roles r ON r.user_id = u.id WHERE u.id = ?", (user_id,)).fetchone()
 
 
@@ -59,7 +69,7 @@ def _load_user(conn: Any, user_id: str) -> Any:
 def list_users(request: Request, user: CurrentUser = Depends(require_role("Admin"))) -> list[dict[str, Any]]:
     with services_of(request).db.read() as conn:
         rows = conn.execute(
-            "SELECT u.id, u.username, u.status, u.created_at, r.role FROM users u "
+            "SELECT u.id, u.username, u.email, u.status, u.created_at, r.role FROM users u "
             "JOIN user_roles r ON r.user_id = u.id ORDER BY u.created_at, u.username").fetchall()
     return [_user_json(r) for r in rows]
 
@@ -88,13 +98,24 @@ def create_user(body: CreateUserBody, request: Request,
 @router.patch("/users/{user_id}")
 def update_user(user_id: str, body: UpdateUserBody, request: Request,
                 user: CurrentUser = Depends(require_role("Admin"))) -> dict[str, Any]:
-    if body.role is None and body.disabled is None:
-        raise AppError("VALIDATION_FAILED", "Provide role or disabled.")
+    email_given = "email" in body.model_fields_set
+    if body.role is None and body.disabled is None and not email_given:
+        raise AppError("VALIDATION_FAILED", "Provide role, disabled, or email.")
     services = services_of(request)
     with services.db.transaction() as conn:  # BEGIN IMMEDIATE: the last-Admin count cannot race
         target = _load_user(conn, user_id)
         if target is None:
             raise AppError("NOT_FOUND", "User not found.")
+        if email_given:
+            new_email = body.email.lower() if body.email else None
+            if new_email != target["email"]:
+                taken = conn.execute("SELECT 1 FROM users WHERE email = ? AND id != ?",
+                                     (new_email, user_id)).fetchone() if new_email else None
+                if taken is not None:
+                    raise AppError("CONFLICT", "That email is already used by another account.")
+                conn.execute("UPDATE users SET email = ? WHERE id = ?", (new_email, user_id))
+                audit.append(conn, actor=user.username, action="admin.user_email_changed", subject=user_id,
+                             detail={"cleared": new_email is None})
         new_role = body.role or target["role"]
         if body.disabled is None:
             new_status = target["status"]
@@ -126,6 +147,28 @@ def update_user(user_id: str, body: UpdateUserBody, request: Request,
                 audit.append(conn, actor=user.username, action="admin.user_enabled", subject=user_id, detail={})
         row = _load_user(conn, user_id)
     return _user_json(row)
+
+
+@router.post("/users/{user_id}/password", status_code=204)
+def set_user_password(user_id: str, body: SetPasswordBody, request: Request,
+                      user: CurrentUser = Depends(require_role("Admin"))) -> Response:
+    """Admin sets a new password for another account (or their own). Every session of that account is revoked.
+
+    Use this to recover an account without email. Tell the person the new password through a safe channel and
+    ask them to change it at once. The password is never written to the audit log or to a response."""
+    message = password_policy_error(body.new_password)
+    if message is not None:
+        raise AppError("VALIDATION_FAILED", message)
+    password_hash = hash_password(body.new_password)  # outside the write transaction: scrypt is slow
+    with services_of(request).db.transaction() as conn:
+        target = _load_user(conn, user_id)
+        if target is None:
+            raise AppError("NOT_FOUND", "User not found.")
+        conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id))
+        revoked = conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,)).rowcount
+        audit.append(conn, actor=user.username, action="admin.user_password_set", subject=user_id,
+                     detail={"sessions_revoked": revoked})
+    return Response(status_code=204)
 
 
 # --- API keys (session login only; see auth.session_user) -------------------------------------------------------

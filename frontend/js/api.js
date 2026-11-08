@@ -101,6 +101,7 @@ async function request(method, path, opts = {}) {
 export const api = {
   get: (path, opts) => request('GET', path, opts),
   post: (path, json, opts = {}) => request('POST', path, { ...opts, json }),
+  patch: (path, json, opts = {}) => request('PATCH', path, { ...opts, json }),
   postEmpty: (path, opts) => request('POST', path, opts),
   upload: (path, formData, opts) => request('POST', path, { ...opts, body: formData }),
   // Binary download with the server's SHA-256 header (X-Content-SHA256).

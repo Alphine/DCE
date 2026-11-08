@@ -489,9 +489,7 @@ code, pre, .mono, .hash {
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; min-width: 0; }
 .label { font-size: 13px; font-weight: 600; color: var(--text-2); }
 .hint { font-size: 12.5px; color: var(--text-3); }
-.field input[type="text"],
-.field input[type="password"],
-.field input[type="search"],
+.field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
 .field textarea,
 .field select,
 .input {
@@ -1346,3 +1344,52 @@ details[open] > summary { margin-bottom: 8px; }
 .result-label { color: var(--text-2); margin: 0 0 14px; overflow-wrap: anywhere; }
 .assumption-list { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); overflow-wrap: anywhere; }
 @media (max-width: 640px) { .situation-map, .situation-map .wm { min-height: 320px; height: 320px; } }
+
+/* ---------- Simulation and planning ---------- */
+.row-link.is-selected td { background: var(--amber-soft); }
+
+.priority-pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.sim-chart-wrap { width: 100%; overflow-x: auto; }
+.sim-chart { display: block; width: 100%; min-width: 420px; height: auto; }
+.sim-grid { stroke: var(--line); stroke-width: 1; }
+.sim-axis { fill: var(--text-3); font-family: var(--font-mono); font-size: 11px; }
+.sim-bar { fill: var(--cyan); opacity: 0.8; }
+.sim-bar--peak { fill: var(--amber); opacity: 1; }
+
+.sim-details { margin-top: 0.75rem; }
+.sim-details summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+}
+.sim-details summary:hover { color: var(--text); }
+.sim-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- Admin users ---------- */
+.admin-users select, .admin-users input { min-width: 0; width: 100%; }
+.admin-users td { vertical-align: top; }
+.admin-users td:nth-child(3) { min-width: 200px; }
+.admin-actions { min-width: 220px; }
+.admin-password { margin-top: 8px; }
+.admin-password summary { cursor: pointer; color: var(--text-2); font-size: 0.9rem; }
+.admin-password summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+.admin-password .stack { margin-top: 8px; }
+.row-err { margin-top: 6px; }
+
+/* ---------- Account email and password reset ---------- */
+.user-email { font-size: 12px; color: var(--text-3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-email.is-empty { font-style: italic; }

@@ -75,6 +75,21 @@ Rotate on any suspicion of exposure, after staff changes, and on a fixed schedul
 5. Revoke the old key in the Vultr console.
 6. Record the rotation date in the operator log (not in the repo).
 
+**Operator password reset (for a user who cannot sign in)**
+
+Use this when no Admin can sign in and the account owner has lost the password. It needs shell access to the VM, so only the operator can run it. Any user who can still sign in changes their own password through the app (`POST /api/auth/password`).
+
+1. Run it from the API container, with `-it` so the prompt works: `cd /srv/dce/app && sudo docker compose -f deployment/docker-compose.yml --env-file .env exec -it api python -m app.reset_password <username>`
+2. Type the new password twice when prompted. It must meet the password policy (at least 12 characters) and differ from the current one. Nothing is printed back.
+3. The command replaces the hash, revokes every session of that user, and writes `auth.password_reset_by_operator` (actor `operator`) to the audit log. The password itself is never logged.
+4. Record the date and the username in the operator log (not in the repo).
+
+Add `--role ROLE` to set the role as well. ROLE is one of `Viewer`, `Analyst`, `Reviewer`, `Approver`, or `Admin`.
+
+- If the username does not exist, `--role` creates the account with that role (audit `auth.user_created_by_operator`).
+- If it exists, `--role` changes its role (audit `admin.user_role_changed`). The last active Admin cannot be demoted, and a refused run changes nothing.
+- Without `--role`, a missing username is refused.
+
 **Seed passwords**
 
 1. Export the new value in your shell with `read -rs DCE_SEED_PASSWORD; export DCE_SEED_PASSWORD`.
