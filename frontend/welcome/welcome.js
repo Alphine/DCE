@@ -77,7 +77,7 @@
       'limits.item3b': 'Do not use this product for real emergency decisions without validation for your own context.',
       'limits.about': 'Read the About page in the app',
       'footer.tagline': 'Disaster response, under command.',
-      'footer.licence': 'Licence: to be confirmed by the project owner',
+      'footer.licence': 'Licence: MIT. See the LICENSE file in the repository.',
       'footer.appTitle': 'The app',
       'footer.command': 'Command center',
       'footer.public': 'Public warnings',

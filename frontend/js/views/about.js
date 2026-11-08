@@ -142,7 +142,8 @@ export async function mount(root, ctx) {
           h('li', null, 'Map library: Leaflet 1.9.4, BSD 2-Clause licence, copyright Volodymyr Agafonkin and CloudMade contributors. Bundled with the app, not loaded from a CDN. ',
             h('a', { href: 'https://leafletjs.com', target: '_blank', rel: 'noopener noreferrer' }, 'leafletjs.com')),
           h('li', null, 'No online map tiles are loaded. The map shows vector outlines and the data you approved.'),
-          h('li', null, 'Each source keeps its own licence. The two above are the only map data the Situation and Command Center maps use.')))));
+          h('li', null, 'Each source keeps its own licence. The two above are the only map data the Situation and Command Center maps use.'),
+          h('li', null, 'Disaster Commander Edge itself is released under the MIT licence. See the LICENSE file in the repository.')))));
 
   return () => {};
 }
