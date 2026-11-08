@@ -7,7 +7,7 @@
 //   - /api/auth/* and every non-GET request are never cached and never intercepted.
 // Bump CACHE_VERSION whenever a file in SHELL changes. Old caches are removed on activate.
 
-const CACHE_VERSION = 'dce-shell-v2';
+const CACHE_VERSION = 'dce-shell-v3';
 const SHELL_CACHE = CACHE_VERSION;
 const SNAPSHOT_SECTIONS = ['reports', 'missions', 'datasets', 'simulations'];
 const SNAPSHOT_TIMEOUT_MS = 2000;
@@ -20,7 +20,6 @@ const SHELL = [
   'css/app.css',
   'assets/favicon.svg',
   'assets/logo.svg',
-  'assets/world-map.svg',
   'icons/icon.svg',
   'icons/icon-192.png',
   'icons/icon-512.png',

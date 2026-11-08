@@ -151,10 +151,10 @@ function markerStyle(p, selected) {
   };
 }
 
-function outlineStyle(selected) {
-  return selected
-    ? { color: '#ffb020', weight: 2, fillColor: '#2a2a18', fillOpacity: 0.9 }
-    : { color: '#4b5a7a', weight: 0.6, fillColor: '#16203a', fillOpacity: 1 };
+function outlineStyle(selected, hover = false) {
+  if (selected) return { color: '#ffb020', weight: 2, fillColor: '#2a2a18', fillOpacity: 0.9 };
+  if (hover) return { color: '#8fa6cf', weight: 1.2, fillColor: '#22325a', fillOpacity: 1 };
+  return { color: '#4b5a7a', weight: 0.6, fillColor: '#16203a', fillOpacity: 1 };
 }
 
 function tooltipElement(p, layerId) {
@@ -200,7 +200,11 @@ export async function createLeafletMap(container, { points = [], layers = {}, co
 
   const countryLayer = L.geoJSON(outlineData || { type: 'FeatureCollection', features: [] }, {
     style: () => outlineStyle(false),
-    interactive: false,
+    onEachFeature: (feature, layer) => {
+      layer.on('mouseover', () => layer.setStyle(outlineStyle(false, true)));
+      layer.on('mouseout', () => layer.setStyle(outlineStyle(false)));
+    },
+    interactive: true,
   });
   const pointGroups = { disaster: L.layerGroup(), shelters: L.layerGroup(), affected: L.layerGroup() };
   const groups = { countries: countryLayer, ...pointGroups };
@@ -255,6 +259,8 @@ export async function createLeafletMap(container, { points = [], layers = {}, co
         if (node) node.setAttribute('aria-label', text);
       });
       marker.on('click', () => select(id));
+      marker.on('mouseover', () => marker.setStyle({ weight: 3, color: '#ffffff' }));
+      marker.on('mouseout', () => marker.setStyle(markerStyle(p, id === state.selectedId)));
       pointGroups[layerId].addLayer(marker);
       markers.set(id, { point: p, marker });
     }

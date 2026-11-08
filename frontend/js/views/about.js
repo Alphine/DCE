@@ -134,7 +134,15 @@ export async function mount(root, ctx) {
           h('li', null, 'The local sandbox runner is for development only. It has no container isolation.'),
           h('li', null, 'Hash checks in the browser need HTTPS or localhost.'),
           h('li', null, 'Gate A approves the plan and limits, not the generated code.'),
-          h('li', null, 'Map points come only from real coordinates. Missing coordinates are listed, never plotted.')))));
+          h('li', null, 'Map points come only from real coordinates. Missing coordinates are listed, never plotted.'))),
+      panel({ title: 'Map and data sources', sub: 'Where the map outlines and libraries come from, and their licences.', style: '--i:6' },
+        h('ul', { class: 'about-list' },
+          h('li', null, 'Country outlines: Natural Earth 1:110m Admin 0 (countries). Public domain. ',
+            h('a', { href: 'https://www.naturalearthdata.com/about/terms-of-use/', target: '_blank', rel: 'noopener noreferrer' }, 'Terms of use')),
+          h('li', null, 'Map library: Leaflet 1.9.4, BSD 2-Clause licence, copyright Volodymyr Agafonkin and CloudMade contributors. Bundled with the app, not loaded from a CDN. ',
+            h('a', { href: 'https://leafletjs.com', target: '_blank', rel: 'noopener noreferrer' }, 'leafletjs.com')),
+          h('li', null, 'No online map tiles are loaded. The map shows vector outlines and the data you approved.'),
+          h('li', null, 'Each source keeps its own licence. The two above are the only map data the Situation and Command Center maps use.')))));
 
   return () => {};
 }

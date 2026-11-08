@@ -2,7 +2,8 @@ import { api } from '../api.js';
 import { h, clear, fmtDate, fmtClock, short, spinner, errorState, listOf, pageHead, panel, emptyState, kv } from '../dom.js';
 import { datasetKind, mapPoints, depthByDistrict, depthFromSummary } from '../domain.js';
 import { stateBadge, dataClassBadge } from '../components/badges.js';
-import { createWorldMap, worldMapLegend, pointDescription } from '../components/world-map.js';
+import { worldMapLegend, pointDescription } from '../components/world-map.js';
+import { createLeafletMap } from '../components/leaflet-map.js';
 import { createBarChart } from '../components/chart.js';
 import { verifyBlob, hashStatus } from '../components/hash.js';
 import { icon } from '../components/icons.js';
@@ -267,13 +268,13 @@ export async function mount(root, ctx) {
       mapSlot.replaceChildren(emptyState('No approved dataset yet', 'Approve a dataset to plot its incidents or logistics sites.'));
     } else {
       const dis = disasterDs ? mapPoints(disasterRows, disasterDs.columns, { layer: 'disaster', source: disasterDs.name }) : null;
-      const log = logisticsDs ? mapPoints(logisticsRows, logisticsDs.columns, { layer: 'logistics', source: logisticsDs.name }) : null;
+      const log = logisticsDs ? mapPoints(logisticsRows, logisticsDs.columns, { layer: 'shelters', source: logisticsDs.name }) : null;
       const disCount = dis ? dis.points.length : 0;
       const logCount = log ? log.points.length : 0;
       const mapHost = h('div', { class: 'wm-host', 'aria-label': 'Disaster and logistics map' });
       const toggle = (layer, label, count) => {
         const input = h('input', { type: 'checkbox', checked: true, disabled: count === 0 ? true : null });
-        input.addEventListener('change', () => { if (map) map.setLayerVisible(layer, input.checked); });
+        input.addEventListener('change', () => { if (map) map.setLayer(layer, input.checked); });
         return h('label', { class: 'wm-toggle' }, input, h('span', null, `${label} (${count})`));
       };
       const unknownList = dis && dis.unknown.length
@@ -292,7 +293,7 @@ export async function mount(root, ctx) {
       mapSlot.replaceChildren(...[
         h('div', { class: 'wm-toolbar', role: 'group', 'aria-label': 'Map layers' },
           toggle('disaster', 'Disaster incidents', disCount),
-          toggle('logistics', 'Logistics sites', logCount)),
+          toggle('shelters', 'Logistics sites', logCount)),
         mapHost,
         worldMapLegend({ disaster: disCount, logistics: logCount }),
         h('p', { class: 'small muted' },
@@ -306,9 +307,9 @@ export async function mount(root, ctx) {
       ].filter(Boolean));
       showPointCard(null);
       const points = [...(dis ? dis.points : []), ...(log ? log.points : [])];
-      map = createWorldMap(mapHost, {
+      map = await createLeafletMap(mapHost, { label: 'Disaster and logistics map',
         points,
-        layers: { disaster: true, logistics: true },
+        layers: { disaster: true, shelters: true },
         onSelect: (point) => showPointCard(point),
       });
       if (!points.length) mapHost.prepend(h('p', { class: 'small muted wm-empty' }, 'No points with coordinates to plot.'));

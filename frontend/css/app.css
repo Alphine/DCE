@@ -1509,3 +1509,24 @@ details[open] > summary { margin-bottom: 8px; }
 @media (max-width: 600px) {
   #al-country, #al-severity, #al-hours { max-width: 100%; width: 100%; }
 }
+
+/* ---------- Map polish ---------- */
+.lm-map {
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(63, 216, 240, 0.06), transparent 60%),
+    radial-gradient(ellipse at 90% 100%, rgba(255, 176, 32, 0.05), transparent 55%),
+    var(--bg-0);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 14px 40px -24px rgba(0, 0, 0, 0.8);
+}
+.lm .leaflet-interactive { cursor: pointer; }
+.lm .leaflet-control-zoom { border: 1px solid var(--line-strong) !important; border-radius: var(--r-sm); overflow: hidden; }
+.lm .leaflet-control-zoom a { width: 32px; height: 32px; line-height: 32px; }
+.lm .leaflet-control-attribution { border-top-left-radius: var(--r-sm); font-size: 11px; }
+.lm .leaflet-tooltip { border-radius: var(--r-sm); padding: 6px 8px; }
+@media (max-width: 640px) {
+  .lm-map { height: 280px; }
+  .lm .leaflet-control-zoom a { width: 36px; height: 36px; line-height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lm .leaflet-interactive { transition: none; }
+}
