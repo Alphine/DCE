@@ -163,3 +163,21 @@
 @media (prefers-reduced-motion: reduce) {
   .sev-critical::before { animation: none; }
 }
+
+/* ---------- Readable task feed and a tighter header ---------- */
+.feed-row {
+  grid-template-columns: minmax(0, 1fr);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.feed-row .feed-title { font-size: 14px; }
+.feed-row .feed-meta { font-size: 12px; }
+
+.topbar-main { min-height: 56px; padding: 6px 0; gap: 10px 16px; }
+.nav--tools { padding: 5px 0 6px; gap: 5px; }
+.nav-tool { font-size: 12px; padding: 4px 9px; }
+.nav-tool .icon { width: 14px; height: 14px; }
+.nav-item { padding-top: 6px; padding-bottom: 6px; }
+@media (max-width: 1100px) {
+  .brand-sub { display: none; }
+}
