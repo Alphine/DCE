@@ -24,6 +24,7 @@ class Services:
     manager: TaskManager
     runner: Any
     login_limiter: SlidingWindowLimiter
+    mailer: Any = None  # None when SMTP is not configured
 
 
 def services_of(request: Request) -> Services:

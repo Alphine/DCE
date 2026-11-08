@@ -29,6 +29,8 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | POST | `/api/auth/login` | public (rate limited) | Start session |
 | POST | `/api/auth/logout` | Viewer (session cookie only) | End session (204) |
 | POST | `/api/auth/password` | Viewer (session cookie only) | Change own password, revoke other sessions (204) |
+| POST | `/api/auth/forgot` | Public, rate limited | Email a reset link (202). The answer is the same for every address. No mail is sent unless SMTP is configured and the address belongs to an active account |
+| POST | `/api/auth/reset` | Public (token) | Set a new password with the emailed token (204). Token works once, expires after 30 minutes, and ends all sessions of the account |
 | GET | `/api/auth/me` | Viewer | Current user |
 | GET | `/api/admin/users` | Admin | List users (no password material) |
 | POST | `/api/admin/users` | Admin | Create user (201) |
@@ -321,6 +323,12 @@ The backend selects a runner at startup from `DCE_SANDBOX_RUNNER` (`docker` or `
 | `DCE_TRUSTED_PROXIES` | (empty) | Comma-separated IPs or CIDRs (for example `172.18.0.1` or `172.18.0.0/16`). `X-Forwarded-For` is read only when the direct peer is in this list; otherwise the direct peer is the client. The client is the rightmost untrusted entry. Empty means no proxy is trusted. A malformed entry stops startup. In production, set it to the address Caddy connects from (the Docker bridge gateway as seen by the backend container) |
 | `DCE_SESSION_SECRET` | (none) | Secret for signing session identifiers if the backend uses signed cookies. Never committed |
 | `DCE_SEED_PASSWORD` | (none) | Required by `python -m app.seed`. Never committed |
+| `DCE_SMTP_HOST` | (none) | SMTP server for reset emails, for example `smtp.gmail.com`. Password reset by email is off when host, user, or password is empty |
+| `DCE_SMTP_PORT` | `587` | STARTTLS port |
+| `DCE_SMTP_USER` | (none) | Sending account, for example a Gmail address |
+| `DCE_SMTP_PASSWORD` | (none) | App password for that account. Never committed. Keep it in `.env` on the VM only |
+| `DCE_SMTP_FROM` | same as user | Sender address shown in the email |
+| `DCE_PUBLIC_BASE_URL` | `http://localhost:8000` | Base of the reset link, for example `https://commander.basyid.dev` |
 
 ## 10. Seed accounts (development and demo)
 

@@ -1389,3 +1389,7 @@ details[open] > summary { margin-bottom: 8px; }
 .admin-password summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
 .admin-password .stack { margin-top: 8px; }
 .row-err { margin-top: 6px; }
+
+/* ---------- Account email and password reset ---------- */
+.user-email { font-size: 12px; color: var(--text-3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-email.is-empty { font-style: italic; }

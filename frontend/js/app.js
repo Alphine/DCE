@@ -6,8 +6,12 @@ import { toast } from './components/toast.js';
 import { h, errorState } from './dom.js';
 import { icon } from './components/icons.js';
 
+// Routes that work without a session: sign-in and the emailed password reset.
+const PUBLIC_ROUTES = new Set(['login', 'reset']);
+
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },
+  { name: 'reset', title: 'Reset password', match: (p) => (p[0] === 'reset' ? {} : null), load: () => import('./views/reset.js') },
   { name: 'command', title: 'Command Center', minRole: 'Viewer',
     match: (p) => (p.length === 0 || p[0] === 'dashboard' ? {} : null), load: () => import('./views/command-center.js') },
   { name: 'situation', title: 'Situation', minRole: 'Viewer',
@@ -70,6 +74,7 @@ const nav = $('nav');
 const toolsNav = $('nav-tools');
 const roleChip = $('role-chip');
 const usernameEl = $('username');
+const userEmailEl = $('user-email');
 const logoutBtn = $('logout');
 const connPill = $('conn-pill');
 const connText = $('conn-text');
@@ -107,6 +112,8 @@ function renderChrome(routeName) {
   if (!state.user) return;
   roleChip.textContent = state.user.role;
   usernameEl.textContent = state.user.username;
+  userEmailEl.textContent = state.user.email || 'No email set';
+  userEmailEl.classList.toggle('is-empty', !state.user.email);
   nav.replaceChildren(...navLinks(PRIMARY_NAV, routeName, 'nav-item'));
   toolsNav.replaceChildren(...navLinks(TOOLS_NAV, routeName, 'nav-tool'));
 }
@@ -138,7 +145,7 @@ async function onRoute({ route, params }) {
   const token = ++routeToken;
   teardown();
 
-  if (!state.user && route.name !== 'login') return go('#/login');
+  if (!state.user && !PUBLIC_ROUTES.has(route.name)) return go('#/login');
   if (state.user && route.name === 'login') return go('#/');
 
   renderChrome(route.name);
