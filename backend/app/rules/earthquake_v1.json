@@ -1,0 +1,65 @@
+{
+  "pack_id": "dce-earthquake-illustrative",
+  "version": "1.0.0",
+  "hazard": "earthquake",
+  "author": "Disaster Commander Edge project",
+  "status_note": "ILLUSTRATIVE. Every threshold in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions. The tsunami_check_candidate flag is not a tsunami warning.",
+  "sources": [
+    "Project illustrative assumptions for demonstration. Replace with an authoritative seismic source before any operational use."
+  ],
+  "countries": [],
+  "thresholds_label": "illustrative",
+  "severity_order": [
+    "LOW",
+    "MEDIUM",
+    "HIGH"
+  ],
+  "rules": [
+    {
+      "id": "EQ-R1",
+      "label": "illustrative",
+      "description": "Magnitude 5.0 or larger: at least LOW severity.",
+      "when": {
+        "magnitude_gte": 5.0
+      },
+      "then": {
+        "severity": "LOW"
+      }
+    },
+    {
+      "id": "EQ-R2",
+      "label": "illustrative",
+      "description": "Magnitude 6.0 or larger: MEDIUM severity.",
+      "when": {
+        "magnitude_gte": 6.0
+      },
+      "then": {
+        "severity": "MEDIUM"
+      }
+    },
+    {
+      "id": "EQ-R3",
+      "label": "illustrative",
+      "description": "Magnitude 7.0 or larger: HIGH severity.",
+      "when": {
+        "magnitude_gte": 7.0
+      },
+      "then": {
+        "severity": "HIGH"
+      }
+    },
+    {
+      "id": "EQ-R4",
+      "label": "illustrative",
+      "description": "Magnitude 7.0 or larger and coastal = true: tsunami check candidate. Not a warning.",
+      "when": {
+        "magnitude_gte": 7.0,
+        "coastal": true
+      },
+      "then": {
+        "flag": "tsunami_check_candidate"
+      }
+    }
+  ],
+  "pack_sha256": "64dbea07579dd693806bba055c50b2b4f53d1c534a8bdd4724931d613a1137e8"
+}

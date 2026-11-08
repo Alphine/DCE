@@ -29,30 +29,39 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | POST | `/api/auth/login` | public (rate limited) | Start session |
 | POST | `/api/auth/logout` | Viewer (session cookie only) | End session (204) |
 | POST | `/api/auth/password` | Viewer (session cookie only) | Change own password, revoke other sessions (204) |
+| POST | `/api/auth/forgot` | Public, rate limited | Email a reset link (202). The answer is the same for every address. No mail is sent unless SMTP is configured and the address belongs to an active account |
+| POST | `/api/auth/reset` | Public (token) | Set a new password with the emailed token (204). Token works once, expires after 30 minutes, and ends all sessions of the account |
 | GET | `/api/auth/me` | Viewer | Current user |
 | GET | `/api/admin/users` | Admin | List users (no password material) |
 | POST | `/api/admin/users` | Admin | Create user (201) |
-| PATCH | `/api/admin/users/{id}` | Admin | Change role and/or disabled flag |
+| PATCH | `/api/admin/users/{id}` | Admin | Change role, disabled flag, and/or email (`null` clears it) |
+| POST | `/api/admin/users/{id}/password` | Admin | Set a new password for any account (204). Revokes that account's sessions. Audit `admin.user_password_set` |
 | GET | `/api/admin/api-keys` | Admin (session cookie only) | List API keys (no tokens) |
 | POST | `/api/admin/api-keys` | Admin (session cookie only) | Create API key (201), token shown once |
 | DELETE | `/api/admin/api-keys/{id}` | Admin (session cookie only) | Revoke API key (204) |
 | GET | `/api/dashboard/summary` | Viewer | Counts, runner status, quota |
-| GET | `/api/datasets` | Viewer | List datasets |
-| POST | `/api/datasets` | Analyst | Upload CSV (multipart) |
+| GET | `/api/datasets` | Viewer | List datasets (`?country=` filter, see section 2.1) |
+| POST | `/api/datasets` | Analyst | Upload CSV (multipart); optional `country_code` field |
 | GET | `/api/datasets/{id}` | Viewer | Dataset with profile |
 | POST | `/api/datasets/{id}/approve` | Reviewer (not uploader) | Set status APPROVED |
 | POST | `/api/reports` | Analyst | Submit structured field report (SDD 10.7); validated, status OBSERVATION (201) |
-| GET | `/api/reports` | Viewer (Viewers see VERIFIED_OBSERVATION only) | List reports (`?limit=`, max 500) |
+| GET | `/api/reports` | Viewer (Viewers see VERIFIED_OBSERVATION only) | List reports (`?limit=`, max 500, `?country=`) |
 | GET | `/api/reports/{id}` | Viewer (Viewers see VERIFIED_OBSERVATION only) | Report detail, status and review |
 | POST | `/api/reports/{id}/review` | Reviewer (not submitter) | Promote to VERIFIED_OBSERVATION or REJECTED (from OBSERVATION only) |
 | POST | `/api/missions` | Analyst | Propose mission from an approved CSV dataset or a verified report (201, status PROPOSED) |
-| GET | `/api/missions` | Viewer (Viewers see APPROVED only) | List missions (`?limit=`, max 500) |
+| GET | `/api/missions` | Viewer (Viewers see APPROVED only) | List missions (`?limit=`, max 500, `?country=`) |
 | GET | `/api/missions/{id}` | Viewer (Viewers see APPROVED only) | Mission detail, target areas, content hash and decision |
 | POST | `/api/missions/{id}/approve` | Approver or Admin (not proposer) | Approve a PROPOSED mission (SDD 18.1, 15.4). Never starts a sandbox run or changes an agent task |
 | POST | `/api/missions/{id}/reject` | Approver or Admin (not proposer) | Reject a PROPOSED mission. Not in SDD 18.1; added so a proposal can be closed without approval |
 | GET | `/api/hazards?dataset_id=&pack=` | Viewer | Rule results for an APPROVED CSV dataset. `pack` is `flood` (default) or `tsunami`. Read-only, no audit row. Not-approved datasets return 404; GeoJSON returns 422; a hash mismatch returns 409 |
 | GET | `/api/situation?limit=` | Viewer | Map points: VERIFIED_OBSERVATION reports with coordinates (`kind` REPORT) and rows of approved CSV datasets with valid `lat` and `lon` (`kind` DATASET_ROW, with 1-based `row`). Max `limit` 2000, default 500. Returns `points`, `counts`, `truncated`. Unreadable datasets are skipped silently |
 | POST | `/api/resources/estimate` | Analyst | Illustrative resource estimate for an APPROVED flood CSV (`data_class` SIMULATED_FACT). Refused with 422 when the dataset has no `water_depth_cm` values. Read-only, no audit row |
+| GET | `/api/simulations` | Viewer | Newest 100 simulation runs, summaries only (no `output`). Creators are ids, never usernames. `?country=` filter |
+| GET | `/api/simulations/{id}` | Viewer | One run with its full `output` (`data_class` SIMULATED_FACT, labelled "Simulation — illustrative parameters") and `output_sha256`. Unknown id returns 404 |
+| POST | `/api/simulations` | Analyst | Run a what-if scenario on an APPROVED flood CSV. Stores inputs, dataset and pack hashes, and the output hash. Writes one `simulation.created` audit row. 201 with the full run. Limits: depth multiplier 0.1–3, rise 0–100 cm per hour, horizon 1–72 hours, and rows × (hours + 1) at most 1,000,000 (else 422) |
+| POST | `/api/sync/batch` | Any signed-in role, session cookie only (API keys get 401); each item is role-checked | Apply queued offline items (section 2.1). 200 items and 1 MB at most (422 over the limit). Returns one result per item, in order |
+| GET | `/api/sync/snapshot?country=` | Viewer | Cached list data with an etag per section (section 2.1). Same visibility as the list endpoints for the caller |
+| GET | `/api/planning/allocation?simulation_id=` | Viewer | Response allocation per district from a stored run's peak hour, using the flood pack ratios. Read-only, nothing saved. 409 if the rule pack has changed since the run |
 | POST | `/api/agent/tasks` | Analyst (quota) | Create agent task |
 | GET | `/api/agent/tasks` | Viewer | List own tasks (Reviewer+ sees all) |
 | GET | `/api/agent/tasks/{id}` | Owner or Reviewer+ | Task detail |
@@ -71,9 +80,64 @@ Request bodies (added after the deployment review):
 - `POST /api/reports/{id}/review`: `{"decision": "approve" | "reject", "note": "optional, max 500 chars"}`.
 - Report responses carry internal user IDs only (`submitter.id`, `review.reviewer.id`). Usernames are never included.
 - `POST /api/missions`: `{"source_type": "DATASET" | "REPORT", "source_id": "uuid", "title": "1-120 chars", "objective": "1-1000 chars", "area_column": "CSV column, required for DATASET"}`. Target areas are the distinct non-empty values of that column (max 50), or the report's `location_name` for a REPORT source. The caller never types them in.
+- `POST /api/simulations`: `{"dataset_id": "uuid", "name": "text", "depth_multiplier": 1.0, "rise_cm_per_hour": 0, "hours": 24}`. Only `pack: "flood"` is accepted. At hour t each known depth is `base × depth_multiplier + rise_cm_per_hour × t`. Severity and road flags come from the verified flood pack. There is no randomness, so the same inputs give the same `output_sha256`.
 - `POST /api/resources/estimate`: `{"dataset_id": "uuid", "pack": "flood"}`. `pack` accepts only `flood` (any other value is `422`), and unknown fields are refused. The result carries the engine's `data_class` (`SIMULATED_FACT`), `label` (`ILLUSTRATIVE ratios`) and `assumptions`, plus `dataset` `{id, name}`.
 - `POST /api/missions/{id}/approve` and `POST /api/missions/{id}/reject`: body `{"note": "optional, max 500 chars"}` or no body. Approval stores the approver ID, role, timestamp, and the SHA-256 of the approved content. If the stored content no longer matches its hash, the decision is refused with `409 CONFLICT`.
 - Audit: report submission and review, and mission proposal and decisions, are audit records (`report.submitted`, `report.reviewed`, `mission.proposed`, `mission.approved`, `mission.rejected`). Free text such as notes and decision notes is stored as a SHA-256 only.
+
+### 2.1 Countries and offline sync (v1.7)
+
+**Country.** `reports`, `datasets`, `missions` and `simulation_runs` carry `country_code`: ISO 3166-1 alpha-2, validated against a bundled list of the 249 current codes. Input is trimmed and uppercased (`ph` is stored as `PH`). Every response includes `country_code`. Rows created before this version have no country and are shown as `ID`.
+- Create: `country_code` is optional on `POST /api/reports` (JSON field), `POST /api/datasets` (form field), `POST /api/missions` and `POST /api/simulations`. A mission or simulation without one takes its source's country (dataset or report). An unknown code returns 422.
+- Filter: `?country=XX` on `GET /api/reports`, `/api/datasets`, `/api/missions` and `/api/simulations`. An unknown code returns 422. `?country=ID` also matches rows with no country.
+
+**Governance for offline decisions.** An approval or rejection made offline is pending until the server accepts it. `REPORT_DECISION` and `MISSION_DECISION` are accepted only if all five checks pass at sync time:
+1. The user exists, is active, and has the needed role (Reviewer for reports, Approver for missions; higher roles pass).
+2. The item is still in the state it was decided against (`OBSERVATION` for reports, `PROPOSED` for missions).
+3. `content_sha256` in the payload equals the server's current hash. Reports and missions both expose `content_sha256` in their responses. For a report it is the SHA-256 of canonical JSON over `hazard_type`, `location_name`, `latitude`, `longitude`, `observed_at`, `reporter_role`, `severity_reported`, `source_reference` and `notes`.
+4. The decider is not the proposer or submitter.
+5. `made_at` is no more than 72 hours before server time and not more than 5 minutes in the future.
+
+**`POST /api/sync/batch`** (session cookie only; API keys get 401)
+
+Request:
+```json
+{"client_id": "device uuid, max 64 chars", "items": [
+  {"op_id": "uuid, unique per item", "kind": "REPORT_CREATE", "payload": {}, "made_at": "2026-11-08T10:00:00Z"}
+]}
+```
+Kinds and payloads:
+- `REPORT_CREATE`: the `POST /api/reports` body (Analyst).
+- `REPORT_DECISION`: `{"report_id", "decision": "approve" | "reject", "content_sha256", "note"}` (Reviewer).
+- `MISSION_PROPOSE`: the `POST /api/missions` body (Analyst).
+- `MISSION_DECISION`: `{"mission_id", "decision": "approve" | "reject", "content_sha256", "note"}` (Approver).
+- `SIMULATION_CREATE`: the `POST /api/simulations` body plus `pack_sha256`, the pack hash the device used. Accepted only if the dataset is approved and the server's pack has that hash (`PACK_MISMATCH` otherwise).
+
+`made_at` is required on every item and must carry a time zone.
+
+Response (200), one result per item, in request order:
+```json
+{"results": [
+  {"op_id": "...", "status": "APPLIED", "code": "APPLIED", "message": "Applied.", "data": {"id": "..."}},
+  {"op_id": "...", "status": "REJECTED", "code": "CONTENT_CHANGED", "message": "..."},
+  {"op_id": "...", "status": "DUPLICATE", "code": "DUPLICATE", "message": "...", "result": {"status": "APPLIED", "...": "..."}}
+], "synced_at": "2026-11-08T10:00:05Z"}
+```
+- Each item runs in its own transaction. One rejected item does not block the others. A rejected item changes nothing.
+- `op_id` is idempotent. A replay returns `DUPLICATE` with the stored result from the first attempt, including a stored rejection, and makes no change. An `op_id` already used by another account returns `REJECTED` with `OP_ID_IN_USE`.
+- Governance codes: `USER_INACTIVE`, `FORBIDDEN` (role too low), `ITEM_STATE_CHANGED`, `CONTENT_CHANGED`, `SELF_APPROVAL_NOT_ALLOWED`, `DECISION_EXPIRED` (older than 72 hours), `MADE_AT_IN_FUTURE`. Other codes: `VALIDATION_FAILED`, `NOT_FOUND`, `INVALID_STATE`, `PACK_MISMATCH`, `UNKNOWN_KIND`, `INTERNAL`.
+- An accepted offline decision is audited as `report.reviewed` or `mission.approved` / `mission.rejected`, with `offline: true`, `decided_offline_at` (= `made_at`), `synced_at`, `op_id` and `client_id`. Offline creates carry `made_offline_at` in their audit row.
+- Limits: 200 items and 1 MB per request. Over either limit returns 422 `VALIDATION_FAILED`.
+
+**`GET /api/sync/snapshot?country=`** (Viewer or higher)
+
+Returns `{"country", "generated_at", "sections": {...}}`. Each section is `{"etag", "count", "truncated", "items"}`. `etag` is the SHA-256 of the canonical JSON (sorted keys, no spaces) of `items`. Sections:
+- `reports`: the same visibility as `GET /api/reports` (Viewers get VERIFIED_OBSERVATION only).
+- `datasets`: the same visibility as `GET /api/datasets`.
+- `missions`: the same visibility as `GET /api/missions`.
+- `simulations`: the newest 100 runs, summaries only.
+
+Each section is capped at 1000 items (100 for simulations). `truncated` is true when the cap was hit.
 
 Rate limiting: 10 login attempts per client IP per minute (client IP is resolved as in section 9, `DCE_TRUSTED_PROXIES`); 20 agent task creations per user per day (`DCE_QUOTA_TASKS_PER_DAY`); 1 agent task creation per user per 30 seconds.
 
@@ -315,6 +379,12 @@ The backend selects a runner at startup from `DCE_SANDBOX_RUNNER` (`docker` or `
 | `DCE_TRUSTED_PROXIES` | (empty) | Comma-separated IPs or CIDRs (for example `172.18.0.1` or `172.18.0.0/16`). `X-Forwarded-For` is read only when the direct peer is in this list; otherwise the direct peer is the client. The client is the rightmost untrusted entry. Empty means no proxy is trusted. A malformed entry stops startup. In production, set it to the address Caddy connects from (the Docker bridge gateway as seen by the backend container) |
 | `DCE_SESSION_SECRET` | (none) | Secret for signing session identifiers if the backend uses signed cookies. Never committed |
 | `DCE_SEED_PASSWORD` | (none) | Required by `python -m app.seed`. Never committed |
+| `DCE_SMTP_HOST` | (none) | SMTP server for reset emails, for example `smtp.gmail.com`. Password reset by email is off when host, user, or password is empty |
+| `DCE_SMTP_PORT` | `587` | STARTTLS port |
+| `DCE_SMTP_USER` | (none) | Sending account, for example a Gmail address |
+| `DCE_SMTP_PASSWORD` | (none) | App password for that account. Never committed. Keep it in `.env` on the VM only |
+| `DCE_SMTP_FROM` | same as user | Sender address shown in the email |
+| `DCE_PUBLIC_BASE_URL` | `http://localhost:8000` | Base of the reset link, for example `https://commander.basyid.dev` |
 
 ## 10. Seed accounts (development and demo)
 
@@ -384,7 +454,8 @@ These rules are binding. They extend sections 1 and 2.
 **Admin user management** (Admin role, or an API key owned by an Admin)
 - `GET /api/admin/users`: array of `{"id", "username", "role", "status": "active" | "disabled", "created_at"}`. Never password hashes.
 - `POST /api/admin/users`: body `{"username": "3 to 64 of A-Z a-z 0-9 . _ -", "role": "<role>", "password": "..."}`. Returns `201` with the user object. Duplicate username: `409 CONFLICT`. Audit `admin.user_created` (detail: role only).
-- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}` and/or `{"disabled": true | false}`. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}`, `{"disabled": true | false}`, and/or `{"email": "name@example.com" | null}`. Email is stored lowercase and must be unique (`409` if taken). `null` clears it. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `POST /api/admin/users/{id}/password`: body `{"new_password": "..."}`, 12 to 256 characters. Used for recovery when no email delivery exists. The password is never returned or logged.
   - An Admin cannot disable their own account: `403 FORBIDDEN`.
   - The last active Admin cannot be disabled or demoted: `409 CONFLICT`. Disabled accounts do not count as active Admins. The check runs inside the write transaction.
   - Disabling deletes the user's sessions. Re-enabling does not restore them.
@@ -405,3 +476,23 @@ These rules are binding. They extend sections 1 and 2.
 - It renders `data_class` labels on every result (SDD §16.3).
 - It shows gate A and gate B controls to the correct role only, and hides controls the user cannot use.
 - It keeps SSE connections open only while the task page is visible, and reconnects on failure.
+
+## 14. Endpoints added in the offline and global stage
+
+Full notes for each part are in `docs/notes/`. This list is the summary.
+
+| Area | Method and path | Role | Notes |
+| --- | --- | --- | --- |
+| Alerts | GET `/api/alerts` | Viewer | Filters: country, kind, severity, unacknowledged. Max 200. See `docs/notes/w4-alerts.md` |
+| Alerts | POST `/api/alerts/{id}/acknowledge` | Reviewer | Idempotent, audited |
+| Alerts | GET `/api/alerts/summary` | Viewer | DECISION_WAITING is computed, not stored |
+| Time series | GET `/api/timeseries?hours=24\|72\|168` | Viewer | UTC hourly buckets, zero-filled |
+| Logistics | GET `/api/logistics/{shelters,supplies,teams,vehicles}` | Viewer | Filters: country, district. Max 500 |
+| Logistics | POST `/api/logistics/{shelters,teams,vehicles}`, PATCH `/{id}` | Analyst | POST `/supplies` upserts by shelter and item. Audited |
+| Warnings | POST `/api/warnings` | Analyst | Creates a DRAFT. Plain text only (`<` and `>` refused) |
+| Warnings | GET `/api/warnings` | Viewer | Internal list, all statuses |
+| Warnings | POST `/api/warnings/{id}/publish` | Approver | Not the creator. `content_sha256` must match (409 otherwise) |
+| Warnings | POST `/api/warnings/{id}/withdraw` | Approver | PUBLISHED only |
+| Public | GET `/api/public/warnings?country=&lang=` | None | PUBLISHED only, six fields, rate limited, `Cache-Control: public, max-age=60` |
+| Hazards | GET `/api/hazards?pack=flood\|tsunami\|earthquake\|wildfire` | Viewer | Two new packs. See `docs/notes/w1-rules.md` |
+| Sync | POST `/api/sync/batch`, GET `/api/sync/snapshot` | Session | Described in section 2.1 |

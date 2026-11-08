@@ -67,7 +67,8 @@ export async function mount(root, ctx) {
     const glyph = state === 'ok' ? '✓' : state === 'bad' ? '✕' : '?';
     const detail = [];
     if (data.checked !== undefined) detail.push(`Checked ${data.checked} records.`);
-    if (data.broken_at !== undefined && data.broken_at !== null) detail.push(`First broken record: ${data.broken_at}.`);
+    // The server sends first_bad_id (null when the chain is valid).
+    if (data.first_bad_id !== undefined && data.first_bad_id !== null) detail.push(`First broken record: ${data.first_bad_id}.`);
     if (data.message) detail.push(String(data.message));
     detail.push(`Verified at ${fmtDate(new Date().toISOString())}.`);
     return h('div', { class: `verdict verdict--${state}`, role: 'status' },

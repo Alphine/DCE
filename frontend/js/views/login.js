@@ -34,6 +34,40 @@ export async function mount(root, ctx) {
     }
   }
 
+  // Forgot password: asks for the account email and always gives the same answer (no account check).
+  const forgotEmail = h('input', { id: 'forgot-email', name: 'email', type: 'email', autocomplete: 'email',
+    required: true, maxlength: '254', spellcheck: 'false', autocapitalize: 'off' });
+  const forgotSlot = h('div', { 'aria-live': 'polite' });
+  const forgotSubmit = h('button', { class: 'btn btn-block', type: 'submit' }, 'Send reset link');
+  const forgotBox = h('form', { class: 'stack', hidden: true, novalidate: false, 'aria-label': 'Forgot password',
+    onsubmit: async (event) => {
+      event.preventDefault();
+      forgotSlot.replaceChildren();
+      forgotSubmit.disabled = true;
+      try {
+        const res = await api.post('auth/forgot', { email: forgotEmail.value.trim() },
+          { signal: ctx.signal, suppressAuthEvent: true });
+        forgotSlot.replaceChildren(h('p', { class: 'small' }, res && res.detail ? res.detail : 'If an account with that email exists, a reset link has been sent.'));
+      } catch (err) {
+        if (ctx.signal.aborted || err.name === 'AbortError') return;
+        forgotSlot.replaceChildren(alertBox('error', err.message));
+      } finally {
+        forgotSubmit.disabled = false;
+      }
+    } },
+    h('div', { class: 'field' },
+      h('label', { class: 'label', for: 'forgot-email' }, 'Account email'),
+      forgotEmail),
+    forgotSlot,
+    forgotSubmit);
+  const forgotToggle = h('button', { class: 'btn btn-ghost btn-sm', type: 'button', 'aria-expanded': 'false',
+    onclick: () => {
+      forgotBox.hidden = !forgotBox.hidden;
+      forgotToggle.setAttribute('aria-expanded', String(!forgotBox.hidden));
+      if (!forgotBox.hidden) forgotEmail.focus();
+    } }, 'Forgot password?');
+  const aboutLink = h('p', { class: 'demo-hint' }, h('a', { href: '/welcome/' }, 'What is Disaster Commander Edge?'));
+
   const form = h('form', { class: 'login-card panel', novalidate: false, onsubmit: onSubmit, 'aria-labelledby': 'login-title' },
     h('h2', { id: 'login-title', class: 'panel-title' }, 'Operator sign-in'),
     h('p', { class: 'panel-sub' }, 'Sign in with your operator account to continue.'),
@@ -45,7 +79,10 @@ export async function mount(root, ctx) {
       password),
     errorSlot,
     submit,
-    h('p', { class: 'demo-hint' }, 'Use the seeded demo accounts: admin, analyst, reviewer, approver. Ask your operator for the password.'));
+    h('div', { class: 'row', style: 'margin-top:10px' }, forgotToggle),
+    forgotBox,
+    h('p', { class: 'demo-hint' }, 'Try the demo sandbox: username demo, password demo. Nothing is sent to the server. Operator accounts need the password from your operator.'),
+    aboutLink);
 
   root.append(h('div', { class: 'login' },
     h('div', { class: 'login-wrap' },

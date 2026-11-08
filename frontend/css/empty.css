@@ -1,0 +1,133 @@
+/* Empty states (components/empty-state.js) and phone-width table lists.
+   Uses the tokens from app.css. No animation anywhere, so reduced motion needs no override. */
+
+.rich-empty {
+  padding: 28px 16px;
+  gap: 8px;
+}
+
+.empty-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+  flex: none;
+}
+
+.rich-empty .empty-title {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.rich-empty .empty-detail {
+  color: var(--text-3);
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 48ch;
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.empty-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.empty-action:hover,
+.empty-action:focus-visible {
+  color: var(--text);
+  border-color: rgba(255, 176, 32, 0.5);
+  text-decoration: none;
+}
+
+.empty-action:focus-visible {
+  outline: 2px solid rgba(255, 176, 32, 0.7);
+  outline-offset: 2px;
+}
+
+/* Stacked list: a plain container whose direct children each render as a bordered card. */
+.stack-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stack-list > * {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+}
+
+/* Table as cards on phones. Convention: every td carries data-label="Column name".
+   Above 640 px the table renders normally. */
+@media (max-width: 640px) {
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+    background: none;
+  }
+
+  table.card-rows,
+  table.card-rows tbody,
+  table.card-rows tr,
+  table.card-rows td {
+    display: block;
+    width: 100%;
+  }
+
+  table.card-rows thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  table.card-rows tr {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 8px 0;
+    margin-bottom: 10px;
+  }
+
+  table.card-rows td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    border: 0;
+    padding: 6px 12px;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  table.card-rows td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--text-3);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  table.card-rows td.num {
+    text-align: right;
+  }
+}

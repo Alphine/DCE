@@ -7,10 +7,22 @@
   <meta name="color-scheme" content="dark">
   <title>Disaster Commander Edge</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#0a0f1d">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/command.css">
+  <link rel="stylesheet" href="css/polish.css">
+  <link rel="stylesheet" href="css/analysis.css">
+  <link rel="stylesheet" href="css/datasets.css">
+  <link rel="stylesheet" href="css/runs.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <link rel="stylesheet" href="css/empty.css">
+  <link rel="stylesheet" href="css/sandbox.css">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
   <a class="skip-link" href="#view">Skip to content</a>
@@ -30,8 +42,10 @@
           <span class="status-dot" aria-hidden="true"></span>
           <span id="conn-text">Online</span>
         </span>
+        <a class="sync-status" id="sync-status" href="#/pending">0 pending · 0 rejected</a>
         <span class="role-chip" id="role-chip"></span>
         <span class="username" id="username"></span>
+        <span class="user-email" id="user-email"></span>
         <button class="btn btn-ghost btn-sm btn-logout" id="logout" type="button" aria-label="Log out of Disaster Commander Edge">Log out</button>
       </div>
     </div>
@@ -39,10 +53,13 @@
   </header>
 
   <main id="view" class="view" tabindex="-1"></main>
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Quick navigation"></nav>
   <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <!-- CDN dependencies (see frontend/README.md). Chart.js is loaded as a classic script so the global Chart exists for ES modules. -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script type="module" src="js/app.js"></script>
+  <script src="js/sw-register.js"></script>
+  <script type="module" src="js/demo/banner.js"></script>
 </body>
 </html>

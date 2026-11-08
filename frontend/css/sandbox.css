@@ -1,0 +1,17 @@
+/* Demo sandbox banner. Shown only while the browser sandbox is on. */
+.sandbox-banner {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgba(255, 176, 32, 0.18), rgba(255, 138, 0, 0.12));
+  border-bottom: 1px solid var(--amber);
+  color: var(--text);
+  font-size: 13px;
+}
+.sandbox-banner strong { color: var(--amber); font-family: var(--font-mono); letter-spacing: 0.06em; }
+.sandbox-actions { margin-left: auto; display: flex; gap: 8px; }

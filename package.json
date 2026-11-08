@@ -1,0 +1,13 @@
+{
+  "name": "disaster-commander-edge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Disaster Commander Edge desktop shell (Tauri 2)",
+  "scripts": {
+    "tauri": "tauri",
+    "build:desktop": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

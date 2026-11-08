@@ -55,7 +55,7 @@ def test_list_users_returns_no_password_material(logged_in: Env) -> None:
     assert response.status_code == 200
     users = response.json()
     assert {u["username"] for u in users} >= set(SEED_USERS)
-    assert all(set(u) == {"id", "username", "role", "status", "created_at"} for u in users)
+    assert all(set(u) == {"id", "username", "role", "email", "status", "created_at"} for u in users)
     assert "scrypt$" not in response.text and "password" not in response.text
 
 

@@ -1,11 +1,14 @@
 // DOM helpers. Every piece of server data is inserted as a text node, never parsed as HTML.
 
-export function h(tag, props, ...children) {
-  const node = document.createElement(tag);
+import { richEmpty } from './components/empty-state.js';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function fill(node, props, children) {
   if (props !== null && typeof props === 'object' && !Array.isArray(props) && !(props instanceof Node)) {
     for (const [key, value] of Object.entries(props)) {
       if (value === undefined || value === null || value === false) continue;
-      if (key === 'class') node.className = String(value);
+      if (key === 'class') node.setAttribute('class', String(value));
       else if (key === 'style' && typeof value === 'object') Object.assign(node.style, value);
       else if (key === 'dataset') Object.assign(node.dataset, value);
       else if (key.startsWith('on') && typeof value === 'function') node.addEventListener(key.slice(2), value);
@@ -20,6 +23,15 @@ export function h(tag, props, ...children) {
     node.append(child instanceof Node ? child : document.createTextNode(String(child)));
   }
   return node;
+}
+
+export function h(tag, props, ...children) {
+  return fill(document.createElement(tag), props, children);
+}
+
+// Same contract as h(), for SVG elements (created in the SVG namespace, attributes set with setAttribute).
+export function svg(tag, props, ...children) {
+  return fill(document.createElementNS(SVG_NS, tag), props, children);
 }
 
 export function clear(node) {
@@ -92,7 +104,11 @@ export function spinner(label = 'Loading…') {
     h('span', null, label));
 }
 
-export function emptyState(title, detail) {
+// options (optional): {icon, actions}. Without either, the markup is the original plain empty state.
+export function emptyState(title, detail, options) {
+  if (options && (options.icon || options.actions)) {
+    return richEmpty({ title, detail, icon: options.icon, actions: options.actions });
+  }
   return h('div', { class: 'state-msg empty' },
     h('strong', null, title),
     detail ? h('span', null, detail) : null);

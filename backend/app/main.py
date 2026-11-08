@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from app.agent.events import EventBus
 from app.agent.inference_client import make_inference
 from app.agent.planner import Planner
+from app.mailer import SmtpMailer
 from app.agent.task_manager import TaskManager
 from app.config import Settings, get_settings
 from app.container import Services
@@ -23,8 +24,9 @@ from app.db import Db
 from app.errors import AppError, install_error_handlers
 from app.middleware import RequestContextMiddleware
 from app.ratelimit import SlidingWindowLimiter
-from app.routes import (admin, agent, artifacts, auth, datasets, governance, hazards, missions, reports,
-                        resources, situation)
+from app.routes import (admin, agent, alerts, artifacts, auth, datasets, governance, hazards, logistics, missions,
+                        planning, reports, resources, simulations, situation, sync)
+from app.routes import warnings as warnings_routes
 
 logger = logging.getLogger("dce.app")
 LOGIN_LIMIT_PER_MINUTE = 10
@@ -64,6 +66,7 @@ def create_app(settings: Settings | None = None, *, runner: Any | None = None,
         app.state.services = Services(
             settings=cfg, db=db, bus=bus, planner=planner, manager=manager, runner=sandbox,
             login_limiter=SlidingWindowLimiter(LOGIN_LIMIT_PER_MINUTE, 60.0),
+            mailer=SmtpMailer(cfg) if cfg.smtp_enabled else None,
         )
         yield
 
@@ -86,9 +89,15 @@ def create_app(settings: Settings | None = None, *, runner: Any | None = None,
     api.include_router(hazards.router)
     api.include_router(situation.router)
     api.include_router(resources.router)
+    api.include_router(simulations.router)
+    api.include_router(sync.router)
+    api.include_router(planning.router)
     api.include_router(agent.router)
     api.include_router(artifacts.router)
     api.include_router(admin.router)
+    api.include_router(alerts.router)
+    api.include_router(logistics.router)
+    api.include_router(warnings_routes.router)
 
     @api.api_route("/{rest:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"], include_in_schema=False)
     def _unknown(rest: str) -> None:

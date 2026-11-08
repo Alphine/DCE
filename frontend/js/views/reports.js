@@ -3,6 +3,21 @@ import { h, fmtDate, spinner, errorState, listOf, pageHead, panel, emptyState, a
 import { toast } from '../components/toast.js';
 import { go } from '../router.js';
 import { hasRole } from '../session.js';
+import { loadList, cacheNotice } from '../offline/read-cache.js';
+import { submitOrQueue, enqueue, list as listOutbox, SAVED_OFFLINE_MESSAGE } from '../offline/outbox.js';
+import { syncNow } from '../offline/sync.js';
+
+// Every new report goes through the outbox, even when online. The server records each op_id, so a retry after a
+// lost response is answered DUPLICATE and cannot create a second report. Returns { queued } or throws on rejection.
+export async function submitThroughOutbox(kind, body) {
+  const opId = await enqueue(kind, body);
+  await syncNow();
+  const pending = (await listOutbox()).find((item) => item.op_id === opId);
+  if (!pending) return { queued: false };
+  if (pending.status === 'rejected') throw new Error(pending.last_error || 'The server did not accept this report.');
+  return { queued: true };
+}
+import { countryField, countryOrNull } from '../components/countries.js';
 
 // SDD 10.7 structured intake and SDD 16.3 review. Reports carry no usernames: the server returns ids only.
 export const HAZARDS = ['EARTHQUAKE', 'TSUNAMI', 'EXTREME_RAINFALL', 'FLOOD', 'LANDSLIDE', 'WILDFIRE', 'SMOKE'];
@@ -54,6 +69,7 @@ export function toReportBody(f) {
     severity_reported: orNull(f.severity_reported),
     source_reference: orNull(f.source_reference.trim()),
     notes: orNull(f.notes.trim()),
+    country_code: countryOrNull(f.country_code),
   };
 }
 
@@ -74,9 +90,10 @@ export async function mount(root, ctx) {
 
   async function refreshList() {
     try {
-      const reports = listOf(await api.get('reports', { signal }));
+      const { items: reports, savedAt } = await loadList('reports', 'reports', { signal });
       if (signal.aborted) return;
       renderList(reports);
+      if (savedAt) listSlot.prepend(cacheNotice(savedAt));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       listSlot.replaceChildren(errorState(err, refreshList));
@@ -86,7 +103,8 @@ export async function mount(root, ctx) {
   function renderList(reports) {
     if (!reports.length) {
       listSlot.replaceChildren(emptyState('No reports yet',
-        hasRole(user, 'Analyst') ? 'Submit a field report above.' : 'Verified observations will appear here.'));
+        hasRole(user, 'Analyst') ? 'Submit a field report above.' : 'Verified observations will appear here.',
+        { icon: 'reports', actions: [{ label: 'Open Situation', href: '#/situation' }] }));
       return;
     }
     const sorted = [...reports].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
@@ -115,6 +133,7 @@ export async function mount(root, ctx) {
     const reporter = selectOf('Reporter role', REPORTER_ROLES, { placeholder: 'Not stated' });
     const severity = selectOf('Severity as reported', SEVERITIES, { placeholder: 'Not stated' });
     const source = h('input', { id: 'rp-source', type: 'text', maxlength: '120', autocomplete: 'off' });
+    const country = countryField('rp-country');
     const notes = h('textarea', { id: 'rp-notes', rows: '3', maxlength: '2000' });
     const submit = h('button', { class: 'btn btn-primary', type: 'submit' }, 'Submit report');
 
@@ -131,16 +150,23 @@ export async function mount(root, ctx) {
         severity_reported: severity.querySelector('select').value,
         source_reference: source.value,
         notes: notes.value,
+        country_code: country.select.value,
       };
       const problem = validateReport(values);
       if (problem) { err.replaceChildren(alertBox('error', problem)); return; }
       submit.disabled = true;
       try {
-        const created = await api.post('reports', toReportBody(values), { signal });
-        toast('Report submitted. It waits for review.');
+        const body = toReportBody(values);
+        const out = await submitThroughOutbox('REPORT_CREATE', body);
         form.reset();
+        if (out.queued) {
+          toast(SAVED_OFFLINE_MESSAGE);
+          await refreshList();
+          return;
+        }
+        toast('Report submitted. It waits for review.');
         await refreshList();
-        go(`#/reports/${encodeURIComponent(created.id)}`);
+        go('#/reports');
       } catch (error) {
         if (error.name === 'AbortError') return;
         err.replaceChildren(alertBox('error', error.message));
@@ -157,6 +183,7 @@ export async function mount(root, ctx) {
       reporter,
       severity,
       h('div', { class: 'field' }, h('label', { for: 'rp-source' }, 'Source reference'), source),
+      country.field,
       h('div', { class: 'field field--wide' }, h('label', { for: 'rp-notes' }, 'Notes (max 2000 characters)'), notes),
       err,
       h('div', { class: 'field--wide row' }, submit));
@@ -179,10 +206,24 @@ export async function mount(root, ctx) {
     const canReview = r.status === 'OBSERVATION' && hasRole(user, 'Reviewer') && r.submitter.id !== user.id;
     const note = h('textarea', { id: 'rv-note', rows: '2', maxlength: '500', 'aria-label': 'Review note (optional)' });
     const reviewErr = h('div', { 'aria-live': 'polite' });
+    const approveBtn = h('button', { class: 'btn btn-primary', type: 'button', onclick: () => act('approve') }, 'Verify observation');
+    const rejectBtn = h('button', { class: 'btn', type: 'button', onclick: () => act('reject') }, 'Reject');
     const act = async (decision) => {
       reviewErr.replaceChildren();
+      const noteText = note.value.trim() || null;
       try {
-        await api.post(`reports/${encodeURIComponent(r.id)}/review`, { decision, note: note.value.trim() || null }, { signal });
+        const out = await submitOrQueue('REPORT_DECISION',
+          { report_id: r.id, decision, note: noteText, content_sha256: r.content_sha256 || null },
+          () => api.post(`reports/${encodeURIComponent(r.id)}/review`, { decision, note: noteText }, { signal }));
+        if (out.queued) {
+          // A pending decision is not effective until the server accepts it. Keep the buttons off until it is sent.
+          approveBtn.disabled = true;
+          rejectBtn.disabled = true;
+          toast(SAVED_OFFLINE_MESSAGE);
+          reviewErr.replaceChildren(alertBox('info', 'Your decision is saved on this device. It takes effect only when the server accepts it.'));
+          await refreshList();
+          return;
+        }
         toast(decision === 'approve' ? 'Report verified.' : 'Report rejected.');
         await refreshList();
         await renderDetail(r.id);
@@ -211,9 +252,7 @@ export async function mount(root, ctx) {
         h('label', { for: 'rv-note' }, 'Review note (optional)'),
         note,
         reviewErr,
-        h('div', { class: 'row' },
-          h('button', { class: 'btn btn-primary', type: 'button', onclick: () => act('approve') }, 'Verify observation'),
-          h('button', { class: 'btn', type: 'button', onclick: () => act('reject') }, 'Reject'))) : null,
+        h('div', { class: 'row' }, approveBtn, rejectBtn)) : null,
       !canReview && r.status === 'OBSERVATION' && hasRole(user, 'Reviewer') && r.submitter.id === user.id
         ? alertBox('info', 'You submitted this report, so another reviewer must verify it.') : null);
   }

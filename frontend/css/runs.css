@@ -1,0 +1,134 @@
+/* Runs screens: Simulation, Planning and Missions.
+   Loaded after app.css. Uses the tokens from app.css (--line, --amber, --emerald, --crimson-soft, ...). */
+
+/* ---------- Collapsible forms (run and proposal forms sit below the list) ---------- */
+.run-new {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(14, 22, 40, 0.5);
+  padding: 0 16px;
+}
+.run-new[open] { padding-bottom: 16px; }
+.run-new > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 14px 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.run-new > summary::-webkit-details-marker { display: none; }
+.run-new > summary::after { content: "+"; float: right; color: var(--text-3); }
+.run-new[open] > summary::after { content: "−"; }
+.run-new > summary:hover { color: var(--text); }
+.run-new > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+.run-current {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.panel--compact { padding: 14px 18px; }
+
+/* ---------- Status chip (missions). Glyph plus text, never colour alone. ---------- */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-chip-glyph { font-size: 12px; line-height: 1; }
+.status-chip--ok { color: var(--emerald); background: var(--emerald-soft, rgba(62, 227, 154, 0.12)); }
+.status-chip--warn { color: var(--amber); background: var(--amber-soft, rgba(255, 176, 32, 0.12)); }
+.status-chip--bad { color: #ff8c99; background: var(--crimson-soft, rgba(255, 77, 98, 0.14)); }
+.status-chip--neutral { color: var(--slate, #8f9bb8); background: rgba(143, 155, 184, 0.09); }
+
+/* ---------- Planning: households bar and priority column ---------- */
+.plan-table .bar-cell { min-width: 150px; }
+.bar-value { display: block; text-align: right; }
+.bar-track {
+  display: block;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--line-strong);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--amber);
+  transition: width 0.4s ease;
+}
+
+.next-steps {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.next-steps strong { color: var(--text); font-weight: 600; }
+.next-link { margin-left: 8px; white-space: nowrap; }
+
+.not-estimated li { color: var(--text-2); }
+
+/* ---------- Missions: decision history and objective ---------- */
+.mission-objective {
+  margin: 0 0 16px;
+  color: var(--text);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.timeline-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0 0 0 16px;
+  border-left: 2px solid var(--line-strong);
+  display: grid;
+  gap: 12px;
+}
+.tl-item { position: relative; color: var(--text-2); overflow-wrap: anywhere; }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.tl-item strong { color: var(--text); font-weight: 600; }
+.tl-item--ok::before { background: var(--emerald); }
+.tl-item--bad::before { background: #ff8c99; }
+.tl-item--wait::before { background: var(--amber); }
+.tl-note { margin: 4px 0 0; font-size: 13px; }
+
+.decide-box {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill { transition: none; }
+  .run-new > summary { transition: none; }
+}

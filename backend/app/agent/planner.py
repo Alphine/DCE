@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 from typing import Any
 
 from app.agent.inference_client import InferenceClient, InferenceError, PlanRequest, check_script
@@ -37,15 +38,22 @@ class Planner:
                           dataset_name: str, profile: dict[str, Any], dataset_kind: str = "CSV") -> Plan:
         request = PlanRequest(instruction=instruction, requested_outputs=requested_outputs,
                               dataset_name=dataset_name, profile=profile, limits=dict(self._ceiling))
-        try:
-            raw = await self._client.plan(request)
-            return validate_plan(raw, self._ceiling, dataset_kind)
-        except InferenceError as exc:
-            logger.warning("planning failed code=%s", exc.code)
-            raise PlanningFailed(exc.code) from exc
-        except PlanError as exc:
-            logger.warning("plan rejected code=%s", exc.code)
-            raise PlanningFailed(exc.code) from exc
+        # One repair attempt: a schema failure is sent back to the model with the failing field names. Other
+        # failures (unknown tool, raised limits, unproduced output) are not retried, because they are policy refusals.
+        for attempt in (1, 2):
+            try:
+                raw = await self._client.plan(request)
+                return validate_plan(raw, self._ceiling, dataset_kind)
+            except InferenceError as exc:
+                logger.warning("planning failed code=%s", exc.code)
+                raise PlanningFailed(exc.code) from exc
+            except PlanError as exc:
+                retryable = exc.code == "PLAN_INVALID_SCHEMA" and attempt == 1
+                logger.warning("plan rejected code=%s attempt=%d detail=%s", exc.code, attempt, exc.message)
+                if not retryable:
+                    raise PlanningFailed(exc.code) from exc
+                request = replace(request, feedback=exc.message)
+        raise PlanningFailed("PLAN_INVALID_SCHEMA")  # unreachable; keeps the type checker satisfied
 
     async def create_script(self, plan: Plan, profile: dict[str, Any]) -> str:
         """Generate task.py after gate A. The script is checked before it can reach the sandbox."""

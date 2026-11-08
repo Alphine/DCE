@@ -1,0 +1,93 @@
+/* Analysis screens: Hazard Intelligence and Resource Planner. Severity chips reuse command.css (.sev-chip, .sev-low, ...). */
+
+.analysis-chips {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+.analysis-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.analysis-chip-unknown {
+  color: var(--text-2, #9aa3b2);
+  background: transparent;
+  border-style: dashed;
+}
+.analysis-count {
+  font-size: 1rem;
+}
+
+.analysis-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.analysis-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: var(--r-md, 10px);
+  background: var(--glass, rgba(255, 255, 255, 0.03));
+  min-width: 0;
+}
+.analysis-tile-label {
+  font-size: 0.8rem;
+  color: var(--text-2, #9aa3b2);
+  overflow-wrap: anywhere;
+}
+.analysis-tile-value {
+  font-size: 1.4rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.analysis-tiles--six {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+/* The bar in a district table: the label is for screen readers, the number stays visible. */
+.analysis-bar-cell {
+  min-width: 12rem;
+}
+.analysis-bar-cell .mc-bar-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.analysis-bar-cell .mc-bar-row {
+  position: relative;
+}
+
+.analysis-details {
+  margin-top: 0.75rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: var(--r-md, 10px);
+  padding: 0.5rem 0.9rem;
+}
+.analysis-details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.35rem 0;
+}
+.analysis-details[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analysis-tile,
+  .analysis-details,
+  .analysis-bar-cell .mc-bar-fill {
+    transition: none;
+    animation: none;
+  }
+}

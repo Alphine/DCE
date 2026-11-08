@@ -1,0 +1,139 @@
+/* Polish layer (UX pass, see docs/audit/ux.md). Loaded after command.css, so it wins where rules overlap.
+   Existing tokens only. Blocks are numbered to match the audit. */
+
+/* 1. Native controls follow the dark theme. Filters, admin rows and the language switch sit outside .field,
+      so they never got the field styles. :where() keeps specificity at zero, so every existing class rule still wins. */
+:root { color-scheme: dark; }
+:where(select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), textarea) {
+  background: rgba(3, 6, 14, 0.7);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  font: 15px/1.4 var(--font-body);
+}
+:where(select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"])) {
+  min-height: 40px;
+}
+:where(select, textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"])):focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.22);
+}
+select option, select optgroup { background: var(--bg-1); color: var(--text); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--amber); }
+
+/* 2. Page header: a rule under the header separates it from the content. */
+.page-head {
+  align-items: flex-end;
+  padding-bottom: 16px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.page-head p { font-size: 14.5px; line-height: 1.5; }
+
+/* 3. Panel headers read as titles. One style for h2 and h3 (they were 0.95rem caps and 1.05rem title case). */
+.panel-head {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head > div:first-child { flex: 1 1 240px; min-width: 0; }
+.panel-title,
+h2.panel-title,
+h3.panel-title {
+  font: 600 1.05rem/1.25 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text);
+}
+.panel-sub { font-size: 13.5px; line-height: 1.45; }
+
+/* 4. KPI tiles: the number is the largest thing in the tile; the label is readable. */
+.tile { padding: 16px 18px; }
+.tile-label { font-size: 12px; color: var(--text-2); letter-spacing: 0.12em; }
+.tile-value {
+  font-size: clamp(1.9rem, 1.2vw + 1.5rem, 2.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-top: 8px;
+}
+.tile-value--text { font-size: 1.4rem; }
+.tile-sub { font-size: 13px; line-height: 1.4; }
+.indicators .tile { padding: 14px 16px; }
+.indicators .tile-value { font-size: clamp(1.7rem, 1vw + 1.3rem, 2.1rem); }
+.indicators .tile-value--text { font-size: 1.4rem; }
+
+/* Command Center status bar */
+.cc-stat { padding: 12px 16px; }
+.cc-stat-label { font-size: 11.5px; color: var(--text-2); }
+.cc-stat-value { font-size: 30px; font-weight: 700; }
+.cc-stat-note { font-size: 12.5px; }
+.cc-clock { font-size: 20px; }
+
+/* 5. Map as the visual anchor. Heights were set in four places (command.css, app.css x3) and the
+      Situation rule .situation-map .wm targeted a map that is never drawn there, so it did nothing. */
+@media (min-width: 721px) {
+  .cc-hero .panel--map {
+    border-color: var(--line-strong);
+    box-shadow: inset 0 2px 0 var(--cyan), var(--shadow);
+  }
+  .cc-hero .wm-host .lm-map,
+  .cc-hero .lm .lm-map {
+    height: clamp(480px, 70vh, 680px) !important;
+    min-height: 480px;
+  }
+}
+.lm-map { border-color: var(--line-strong); }
+.situation-map .lm-map { height: clamp(420px, 62vh, 600px); }
+@media (max-width: 640px) {
+  .situation-map .lm-map { height: 300px; }
+}
+
+/* 6. Tables: readable first column, a hover row you can see, quieter headers. */
+.table th {
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--bg-1);
+  padding: 10px 12px;
+}
+.table td { color: var(--text-2); }
+.table tbody td:first-child { color: var(--text); font-weight: 600; }
+.table tbody tr:hover td { background: var(--cyan-soft); color: var(--text); }
+.table tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--cyan); }
+
+/* 7. Forms: labels read as labels, not as hints. */
+.label { color: var(--text); font-size: 13.5px; }
+.field { margin-bottom: 16px; }
+.hint { line-height: 1.45; }
+
+/* 8. Hover and focus states that were missing or too faint. */
+.feed-row:hover { background: rgba(255, 255, 255, 0.05); }
+.assistant-link:hover { text-decoration: underline; }
+.btn-link:hover { background: none; text-decoration: underline; }
+.situation-layer:hover, .wm-toggle:hover { color: var(--text); }
+.situation-layer input:focus-visible,
+.wm-toggle input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.step-state { font-size: 11px; }
+
+/* 9. Empty states: a dashed frame inside a panel, so "nothing here" is not mistaken for loading or body text. */
+.panel .rich-empty { border: 1px dashed var(--line-strong); border-radius: var(--r-md); }
+.rich-empty .empty-title { color: var(--text); }
+
+/* 10. Phone and touch. 44 px targets, 16 px inputs (stops iOS zooming on focus). */
+@media (max-width: 720px) {
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 40px; }
+  :where(select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"])) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .wm-toggle, .situation-layer { min-height: 40px; }
+  .table th, .table td { padding: 9px 10px; }
+  .cc-stat-value { font-size: 24px; }
+}
+
+/* Media never forces a horizontal page scroll. */
+img, svg, canvas, video { max-width: 100%; }

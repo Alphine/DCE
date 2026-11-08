@@ -2,12 +2,14 @@ import { api } from '../api.js';
 import { h, clear, fmtDate, fmtClock, short, spinner, errorState, listOf, pageHead, panel, emptyState, kv } from '../dom.js';
 import { datasetKind, mapPoints, depthByDistrict, depthFromSummary } from '../domain.js';
 import { stateBadge, dataClassBadge } from '../components/badges.js';
-import { createWorldMap, worldMapLegend, pointDescription } from '../components/world-map.js';
+import { worldMapLegend, pointDescription } from '../components/world-map.js';
+import { createLeafletMap } from '../components/leaflet-map.js';
 import { createBarChart } from '../components/chart.js';
 import { verifyBlob, hashStatus } from '../components/hash.js';
 import { icon } from '../components/icons.js';
 import { toast } from '../components/toast.js';
 import { hasRole } from '../session.js';
+import { buildQueue, decisionQueuePanel } from '../components/decision-queue.js';
 
 const FAILED_STATES = new Set(['FAILED_PLANNING', 'FAILED_SANDBOX', 'TIMED_OUT', 'REJECTED_OUTPUT', 'ORPHANED']);
 
@@ -31,6 +33,7 @@ export async function mount(root, ctx) {
   let pointCard = null;
 
   const asOfSlot = h('p', { class: 'small muted', 'aria-live': 'polite' });
+  const queueSlot = h('div', { class: 'stack' }, spinner('Loading decision queue…'));
   const tilesSlot = h('div', { class: 'indicators' }, spinner('Loading summary…'));
   const mapSlot = h('div', { class: 'stack' });
   const chartSlot = h('div', { class: 'stack' });
@@ -41,12 +44,27 @@ export async function mount(root, ctx) {
   const quickLinks = QUICK_TOOLS.filter((t) => hasRole(user, t.min)).map((t) =>
     h('a', { class: 'quick-tool', href: t.href }, icon(t.icon), h('span', null, t.label)));
 
+  // Status bar: alert counts, decisions waiting for this user, last update, and two clocks (UTC for incident
+  // logs, local time for the operator). The clock timer is cleared when the page is left.
+  const statusSlot = h('div', { class: 'cc-status', role: 'region', 'aria-label': 'Status' }, spinner('Loading status…'));
+  const clockUtc = h('span', { class: 'cc-clock', 'aria-label': 'UTC time' });
+  const clockLocal = h('span', { class: 'cc-clock', 'aria-label': 'Local time' });
+  const clockWrap = h('div', { class: 'cc-clock-wrap' },
+    h('span', { class: 'cc-stat-label' }, 'UTC'), clockUtc,
+    h('span', { class: 'cc-stat-label' }, 'Local'), clockLocal);
+  let alertSummary = null;
+  let pendingCount = null;
+  let lastUpdate = null;
+  let clockTimer = null;
+
   root.append(
     pageHead('Command Center',
       'Live overview of datasets, agent tasks, sandbox status and quota. The map and chart use approved datasets only.',
       refreshBtn),
-    h('div', { class: 'cc-grid' },
+    statusSlot,
+    h('div', { class: 'cc-grid cc-hero' },
       h('div', { class: 'cc-col cc-left' },
+        queueSlot,
         panel({ title: 'Situational overview', sub: 'Counts and status from the server.', cls: 'panel--overview' },
           asOfSlot,
           tilesSlot)),
@@ -264,13 +282,13 @@ export async function mount(root, ctx) {
       mapSlot.replaceChildren(emptyState('No approved dataset yet', 'Approve a dataset to plot its incidents or logistics sites.'));
     } else {
       const dis = disasterDs ? mapPoints(disasterRows, disasterDs.columns, { layer: 'disaster', source: disasterDs.name }) : null;
-      const log = logisticsDs ? mapPoints(logisticsRows, logisticsDs.columns, { layer: 'logistics', source: logisticsDs.name }) : null;
+      const log = logisticsDs ? mapPoints(logisticsRows, logisticsDs.columns, { layer: 'shelters', source: logisticsDs.name }) : null;
       const disCount = dis ? dis.points.length : 0;
       const logCount = log ? log.points.length : 0;
       const mapHost = h('div', { class: 'wm-host', 'aria-label': 'Disaster and logistics map' });
       const toggle = (layer, label, count) => {
         const input = h('input', { type: 'checkbox', checked: true, disabled: count === 0 ? true : null });
-        input.addEventListener('change', () => { if (map) map.setLayerVisible(layer, input.checked); });
+        input.addEventListener('change', () => { if (map) map.setLayer(layer, input.checked); });
         return h('label', { class: 'wm-toggle' }, input, h('span', null, `${label} (${count})`));
       };
       const unknownList = dis && dis.unknown.length
@@ -289,7 +307,7 @@ export async function mount(root, ctx) {
       mapSlot.replaceChildren(...[
         h('div', { class: 'wm-toolbar', role: 'group', 'aria-label': 'Map layers' },
           toggle('disaster', 'Disaster incidents', disCount),
-          toggle('logistics', 'Logistics sites', logCount)),
+          toggle('shelters', 'Logistics sites', logCount)),
         mapHost,
         worldMapLegend({ disaster: disCount, logistics: logCount }),
         h('p', { class: 'small muted' },
@@ -303,9 +321,9 @@ export async function mount(root, ctx) {
       ].filter(Boolean));
       showPointCard(null);
       const points = [...(dis ? dis.points : []), ...(log ? log.points : [])];
-      map = createWorldMap(mapHost, {
+      map = await createLeafletMap(mapHost, { label: 'Disaster and logistics map',
         points,
-        layers: { disaster: true, logistics: true },
+        layers: { disaster: true, shelters: true },
         onSelect: (point) => showPointCard(point),
       });
       if (!points.length) mapHost.prepend(h('p', { class: 'small muted wm-empty' }, 'No points with coordinates to plot.'));
@@ -354,8 +372,53 @@ export async function mount(root, ctx) {
     };
   }
 
+  function statItem(label, value, tone, note) {
+    return h('div', { class: `cc-stat${tone ? ` cc-stat--${tone}` : ''}` },
+      h('div', { class: 'cc-stat-label' }, label),
+      h('div', { class: 'cc-stat-value' }, value === null || value === undefined ? '—' : String(value)),
+      note ? h('div', { class: 'cc-stat-note' }, note) : null);
+  }
+
+  function renderStatus() {
+    const sev = (alertSummary && alertSummary.by_severity) || {};
+    const critical = sev.CRITICAL ?? null;
+    const high = sev.HIGH ?? null;
+    statusSlot.replaceChildren(
+      statItem('Critical alerts', critical, critical ? 'critical' : 'low',
+        alertSummary ? 'Not acknowledged' : 'Alerts not available'),
+      statItem('High alerts', high, high ? 'high' : 'low', alertSummary ? 'Not acknowledged' : null),
+      statItem('Waiting for you', pendingCount, pendingCount ? 'medium' : 'low', 'Decisions you can make'),
+      statItem('Last update', lastUpdate, null, 'From the server'),
+      clockWrap);
+  }
+
+  function tickClock() {
+    const now = new Date();
+    clockUtc.textContent = now.toISOString().slice(11, 19);
+    clockLocal.textContent = now.toLocaleTimeString();
+  }
+
+  // Decision queue. Each request is settled on its own, so one failure leaves the other sections
+  // visible. A failed list is passed as null and shown as a notice in its group.
+  async function loadQueue() {
+    const settled = await Promise.allSettled([
+      api.get('missions', { signal, query: { limit: 500 } }),
+      api.get('reports', { signal, query: { limit: 500 } }),
+      api.get('datasets', { signal }),
+      api.get('agent/tasks', { signal }),
+    ]);
+    if (signal.aborted) return;
+    const pick = (res) => (res.status === 'fulfilled' ? listOf(res.value) : null);
+    const [missions, reports, datasets, tasks] = settled.map(pick);
+    const model = buildQueue({ missions, reports, datasets, tasks }, user, Date.now());
+    queueSlot.replaceChildren(decisionQueuePanel(model));
+    pendingCount = model.groups.reduce((n, g) => n + (g.decidable || 0), 0);
+    renderStatus();
+  }
+
   async function load() {
     refreshBtn.disabled = true;
+    loadQueue();
     try {
       const [summary, tasksRes] = await Promise.all([
         api.get('dashboard/summary', { signal }),
@@ -366,6 +429,13 @@ export async function mount(root, ctx) {
       renderTiles(summary);
       renderFeed(tasks);
       asOfSlot.textContent = `Updated ${fmtClock(new Date().toISOString())}`;
+      lastUpdate = fmtClock(new Date().toISOString());
+      alertSummary = await api.get('alerts/summary', { signal }).catch((err) => {
+        if (err && err.name === 'AbortError') throw err;
+        return null;
+      });
+      if (signal.aborted) return;
+      renderStatus();
       const spatial = await renderSpatial(tasks);
       if (signal.aborted || !spatial) return;
       renderAssistant({ summary, tasks, ...spatial });
@@ -379,9 +449,13 @@ export async function mount(root, ctx) {
     }
   }
 
+  tickClock();
+  clockTimer = setInterval(tickClock, 1000);
+  renderStatus();
   load();
 
   return () => {
+    if (clockTimer) clearInterval(clockTimer);
     if (map) map.destroy();
     if (chart) chart.destroy();
     clear(root);

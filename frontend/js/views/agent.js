@@ -95,7 +95,8 @@ export async function mount(root, ctx) {
       }, { signal });
       if (signal.aborted) return;
       toast('Task created. The planner is drafting a plan.', { kind: 'success' });
-      go(`#/tasks/${encodeURIComponent(task.id)}`);
+      // POST /api/agent/tasks answers 202 with { task_id, state, events_url }, not the full task.
+      go(`#/tasks/${encodeURIComponent(task.task_id)}`);
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       showError(err.message);

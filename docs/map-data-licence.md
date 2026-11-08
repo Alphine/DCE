@@ -2,6 +2,13 @@
 
 Status: finding for review. This is not legal advice.
 
+**Update 2026-11-08: resolved by replacement.** `frontend/assets/world-map.svg` has been removed. The Situation and
+Command Center maps now use Leaflet 1.9.4 (BSD 2-Clause, vendored in `frontend/vendor/leaflet/`) with Natural Earth
+1:110m countries (public domain, `frontend/data/geo/countries-110m.geojson`). No online tiles are loaded. The
+About page lists both sources. The MIT notice belonged to the removed asset, so the current map data is not MIT.
+`frontend/js/components/world-map.js` still exists for its legend and point helpers; its SVG loader is no longer
+used and should be removed in a later cleanup.
+
 ## What was checked
 
 - Derived asset: `frontend/assets/world-map.svg` (about 1.2 MB, 435 country `<path>` elements, class `world-countries`).

@@ -57,6 +57,19 @@ class Settings(BaseSettings):
     trusted_proxies: str = ""
     seed_password: SecretStr | None = None
 
+    # Outgoing email for password reset (SMTP with STARTTLS, for example Gmail with an app password).
+    smtp_host: str = ""
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_user: str = ""
+    smtp_password: SecretStr = SecretStr("")
+    smtp_from: str = ""
+    # Base of the links in reset emails, without a trailing slash, for example https://commander.basyid.dev
+    public_base_url: str = "http://localhost:8000"
+
+    @property
+    def smtp_enabled(self) -> bool:
+        return bool(self.smtp_host and self.smtp_user and self.smtp_password.get_secret_value())
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

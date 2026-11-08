@@ -1,0 +1,183 @@
+/* Command layer: severity system, status bar, hero layout, and phone navigation.
+   Loaded after app.css, so these rules win where they overlap. Owner: command redesign. */
+
+/* ---------- Severity system (one scale for every screen) ---------- */
+:root {
+  --sev-low: #3ee39a;
+  --sev-medium: #ffb020;
+  --sev-high: #ff8a00;
+  --sev-critical: #ff4d62;
+  --sev-low-soft: rgba(62, 227, 154, 0.14);
+  --sev-medium-soft: rgba(255, 176, 32, 0.14);
+  --sev-high-soft: rgba(255, 138, 0, 0.16);
+  --sev-critical-soft: rgba(255, 77, 98, 0.18);
+}
+
+.sev-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.sev-chip::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.sev-low { color: var(--sev-low); background: var(--sev-low-soft); }
+.sev-medium { color: var(--sev-medium); background: var(--sev-medium-soft); }
+.sev-high { color: var(--sev-high); background: var(--sev-high-soft); }
+.sev-critical { color: var(--sev-critical); background: var(--sev-critical-soft); }
+.sev-critical::before { animation: sev-pulse 1.6s ease-in-out infinite; }
+
+@keyframes sev-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ---------- Status bar ---------- */
+.cc-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.cc-stat {
+  flex: 1 1 170px;
+  min-width: 150px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--glass);
+}
+.cc-stat--low { border-left-color: var(--sev-low); }
+.cc-stat--medium { border-left-color: var(--sev-medium); }
+.cc-stat--high { border-left-color: var(--sev-high); }
+.cc-stat--critical { border-left-color: var(--sev-critical); }
+.cc-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.cc-stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.cc-stat-note { font-size: 12px; color: var(--text-3); }
+.cc-clock-wrap {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--glass);
+}
+.cc-clock {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cyan);
+}
+
+/* ---------- Hero layout: queue left, map centre, assistant and tasks right ---------- */
+.cc-hero {
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 2.2fr) minmax(300px, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.cc-hero .cc-centre { position: static; }
+.cc-hero .panel--map { min-height: 0; }
+.cc-hero .wm-host { height: auto; min-height: 0; }
+.cc-hero .wm-host .lm-map,
+.cc-hero .lm-map {
+  height: clamp(460px, 64vh, 640px) !important;
+  min-height: 460px;
+}
+.cc-hero .lm { margin-bottom: 0; }
+@media (max-width: 1100px) {
+  .cc-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cc-hero .cc-centre { grid-column: 1 / -1; order: -1; position: static; }
+}
+@media (max-width: 720px) {
+  .cc-hero { grid-template-columns: minmax(0, 1fr); }
+  .cc-hero .cc-centre { order: -1; }
+  .cc-hero .wm-host .lm-map,
+  .cc-hero .lm-map { height: 320px !important; min-height: 320px; }
+}
+
+/* ---------- Phone navigation: five primary destinations at the bottom ---------- */
+.bottom-nav { display: none; }
+@media (max-width: 720px) {
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(10, 15, 29, 0.96);
+    border-top: 1px solid var(--line-strong);
+    backdrop-filter: blur(8px);
+  }
+  .bottom-nav .bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-height: 52px;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    color: var(--text-3);
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .bottom-nav .bottom-item svg { width: 22px; height: 22px; }
+  .bottom-nav .bottom-item[aria-current="page"] { color: var(--amber); background: var(--amber-soft); }
+  .bottom-nav .bottom-item:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  main#view { padding-bottom: 92px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sev-critical::before { animation: none; }
+}
+
+/* ---------- Readable task feed and a tighter header ---------- */
+.feed-row {
+  grid-template-columns: minmax(0, 1fr);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.feed-row .feed-title { font-size: 14px; }
+.feed-row .feed-meta { font-size: 12px; }
+
+.topbar-main { min-height: 56px; padding: 6px 0; gap: 10px 16px; }
+.nav--tools { padding: 5px 0 6px; gap: 5px; }
+.nav-tool { font-size: 12px; padding: 4px 9px; }
+.nav-tool .icon { width: 14px; height: 14px; }
+.nav-item { padding-top: 6px; padding-bottom: 6px; }
+@media (max-width: 1100px) {
+  .brand-sub { display: none; }
+}
