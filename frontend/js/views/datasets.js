@@ -47,7 +47,8 @@ export async function mount(root, ctx) {
 
   function renderList(datasets) {
     if (!datasets.length) {
-      listSlot.replaceChildren(emptyState('No datasets yet', hasRole(user, 'Analyst') ? 'Upload a CSV above to start.' : 'An analyst needs to upload one.'));
+      listSlot.replaceChildren(emptyState('No datasets yet', hasRole(user, 'Analyst') ? 'Upload a CSV above to start.' : 'An analyst needs to upload one.',
+        { icon: 'datasets', actions: [{ label: 'Open Reports', href: '#/reports' }] }));
       return;
     }
     const sorted = [...datasets].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));

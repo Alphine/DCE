@@ -65,7 +65,8 @@ export async function mount(root, ctx) {
   function renderList(missions) {
     if (!missions.length) {
       listSlot.replaceChildren(emptyState('No missions yet',
-        hasRole(user, 'Analyst') ? 'Propose one from an approved dataset or a verified report above.' : 'Approved missions will appear here.'));
+        hasRole(user, 'Analyst') ? 'Propose one from an approved dataset or a verified report above.' : 'Approved missions will appear here.',
+        { icon: 'missions', actions: [{ label: 'Open Datasets', href: '#/datasets' }, { label: 'Open Reports', href: '#/reports' }] }));
       return;
     }
     const sorted = [...missions].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));

@@ -93,7 +93,8 @@ export async function mount(root, ctx) {
       listSlot.replaceChildren(emptyState('No runs yet',
         hasRole(user, 'Analyst')
           ? 'Start a scenario above. It will appear here with its inputs and output hash.'
-          : 'Scenario runs created by an Analyst will appear here.'));
+          : 'Scenario runs created by an Analyst will appear here.',
+        { icon: 'simulation', actions: [{ label: 'Open Planning', href: '#/planning' }] }));
       return;
     }
     listSlot.replaceChildren(h('div', { class: 'table-wrap' },

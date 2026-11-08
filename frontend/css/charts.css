@@ -1,0 +1,125 @@
+/* Mini charts (frontend/js/components/mini-charts.js and the views that use them).
+   Colors come from tokens defined in command.css. The var() fallbacks here only apply if those tokens are missing.
+   Severity tones use the classes sev-low, sev-medium, sev-high and sev-critical. */
+
+/* Sparkline */
+.mc-spark {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.mc-spark-line {
+  stroke: var(--chart-line, #7aa2ff);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.mc-spark-line--reports { stroke: var(--chart-line, #7aa2ff); }
+.mc-spark-line--verified { stroke: var(--chart-verified, #3ddc97); }
+.mc-spark-dot { fill: var(--chart-line, #7aa2ff); }
+
+.mc-series + .mc-series { margin-top: 0.75rem; }
+.mc-series-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+.mc-series-range { margin: 0.5rem 0 0; }
+.mc-ts-stack { min-width: 0; }
+
+/* Bar rows */
+.mc-bar-row {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 10rem) minmax(3rem, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+.mc-bar-label { overflow-wrap: anywhere; color: var(--text-2, inherit); }
+.mc-bar-track {
+  position: relative;
+  display: block;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--chart-track, rgba(160, 180, 220, 0.14));
+  overflow: hidden;
+}
+.mc-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  border-radius: inherit;
+  background: var(--chart-fill, #7aa2ff);
+  transition: width 0.4s ease;
+}
+.mc-bar-fill.sev-low { background: var(--sev-low, #3ddc97); }
+.mc-bar-fill.sev-medium { background: var(--sev-medium, #ffb020); }
+.mc-bar-fill.sev-high { background: var(--sev-high, #ff4d62); }
+.mc-bar-fill.sev-critical { background: var(--sev-critical, #c4123a); }
+.mc-bar-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Gauge */
+.mc-gauge { display: inline-flex; align-items: center; gap: 0.5rem; }
+.mc-gauge-svg { display: block; width: 4.5rem; height: 4.5rem; flex: none; }
+.mc-gauge-track { stroke: var(--chart-track, rgba(160, 180, 220, 0.18)); stroke-width: 10; }
+.mc-gauge-arc {
+  stroke: var(--chart-fill, #7aa2ff);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+.mc-gauge-arc.sev-low { stroke: var(--sev-low, #3ddc97); }
+.mc-gauge-arc.sev-medium { stroke: var(--sev-medium, #ffb020); }
+.mc-gauge-arc.sev-high { stroke: var(--sev-high, #ff4d62); }
+.mc-gauge-arc.sev-critical { stroke: var(--sev-critical, #c4123a); }
+.mc-gauge-text { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Collapsible table fallback */
+.mc-table { margin-top: 0.5rem; }
+.mc-table > summary { cursor: pointer; font-size: 0.9rem; }
+
+/* Alerts: severity bars above the list */
+.mc-sev-bars { margin-bottom: 0.75rem; max-width: 36rem; }
+
+/* Logistics: supply summary */
+.mc-summary { display: grid; gap: 0.75rem; margin-bottom: 0.75rem; }
+.mc-summary-gauge { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.mc-summary-gauge > p { margin: 0; }
+.mc-summary-bars { max-width: 36rem; }
+
+/* Resources: district coverage cards */
+.mc-cov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.mc-district {
+  border: 1px solid var(--line, rgba(160, 180, 220, 0.18));
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  min-width: 0;
+}
+.mc-district-name { font-size: 1rem; margin: 0 0 0.5rem; overflow-wrap: anywhere; }
+.mc-district-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.mc-district-head > p { margin: 0; }
+
+@media (max-width: 480px) {
+  .mc-bar-row { grid-template-columns: 1fr auto; }
+  .mc-bar-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Reduced motion: no transitions on bars or gauge arcs. */
+@media (prefers-reduced-motion: reduce) {
+  .mc-bar-fill,
+  .mc-gauge-arc {
+    transition: none;
+  }
+}

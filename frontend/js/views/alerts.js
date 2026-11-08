@@ -3,6 +3,7 @@ import { h, pageHead, panel, emptyState, spinner, errorState, listOf, fmtDate } 
 import { badge } from '../components/badges.js';
 import { COUNTRIES } from '../components/countries.js';
 import { timeseriesChart } from '../components/timeseries.js';
+import { barRow } from '../components/mini-charts.js';
 import { toast } from '../components/toast.js';
 import { hasRole } from '../session.js';
 
@@ -39,6 +40,7 @@ export async function mount(root, ctx) {
   hoursSelect.addEventListener('change', () => { state.hours = Number(hoursSelect.value); loadSeries(); });
 
   const summarySlot = h('div', { 'aria-live': 'polite' }, spinner('Counting alerts…'));
+  const sevSlot = h('div', { class: 'mc-sev', 'aria-live': 'polite' });
   const listSlot = h('div', { 'aria-live': 'polite' }, spinner('Loading alerts…'));
   const seriesSlot = h('div', { 'aria-live': 'polite' }, spinner('Loading reports…'));
 
@@ -57,7 +59,7 @@ export async function mount(root, ctx) {
         severitySelect,
         h('label', { class: 'small', for: 'al-open' }, openBox, ' Unacknowledged only'),
       ],
-    }, listSlot),
+    }, sevSlot, listSlot),
     panel({
       title: 'Report intake over time',
       sub: 'Reports by hour, UTC. Viewers see verified reports only.',
@@ -79,9 +81,11 @@ export async function mount(root, ctx) {
       const s = await api.get('alerts/summary', { signal, query: { country: countryParam() } });
       if (signal.aborted) return;
       summarySlot.replaceChildren(summary(s));
+      sevSlot.replaceChildren(severityBars(s.by_severity || {}));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       summarySlot.replaceChildren(errorState(err, loadSummary));
+      sevSlot.replaceChildren();
     }
   }
 
@@ -99,7 +103,8 @@ export async function mount(root, ctx) {
       if (signal.aborted) return;
       listSlot.replaceChildren(rows.length
         ? table(rows)
-        : emptyState('No alerts here', state.openOnly ? 'Nothing is waiting for acknowledgement.' : 'No alerts match these filters.'));
+        : emptyState('No alerts here', state.openOnly ? 'Nothing is waiting for acknowledgement.' : 'No alerts match these filters.',
+          { icon: 'alerts', actions: [{ label: 'Open Situation', href: '#/situation' }] }));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       listSlot.replaceChildren(errorState(err, loadList));
@@ -134,6 +139,20 @@ export async function mount(root, ctx) {
           h('strong', { class: 'num' }, String(byKind[kind] ?? 0))))),
       h('p', { class: 'small muted' },
         `Waiting for a decision: ${waiting.reports_observation ?? 0} reports to review, ${waiting.missions_proposed ?? 0} missions to decide.`));
+  }
+
+  // Counts by severity as small bars above the list. Bars are scaled to the largest count.
+  function severityBars(bySeverity) {
+    const values = SEVERITIES.map((sev) => bySeverity[sev] ?? 0);
+    const top = Math.max(0, ...values.map((v) => Number(v) || 0));
+    return h('div', { class: 'mc-sev-bars', role: 'group', 'aria-label': 'Needs attention by severity' },
+      h('p', { class: 'small muted' }, 'Needs attention by severity, for the chosen country'),
+      SEVERITIES.map((sev, i) => barRow({
+        label: sev.charAt(0) + sev.slice(1).toLowerCase(),
+        value: values[i],
+        max: top,
+        tone: sev,
+      })));
   }
 
   function table(rows) {

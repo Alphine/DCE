@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { h, fmtDate, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox } from '../dom.js';
 import { hasRole } from '../session.js';
+import { barRow, gauge, num } from '../components/mini-charts.js';
 
 // Logistics registry (SDD 15.1, 14.2): shelters, supply stock, teams and vehicles. Viewers read the lists.
 // Analysts add records and change a shelter, team or vehicle status. The Resource Planner compares these with need.
@@ -186,11 +187,13 @@ export async function mount(root, ctx) {
     const sub = rows.length >= 500 ? 'Newest first. Showing the first 500 rows.' : 'Newest first.';
     if (!rows.length) {
       return panel({ title: kind.label, sub, style: '--i:1' },
-        emptyState(`No ${kind.label.toLowerCase()} yet`, canWrite ? 'Add one with the form below.' : 'An Analyst adds records here.'));
+        emptyState(`No ${kind.label.toLowerCase()} yet`, canWrite ? 'Add one with the form below.' : 'An Analyst adds records here.',
+          { icon: 'logistics', actions: [{ label: 'Open Situation', href: '#/situation' }] }));
     }
     const head = kind.columns.map((c) => h('th', { scope: 'col', class: c.num ? 'num' : null }, c.label));
     if (canWrite && kind.statuses) head.push(h('th', { scope: 'col' }, 'Change status'));
     return panel({ title: kind.label, sub, style: '--i:1' },
+      kind === KINDS.supplies ? supplySummary(rows) : null,
       h('div', { class: 'table-wrap' },
         h('table', { class: 'table' },
           h('caption', { class: 'sr-only' }, kind.label),
@@ -198,6 +201,27 @@ export async function mount(root, ctx) {
           h('tbody', null, rows.map((row) => h('tr', null,
             kind.columns.map((c) => h('td', { class: c.num ? 'num mono' : 'wrap-any' }, cellText(c.get(row)))),
             canWrite && kind.statuses ? h('td', null, statusEditor(kind, row)) : null))))));
+  }
+
+  // Stock per standard item as bars, and how many of the standard items have any stock recorded (gauge).
+  // The rows here carry no need figure, so bars are scaled to the largest stock. Need is compared on the Resources screen.
+  function supplySummary(rows) {
+    const totals = SUPPLY_ITEMS.map((item) => rows.reduce((sum, r) => (
+      r.item === item ? sum + (num(r.quantity) || 0) : sum), 0));
+    const top = Math.max(0, ...totals);
+    const covered = totals.filter((t) => t > 0).length;
+    const pct = (covered / SUPPLY_ITEMS.length) * 100;
+    return h('div', { class: 'mc-summary' },
+      h('div', { class: 'mc-summary-gauge' },
+        gauge(pct, { label: 'Standard items with stock recorded', tone: covered === SUPPLY_ITEMS.length ? 'LOW' : 'HIGH' }),
+        h('p', { class: 'small' },
+          `${covered} of ${SUPPLY_ITEMS.length} standard items have stock in these rows. Need is not shown here.`)),
+      h('div', { class: 'mc-summary-bars', role: 'group', 'aria-label': 'Stock on hand by item' },
+        SUPPLY_ITEMS.map((item, i) => barRow({
+          label: item.replace(/_/g, ' '),
+          value: totals[i],
+          max: top,
+        }))));
   }
 
   // Changes a status with PATCH. Only shelters, teams and vehicles have one.

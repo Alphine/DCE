@@ -93,7 +93,8 @@ export async function mount(root, ctx) {
       if (!datasets.length) {
         pick.replaceChildren(h('option', { value: '' }, 'No approved CSV datasets yet'));
         resultSlot.replaceChildren(emptyState('No approved datasets',
-          'Upload a CSV on the Datasets screen and get it approved. Then it can be analysed here.'));
+          'Upload a CSV on the Datasets screen and get it approved. Then it can be analysed here.',
+          { icon: 'datasets', actions: [{ label: 'Open Datasets', href: '#/datasets' }] }));
         return;
       }
       pick.replaceChildren(h('option', { value: '' }, 'Choose a dataset'),

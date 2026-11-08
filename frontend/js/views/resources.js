@@ -1,6 +1,7 @@
 import { api } from '../api.js';
 import { h, fmtDate, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox } from '../dom.js';
 import { dataClassBadge } from '../components/badges.js';
+import { barRow, coveragePercent, gauge, tableFallback } from '../components/mini-charts.js';
 import { hasRole } from '../session.js';
 
 // Resource Planner. An illustrative estimate from affected rows and the flood rule pack ratios (SDD 19.x).
@@ -221,33 +222,78 @@ export function coverageView(plan) {
     panel({ title: 'Coverage', sub: 'Need against stock on hand and matching capacity, by district.',
       actions: [dataClassBadge('SIMULATED_FACT')], style: '--i:4' },
     alertBox('warn', 'Need is simulated and illustrative. Stock and capacity are as recorded in the logistics registry.'),
-    h('div', { class: 'table-wrap' },
-      h('table', { class: 'table' },
-        h('caption', { class: 'sr-only' }, 'Coverage by district. Each item shows need / stock.'),
-        h('thead', null, h('tr', null,
-          h('th', { scope: 'col' }, 'District'),
-          h('th', { scope: 'col', class: 'num' }, 'People needed'),
-          h('th', { scope: 'col', class: 'num' }, 'Capacity (people)'),
-          h('th', { scope: 'col', class: 'num' }, 'People short'),
-          h('th', { scope: 'col', class: 'num' }, 'Water packs'),
-          h('th', { scope: 'col', class: 'num' }, 'Food packs'),
-          h('th', { scope: 'col', class: 'num' }, 'Shelter kits'),
-          h('th', { scope: 'col' }, 'Teams (rescue / medical / transport)'))),
-        h('tbody', null, rows.map((row) => h('tr', null,
-          h('td', { class: 'wrap-any' }, row.district),
-          h('td', { class: 'num mono' }, formatValue(row.need.people_estimated)),
-          h('td', { class: 'num mono' }, formatValue(row.capacity.total_people)),
-          h('td', { class: 'num mono' }, formatValue(row.people_gap)),
-          h('td', { class: 'num mono' }, needOverStock(row.need.water_packs, row.stock.water_packs)),
-          h('td', { class: 'num mono' }, needOverStock(row.need.food_packs, row.stock.food_packs)),
-          h('td', { class: 'num mono' }, needOverStock(row.need.shelter_kits, row.stock.shelter_kits)),
-          h('td', { class: 'wrap-any' }, `${row.teams_available.RESCUE} / ${row.teams_available.MEDICAL} / ${row.teams_available.TRANSPORT}`)))))),
-    ),
+    h('div', { class: 'mc-cov-grid' }, rows.map(districtCard)),
+    tableFallback({
+      summary: 'Show coverage as table',
+      caption: 'Coverage by district. Each item shows need / stock.',
+      head: [
+        { label: 'District' },
+        { label: 'People needed', num: true },
+        { label: 'Capacity (people)', num: true },
+        { label: 'People short', num: true },
+        { label: 'Water packs', num: true },
+        { label: 'Food packs', num: true },
+        { label: 'Shelter kits', num: true },
+        { label: 'Teams (rescue / medical / transport)' },
+      ],
+      rows: rows.map((row) => {
+        const need = row.need || {};
+        const stock = row.stock || {};
+        const capacity = row.capacity || {};
+        const teams = row.teams_available || {};
+        return [
+          row.district,
+          formatValue(need.people_estimated),
+          formatValue(capacity.total_people),
+          formatValue(row.people_gap),
+          needOverStock(need.water_packs, stock.water_packs),
+          needOverStock(need.food_packs, stock.food_packs),
+          needOverStock(need.shelter_kits, stock.shelter_kits),
+          `${formatValue(teams.RESCUE)} / ${formatValue(teams.MEDICAL)} / ${formatValue(teams.TRANSPORT)}`,
+        ];
+      }),
+    })),
     panel({ title: 'Gaps', sub: gaps.length ? `${gaps.length} item(s) below need` : 'No gaps', style: '--i:5' },
       gaps.length
         ? h('ul', { class: 'assumption-list' }, gaps.map((gap) => h('li', null,
           `${gap.district}: ${labelFromKey(gap.item)} short by ${formatValue(gap.shortfall)} (need ${formatValue(gap.need)}, stock ${formatValue(gap.stock)})`)))
         : h('p', { class: 'muted' }, 'Stock meets the need in every allocated district.')));
+}
+
+// Tone for a coverage percent: under 100 is a gap (HIGH), 100 or more is covered (LOW), and no data has no tone.
+function coverageTone(pct) {
+  if (Number.isNaN(pct)) return undefined;
+  return pct < 100 ? 'HIGH' : 'LOW';
+}
+
+// One district: a gauge for people capacity against need, then stock against need for each supply item.
+function districtCard(row) {
+  const need = row.need || {};
+  const stock = row.stock || {};
+  const capacity = row.capacity || {};
+  const teams = row.teams_available || {};
+  const peoplePct = coveragePercent(capacity.total_people, need.people_estimated);
+  const items = [
+    ['Water packs', stock.water_packs, need.water_packs],
+    ['Food packs', stock.food_packs, need.food_packs],
+    ['Shelter kits', stock.shelter_kits, need.shelter_kits],
+  ];
+  return h('article', { class: 'mc-district' },
+    h('h3', { class: 'mc-district-name' }, row.district || '(no district)'),
+    h('div', { class: 'mc-district-head' },
+      gauge(peoplePct, { label: `${row.district || 'District'}: capacity against people needed`, tone: coverageTone(peoplePct) }),
+      h('p', { class: 'small' },
+        `${formatValue(capacity.total_people)} capacity for ${formatValue(need.people_estimated)} people needed. ${formatValue(row.people_gap)} short.`)),
+    h('div', { class: 'mc-district-bars' },
+      items.map(([label, have, want]) => barRow({
+        label: `${label} (stock / need)`,
+        value: have,
+        max: want,
+        showMax: true,
+        tone: coverageTone(coveragePercent(have, want)),
+      }))),
+    h('p', { class: 'small muted' },
+      `Teams available: rescue ${formatValue(teams.RESCUE)}, medical ${formatValue(teams.MEDICAL)}, transport ${formatValue(teams.TRANSPORT)}.`));
 }
 
 function assumptionsView(assumptions) {

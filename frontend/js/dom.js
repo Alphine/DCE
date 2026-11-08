@@ -1,5 +1,7 @@
 // DOM helpers. Every piece of server data is inserted as a text node, never parsed as HTML.
 
+import { richEmpty } from './components/empty-state.js';
+
 export function h(tag, props, ...children) {
   const node = document.createElement(tag);
   if (props !== null && typeof props === 'object' && !Array.isArray(props) && !(props instanceof Node)) {
@@ -92,7 +94,11 @@ export function spinner(label = 'Loading…') {
     h('span', null, label));
 }
 
-export function emptyState(title, detail) {
+// options (optional): {icon, actions}. Without either, the markup is the original plain empty state.
+export function emptyState(title, detail, options) {
+  if (options && (options.icon || options.actions)) {
+    return richEmpty({ title, detail, icon: options.icon, actions: options.actions });
+  }
   return h('div', { class: 'state-msg empty' },
     h('strong', null, title),
     detail ? h('span', null, detail) : null);

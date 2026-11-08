@@ -82,6 +82,15 @@ const main = $('view');
 const topbar = $('topbar');
 const nav = $('nav');
 const toolsNav = $('nav-tools');
+const bottomNav = $('bottom-nav');
+// Phone navigation: the five destinations used most in the field.
+const BOTTOM_NAV = [
+  PRIMARY_NAV.find((i) => i.route === 'command'),
+  PRIMARY_NAV.find((i) => i.route === 'situation'),
+  TOOLS_NAV.find((i) => i.route === 'alerts'),
+  PRIMARY_NAV.find((i) => i.route === 'missions'),
+  PRIMARY_NAV.find((i) => i.route === 'reports'),
+].filter(Boolean);
 const roleChip = $('role-chip');
 const usernameEl = $('username');
 const userEmailEl = $('user-email');
@@ -127,6 +136,7 @@ function renderChrome(routeName) {
   userEmailEl.classList.toggle('is-empty', !state.user.email);
   nav.replaceChildren(...navLinks(PRIMARY_NAV, routeName, 'nav-item'));
   toolsNav.replaceChildren(...navLinks(TOOLS_NAV, routeName, 'nav-tool'));
+  bottomNav.replaceChildren(...navLinks(BOTTOM_NAV, routeName, 'bottom-item'));
 }
 
 // Connection state. Offline when the browser is offline or the last sync request could not reach the server.

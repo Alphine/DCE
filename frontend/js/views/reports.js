@@ -103,7 +103,8 @@ export async function mount(root, ctx) {
   function renderList(reports) {
     if (!reports.length) {
       listSlot.replaceChildren(emptyState('No reports yet',
-        hasRole(user, 'Analyst') ? 'Submit a field report above.' : 'Verified observations will appear here.'));
+        hasRole(user, 'Analyst') ? 'Submit a field report above.' : 'Verified observations will appear here.',
+        { icon: 'reports', actions: [{ label: 'Open Situation', href: '#/situation' }] }));
       return;
     }
     const sorted = [...reports].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
