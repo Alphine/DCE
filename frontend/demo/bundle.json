@@ -1,0 +1,8632 @@
+{
+ "recorded_from": "local review server",
+ "keys": {
+  "GET /api/auth/me": {
+   "id": "7c7dc837-c28c-40f3-8a85-a185056dea5a",
+   "username": "Admin (demo)",
+   "role": "Admin",
+   "email": null
+  },
+  "GET /api/dashboard/summary": {
+   "datasets": {
+    "total": 4,
+    "approved": 4
+   },
+   "tasks": {
+    "by_state": {
+     "AWAITING_APPROVAL": 1
+    }
+   },
+   "artifacts": 0,
+   "sandbox": {
+    "runner": "local",
+    "max_concurrent": 1,
+    "running": 0
+   },
+   "inference": {
+    "mode": "mock",
+    "model": "mock-planner"
+   },
+   "quota": {
+    "used_today": 0,
+    "limit": 20
+   },
+   "env": "development"
+  },
+  "GET /api/datasets": [
+   {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta",
+    "filename": "flood_incidents_sample.csv",
+    "kind": "CSV",
+    "size_bytes": 2583,
+    "sha256": "d669165d6ace6106daaed6765e1bf6d875b1facc79f1b9901ca82ef8f24d89d1",
+    "status": "APPROVED",
+    "country_code": "ID",
+    "owner": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "profile": {
+     "columns": [
+      {
+       "dtype": "string",
+       "name": "id",
+       "nulls": 0
+      },
+      {
+       "dtype": "string",
+       "name": "district",
+       "nulls": 0
+      },
+      {
+       "dtype": "string",
+       "name": "reported_at",
+       "nulls": 0
+      },
+      {
+       "dtype": "integer",
+       "name": "water_depth_cm",
+       "nulls": 3
+      },
+      {
+       "dtype": "integer",
+       "name": "road_blocked",
+       "nulls": 0
+      },
+      {
+       "dtype": "integer",
+       "name": "population_affected",
+       "nulls": 7
+      },
+      {
+       "dtype": "float",
+       "name": "lat",
+       "nulls": 2
+      },
+      {
+       "dtype": "float",
+       "name": "lon",
+       "nulls": 2
+      }
+     ],
+     "preview": [
+      {
+       "district": "Kemang",
+       "id": "INC-001",
+       "lat": -6.2607,
+       "lon": 106.8133,
+       "population_affected": 380,
+       "reported_at": "2026-01-14T06:10:00Z",
+       "road_blocked": 1,
+       "water_depth_cm": 42
+      },
+      {
+       "district": "Kemang",
+       "id": "INC-002",
+       "lat": -6.2615,
+       "lon": 106.8129,
+       "population_affected": 520,
+       "reported_at": "2026-01-14T07:25:00Z",
+       "road_blocked": 1,
+       "water_depth_cm": 58
+      },
+      {
+       "district": "Cawang",
+       "id": "INC-003",
+       "lat": -6.2442,
+       "lon": 106.8453,
+       "population_affected": 210,
+       "reported_at": "2026-01-14T08:02:00Z",
+       "road_blocked": 0,
+       "water_depth_cm": 35
+      },
+      {
+       "district": "Cawang",
+       "id": "INC-004",
+       "lat": -6.2451,
+       "lon": 106.8462,
+       "population_affected": null,
+       "reported_at": "2026-01-14T09:40:00Z",
+       "road_blocked": 1,
+       "water_depth_cm": 71
+      },
+      {
+       "district": "Kampung Melayu",
+       "id": "INC-005",
+       "lat": -6.2226,
+       "lon": 106.8556,
+       "population_affected": 1450,
+       "reported_at": "2026-01-14T10:15:00Z",
+       "road_blocked": 1,
+       "water_depth_cm": 88
+      }
+     ],
+     "rows": 40
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "8f459cb1-01ee-4c5c-806b-baa254ed7edf",
+    "name": "Wildfire watch",
+    "filename": "wildfire_sample.csv",
+    "kind": "CSV",
+    "size_bytes": 249,
+    "sha256": "641934f6e597991535ef6b3ac3e2d14fcc7f1db906ea20d85e053899dd082ec5",
+    "status": "APPROVED",
+    "country_code": "ID",
+    "owner": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "profile": {
+     "columns": [
+      {
+       "dtype": "string",
+       "name": "district",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "distance_km",
+       "nulls": 1
+      },
+      {
+       "dtype": "integer",
+       "name": "wind_kmh",
+       "nulls": 1
+      }
+     ],
+     "preview": [
+      {
+       "distance_km": 1.5,
+       "district": "Attica",
+       "wind_kmh": 32
+      },
+      {
+       "distance_km": 4.2,
+       "district": "Andalusia",
+       "wind_kmh": 18
+      },
+      {
+       "distance_km": 7.8,
+       "district": "Kabylie",
+       "wind_kmh": 25
+      },
+      {
+       "distance_km": 12.4,
+       "district": "Dalmatia",
+       "wind_kmh": 40
+      },
+      {
+       "distance_km": 2.0,
+       "district": "Okanagan",
+       "wind_kmh": 12
+      }
+     ],
+     "rows": 12
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+    "name": "Earthquake catalogue",
+    "filename": "earthquake_sample.csv",
+    "kind": "CSV",
+    "size_bytes": 694,
+    "sha256": "3ab5f0beba0172c321385348f6e7f99f6f21f754ad0d24ef84da078cec45a46c",
+    "status": "APPROVED",
+    "country_code": "ID",
+    "owner": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "profile": {
+     "columns": [
+      {
+       "dtype": "string",
+       "name": "area",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "magnitude",
+       "nulls": 1
+      },
+      {
+       "dtype": "integer",
+       "name": "depth_km",
+       "nulls": 1
+      },
+      {
+       "dtype": "integer",
+       "name": "coast_distance_km",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "lat",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "lon",
+       "nulls": 0
+      }
+     ],
+     "preview": [
+      {
+       "area": "Pesisir Padang",
+       "coast_distance_km": 45,
+       "depth_km": 30,
+       "lat": -0.9471,
+       "lon": 100.4172,
+       "magnitude": 7.2
+      },
+      {
+       "area": "Pesisir Bengkulu",
+       "coast_distance_km": 38,
+       "depth_km": 25,
+       "lat": -3.8004,
+       "lon": 102.2655,
+       "magnitude": 6.8
+      },
+      {
+       "area": "Pesisir Pangandaran",
+       "coast_distance_km": 22,
+       "depth_km": 40,
+       "lat": -7.6933,
+       "lon": 108.6503,
+       "magnitude": 6.6
+      },
+      {
+       "area": "Pesisir Mentawai",
+       "coast_distance_km": 8,
+       "depth_km": 20,
+       "lat": -2.06,
+       "lon": 99.51,
+       "magnitude": 5.9
+      },
+      {
+       "area": "Kota Palu",
+       "coast_distance_km": 12,
+       "depth_km": 15,
+       "lat": -0.8917,
+       "lon": 119.8707,
+       "magnitude": 6.1
+      }
+     ],
+     "rows": 15
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "6527c86d-4bc3-41ae-9071-aef3fd7008da",
+    "name": "Logistics sites",
+    "filename": "logistics_sample.csv",
+    "kind": "CSV",
+    "size_bytes": 1402,
+    "sha256": "0e341442f0580baa99552feee22d86428a14e0aa0c1dbd181ea4e90fbdfacf4f",
+    "status": "APPROVED",
+    "country_code": "ID",
+    "owner": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "profile": {
+     "columns": [
+      {
+       "dtype": "string",
+       "name": "name",
+       "nulls": 0
+      },
+      {
+       "dtype": "string",
+       "name": "facility_type",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "latitude",
+       "nulls": 0
+      },
+      {
+       "dtype": "float",
+       "name": "longitude",
+       "nulls": 0
+      },
+      {
+       "dtype": "integer",
+       "name": "capacity",
+       "nulls": 3
+      },
+      {
+       "dtype": "string",
+       "name": "status",
+       "nulls": 0
+      }
+     ],
+     "preview": [
+      {
+       "capacity": 5000,
+       "facility_type": "DEPOT",
+       "latitude": -6.2088,
+       "longitude": 106.8456,
+       "name": "Depot Jakarta Pusat",
+       "status": "ACTIVE"
+      },
+      {
+       "capacity": 3200,
+       "facility_type": "DEPOT",
+       "latitude": -6.9175,
+       "longitude": 107.6191,
+       "name": "Depot Bandung",
+       "status": "ACTIVE"
+      },
+      {
+       "capacity": 4100,
+       "facility_type": "WAREHOUSE",
+       "latitude": -7.2575,
+       "longitude": 112.7521,
+       "name": "Gudang Surabaya",
+       "status": "ACTIVE"
+      },
+      {
+       "capacity": 1800,
+       "facility_type": "WAREHOUSE",
+       "latitude": -7.9666,
+       "longitude": 112.6326,
+       "name": "Gudang Malang",
+       "status": "STANDBY"
+      },
+      {
+       "capacity": 900,
+       "facility_type": "SHELTER",
+       "latitude": -6.2615,
+       "longitude": 106.8106,
+       "name": "Shelter Kemang",
+       "status": "FULL"
+      }
+     ],
+     "rows": 26
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   }
+  ],
+  "GET /api/datasets/88347c41-885a-4e10-ac83-1be18d158361": {
+   "id": "88347c41-885a-4e10-ac83-1be18d158361",
+   "name": "Flood incidents Jakarta",
+   "filename": "flood_incidents_sample.csv",
+   "kind": "CSV",
+   "size_bytes": 2583,
+   "sha256": "d669165d6ace6106daaed6765e1bf6d875b1facc79f1b9901ca82ef8f24d89d1",
+   "status": "APPROVED",
+   "country_code": "ID",
+   "owner": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "profile": {
+    "columns": [
+     {
+      "dtype": "string",
+      "name": "id",
+      "nulls": 0
+     },
+     {
+      "dtype": "string",
+      "name": "district",
+      "nulls": 0
+     },
+     {
+      "dtype": "string",
+      "name": "reported_at",
+      "nulls": 0
+     },
+     {
+      "dtype": "integer",
+      "name": "water_depth_cm",
+      "nulls": 3
+     },
+     {
+      "dtype": "integer",
+      "name": "road_blocked",
+      "nulls": 0
+     },
+     {
+      "dtype": "integer",
+      "name": "population_affected",
+      "nulls": 7
+     },
+     {
+      "dtype": "float",
+      "name": "lat",
+      "nulls": 2
+     },
+     {
+      "dtype": "float",
+      "name": "lon",
+      "nulls": 2
+     }
+    ],
+    "preview": [
+     {
+      "district": "Kemang",
+      "id": "INC-001",
+      "lat": -6.2607,
+      "lon": 106.8133,
+      "population_affected": 380,
+      "reported_at": "2026-01-14T06:10:00Z",
+      "road_blocked": 1,
+      "water_depth_cm": 42
+     },
+     {
+      "district": "Kemang",
+      "id": "INC-002",
+      "lat": -6.2615,
+      "lon": 106.8129,
+      "population_affected": 520,
+      "reported_at": "2026-01-14T07:25:00Z",
+      "road_blocked": 1,
+      "water_depth_cm": 58
+     },
+     {
+      "district": "Cawang",
+      "id": "INC-003",
+      "lat": -6.2442,
+      "lon": 106.8453,
+      "population_affected": 210,
+      "reported_at": "2026-01-14T08:02:00Z",
+      "road_blocked": 0,
+      "water_depth_cm": 35
+     },
+     {
+      "district": "Cawang",
+      "id": "INC-004",
+      "lat": -6.2451,
+      "lon": 106.8462,
+      "population_affected": null,
+      "reported_at": "2026-01-14T09:40:00Z",
+      "road_blocked": 1,
+      "water_depth_cm": 71
+     },
+     {
+      "district": "Kampung Melayu",
+      "id": "INC-005",
+      "lat": -6.2226,
+      "lon": 106.8556,
+      "population_affected": 1450,
+      "reported_at": "2026-01-14T10:15:00Z",
+      "road_blocked": 1,
+      "water_depth_cm": 88
+     }
+    ],
+    "rows": 40
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/datasets/88347c41-885a-4e10-ac83-1be18d158361/rows?limit=200": {
+   "items": [
+    {
+     "id": "INC-001",
+     "district": "Kemang",
+     "reported_at": "2026-01-14T06:10:00Z",
+     "water_depth_cm": 42,
+     "road_blocked": 1,
+     "population_affected": 380,
+     "lat": -6.2607,
+     "lon": 106.8133
+    },
+    {
+     "id": "INC-002",
+     "district": "Kemang",
+     "reported_at": "2026-01-14T07:25:00Z",
+     "water_depth_cm": 58,
+     "road_blocked": 1,
+     "population_affected": 520,
+     "lat": -6.2615,
+     "lon": 106.8129
+    },
+    {
+     "id": "INC-003",
+     "district": "Cawang",
+     "reported_at": "2026-01-14T08:02:00Z",
+     "water_depth_cm": 35,
+     "road_blocked": 0,
+     "population_affected": 210,
+     "lat": -6.2442,
+     "lon": 106.8453
+    },
+    {
+     "id": "INC-004",
+     "district": "Cawang",
+     "reported_at": "2026-01-14T09:40:00Z",
+     "water_depth_cm": 71,
+     "road_blocked": 1,
+     "population_affected": null,
+     "lat": -6.2451,
+     "lon": 106.8462
+    },
+    {
+     "id": "INC-005",
+     "district": "Kampung Melayu",
+     "reported_at": "2026-01-14T10:15:00Z",
+     "water_depth_cm": 88,
+     "road_blocked": 1,
+     "population_affected": 1450,
+     "lat": -6.2226,
+     "lon": 106.8556
+    },
+    {
+     "id": "INC-006",
+     "district": "Kampung Melayu",
+     "reported_at": "2026-01-14T11:30:00Z",
+     "water_depth_cm": 64,
+     "road_blocked": 1,
+     "population_affected": 980,
+     "lat": -6.2231,
+     "lon": 106.8549
+    },
+    {
+     "id": "INC-007",
+     "district": "Pluit",
+     "reported_at": "2026-01-15T03:45:00Z",
+     "water_depth_cm": 112,
+     "road_blocked": 1,
+     "population_affected": 2300,
+     "lat": -6.1222,
+     "lon": 106.7906
+    },
+    {
+     "id": "INC-008",
+     "district": "Pluit",
+     "reported_at": "2026-01-15T04:20:00Z",
+     "water_depth_cm": null,
+     "road_blocked": 1,
+     "population_affected": 1875,
+     "lat": -6.1229,
+     "lon": 106.7915
+    },
+    {
+     "id": "INC-009",
+     "district": "Pluit",
+     "reported_at": "2026-01-15T05:05:00Z",
+     "water_depth_cm": 96,
+     "road_blocked": 1,
+     "population_affected": null,
+     "lat": -6.1217,
+     "lon": 106.7898
+    },
+    {
+     "id": "INC-010",
+     "district": "Kapuk",
+     "reported_at": "2026-01-15T06:50:00Z",
+     "water_depth_cm": 47,
+     "road_blocked": 0,
+     "population_affected": 640,
+     "lat": -6.126,
+     "lon": 106.7993
+    },
+    {
+     "id": "INC-011",
+     "district": "Kapuk",
+     "reported_at": "2026-01-15T07:35:00Z",
+     "water_depth_cm": 53,
+     "road_blocked": 1,
+     "population_affected": 710,
+     "lat": null,
+     "lon": null
+    },
+    {
+     "id": "INC-012",
+     "district": "Grogol",
+     "reported_at": "2026-01-15T08:10:00Z",
+     "water_depth_cm": 29,
+     "road_blocked": 0,
+     "population_affected": 150,
+     "lat": -6.1653,
+     "lon": 106.7897
+    },
+    {
+     "id": "INC-013",
+     "district": "Grogol",
+     "reported_at": "2026-01-15T09:00:00Z",
+     "water_depth_cm": 61,
+     "road_blocked": 1,
+     "population_affected": 860,
+     "lat": -6.1648,
+     "lon": 106.7904
+    },
+    {
+     "id": "INC-014",
+     "district": "Kebayoran Lama",
+     "reported_at": "2026-01-15T10:25:00Z",
+     "water_depth_cm": 24,
+     "road_blocked": 0,
+     "population_affected": null,
+     "lat": -6.24,
+     "lon": 106.78
+    },
+    {
+     "id": "INC-015",
+     "district": "Kebayoran Lama",
+     "reported_at": "2026-01-15T11:40:00Z",
+     "water_depth_cm": 38,
+     "road_blocked": 0,
+     "population_affected": 290,
+     "lat": -6.2412,
+     "lon": 106.7817
+    },
+    {
+     "id": "INC-016",
+     "district": "Tebet",
+     "reported_at": "2026-01-16T05:30:00Z",
+     "water_depth_cm": 77,
+     "road_blocked": 1,
+     "population_affected": 1120,
+     "lat": -6.229,
+     "lon": 106.846
+    },
+    {
+     "id": "INC-017",
+     "district": "Tebet",
+     "reported_at": "2026-01-16T06:15:00Z",
+     "water_depth_cm": 82,
+     "road_blocked": 1,
+     "population_affected": 1040,
+     "lat": -6.2297,
+     "lon": 106.8471
+    },
+    {
+     "id": "INC-018",
+     "district": "Tebet",
+     "reported_at": "2026-01-16T07:00:00Z",
+     "water_depth_cm": null,
+     "road_blocked": 0,
+     "population_affected": 430,
+     "lat": -6.2284,
+     "lon": 106.8452
+    },
+    {
+     "id": "INC-019",
+     "district": "Kalideres",
+     "reported_at": "2026-01-16T08:20:00Z",
+     "water_depth_cm": 33,
+     "road_blocked": 0,
+     "population_affected": 260,
+     "lat": -6.145,
+     "lon": 106.704
+    },
+    {
+     "id": "INC-020",
+     "district": "Kalideres",
+     "reported_at": "2026-01-16T09:45:00Z",
+     "water_depth_cm": 44,
+     "road_blocked": 1,
+     "population_affected": 390,
+     "lat": -6.1462,
+     "lon": 106.7055
+    },
+    {
+     "id": "INC-021",
+     "district": "Cilincing",
+     "reported_at": "2026-01-16T10:30:00Z",
+     "water_depth_cm": 105,
+     "road_blocked": 1,
+     "population_affected": 2050,
+     "lat": -6.1,
+     "lon": 106.94
+    },
+    {
+     "id": "INC-022",
+     "district": "Cilincing",
+     "reported_at": "2026-01-16T11:10:00Z",
+     "water_depth_cm": 91,
+     "road_blocked": 1,
+     "population_affected": 1640,
+     "lat": -6.1012,
+     "lon": 106.9388
+    },
+    {
+     "id": "INC-023",
+     "district": "Duren Sawit",
+     "reported_at": "2026-01-17T04:05:00Z",
+     "water_depth_cm": 56,
+     "road_blocked": 0,
+     "population_affected": null,
+     "lat": -6.243,
+     "lon": 106.901
+    },
+    {
+     "id": "INC-024",
+     "district": "Duren Sawit",
+     "reported_at": "2026-01-17T05:40:00Z",
+     "water_depth_cm": 49,
+     "road_blocked": 1,
+     "population_affected": 505,
+     "lat": -6.2437,
+     "lon": 106.9022
+    },
+    {
+     "id": "INC-025",
+     "district": "Kemang",
+     "reported_at": "2026-01-17T06:55:00Z",
+     "water_depth_cm": 18,
+     "road_blocked": 0,
+     "population_affected": 95,
+     "lat": -6.2599,
+     "lon": 106.814
+    },
+    {
+     "id": "INC-026",
+     "district": "Pluit",
+     "reported_at": "2026-01-17T08:30:00Z",
+     "water_depth_cm": 69,
+     "road_blocked": 1,
+     "population_affected": 1330,
+     "lat": -6.1234,
+     "lon": 106.792
+    },
+    {
+     "id": "INC-027",
+     "district": "Kapuk",
+     "reported_at": "2026-01-17T09:15:00Z",
+     "water_depth_cm": 40,
+     "road_blocked": 0,
+     "population_affected": 320,
+     "lat": -6.1248,
+     "lon": 106.798
+    },
+    {
+     "id": "INC-028",
+     "district": "Grogol",
+     "reported_at": "2026-01-17T10:05:00Z",
+     "water_depth_cm": 73,
+     "road_blocked": 1,
+     "population_affected": null,
+     "lat": -6.167,
+     "lon": 106.791
+    },
+    {
+     "id": "INC-029",
+     "district": "Cawang",
+     "reported_at": "2026-01-17T11:20:00Z",
+     "water_depth_cm": 22,
+     "road_blocked": 0,
+     "population_affected": 120,
+     "lat": -6.246,
+     "lon": 106.844
+    },
+    {
+     "id": "INC-030",
+     "district": "Kampung Melayu",
+     "reported_at": "2026-01-18T05:10:00Z",
+     "water_depth_cm": 101,
+     "road_blocked": 1,
+     "population_affected": 1760,
+     "lat": null,
+     "lon": null
+    },
+    {
+     "id": "INC-031",
+     "district": "Tebet",
+     "reported_at": "2026-01-18T06:40:00Z",
+     "water_depth_cm": 36,
+     "road_blocked": 0,
+     "population_affected": 350,
+     "lat": -6.2301,
+     "lon": 106.848
+    },
+    {
+     "id": "INC-032",
+     "district": "Kalideres",
+     "reported_at": "2026-01-18T07:50:00Z",
+     "water_depth_cm": 58,
+     "road_blocked": 1,
+     "population_affected": 700,
+     "lat": -6.144,
+     "lon": 106.7068
+    },
+    {
+     "id": "INC-033",
+     "district": "Cilincing",
+     "reported_at": "2026-01-18T09:25:00Z",
+     "water_depth_cm": 67,
+     "road_blocked": 1,
+     "population_affected": 880,
+     "lat": -6.099,
+     "lon": 106.941
+    },
+    {
+     "id": "INC-034",
+     "district": "Kebayoran Lama",
+     "reported_at": "2026-01-18T10:40:00Z",
+     "water_depth_cm": 15,
+     "road_blocked": 0,
+     "population_affected": 60,
+     "lat": -6.2395,
+     "lon": 106.779
+    },
+    {
+     "id": "INC-035",
+     "district": "Duren Sawit",
+     "reported_at": "2026-01-18T11:55:00Z",
+     "water_depth_cm": 84,
+     "road_blocked": 1,
+     "population_affected": 1210,
+     "lat": -6.2421,
+     "lon": 106.9031
+    },
+    {
+     "id": "INC-036",
+     "district": "Pluit",
+     "reported_at": "2026-01-19T04:30:00Z",
+     "water_depth_cm": 126,
+     "road_blocked": 1,
+     "population_affected": 2480,
+     "lat": -6.121,
+     "lon": 106.7885
+    },
+    {
+     "id": "INC-037",
+     "district": "Grogol",
+     "reported_at": "2026-01-19T06:00:00Z",
+     "water_depth_cm": null,
+     "road_blocked": 1,
+     "population_affected": 990,
+     "lat": -6.166,
+     "lon": 106.7888
+    },
+    {
+     "id": "INC-038",
+     "district": "Kemang",
+     "reported_at": "2026-01-19T07:15:00Z",
+     "water_depth_cm": 50,
+     "road_blocked": 0,
+     "population_affected": null,
+     "lat": -6.262,
+     "lon": 106.8125
+    },
+    {
+     "id": "INC-039",
+     "district": "Kapuk",
+     "reported_at": "2026-01-19T08:45:00Z",
+     "water_depth_cm": 62,
+     "road_blocked": 1,
+     "population_affected": 745,
+     "lat": -6.1268,
+     "lon": 106.8004
+    },
+    {
+     "id": "INC-040",
+     "district": "Tebet",
+     "reported_at": "2026-01-19T10:10:00Z",
+     "water_depth_cm": 28,
+     "road_blocked": 0,
+     "population_affected": null,
+     "lat": -6.2275,
+     "lon": 106.8443
+    }
+   ],
+   "next_offset": null,
+   "total": 40
+  },
+  "GET /api/hazards?dataset_id=88347c41-885a-4e10-ac83-1be18d158361&pack=flood": {
+   "data_class": "INFERRED_FACT",
+   "tool": "hazard_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-flood-illustrative",
+    "version": "1.0.0",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "FLOOD-R1",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: road blocked candidate.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "flag": "road_blocked_candidate"
+      }
+     },
+     {
+      "id": "FLOOD-R2",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: at least MEDIUM severity.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "FLOOD-R3",
+      "label": "illustrative",
+      "description": "Water depth at or above 100 cm: HIGH severity.",
+      "when": {
+       "water_depth_cm_gte": 100
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 40,
+   "rows_unknown_depth": 3,
+   "counts_by_severity": {
+    "HIGH": 4,
+    "LOW": 15,
+    "MEDIUM": 18,
+    "UNKNOWN": 3
+   },
+   "road_blocked_candidates": 22,
+   "per_district": {
+    "Cawang": {
+     "rows": 3,
+     "road_blocked_candidates": 1,
+     "unknown_depth_rows": 0
+    },
+    "Cilincing": {
+     "rows": 3,
+     "road_blocked_candidates": 3,
+     "unknown_depth_rows": 0
+    },
+    "Duren Sawit": {
+     "rows": 3,
+     "road_blocked_candidates": 2,
+     "unknown_depth_rows": 0
+    },
+    "Grogol": {
+     "rows": 4,
+     "road_blocked_candidates": 2,
+     "unknown_depth_rows": 1
+    },
+    "Kalideres": {
+     "rows": 3,
+     "road_blocked_candidates": 1,
+     "unknown_depth_rows": 0
+    },
+    "Kampung Melayu": {
+     "rows": 3,
+     "road_blocked_candidates": 3,
+     "unknown_depth_rows": 0
+    },
+    "Kapuk": {
+     "rows": 4,
+     "road_blocked_candidates": 2,
+     "unknown_depth_rows": 0
+    },
+    "Kebayoran Lama": {
+     "rows": 3,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 0
+    },
+    "Kemang": {
+     "rows": 4,
+     "road_blocked_candidates": 2,
+     "unknown_depth_rows": 0
+    },
+    "Pluit": {
+     "rows": 5,
+     "road_blocked_candidates": 4,
+     "unknown_depth_rows": 1
+    },
+    "Tebet": {
+     "rows": 5,
+     "road_blocked_candidates": 2,
+     "unknown_depth_rows": 1
+    }
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "Kemang",
+     "water_depth_cm": 42.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "district": "Kemang",
+     "water_depth_cm": 58.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 3,
+     "district": "Cawang",
+     "water_depth_cm": 35.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "district": "Cawang",
+     "water_depth_cm": 71.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 5,
+     "district": "Kampung Melayu",
+     "water_depth_cm": 88.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 6,
+     "district": "Kampung Melayu",
+     "water_depth_cm": 64.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 7,
+     "district": "Pluit",
+     "water_depth_cm": 112.0,
+     "severity": "HIGH",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 8,
+     "district": "Pluit",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "Pluit",
+     "water_depth_cm": 96.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 10,
+     "district": "Kapuk",
+     "water_depth_cm": 47.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "Kapuk",
+     "water_depth_cm": 53.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 12,
+     "district": "Grogol",
+     "water_depth_cm": 29.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "district": "Grogol",
+     "water_depth_cm": 61.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 14,
+     "district": "Kebayoran Lama",
+     "water_depth_cm": 24.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "district": "Kebayoran Lama",
+     "water_depth_cm": 38.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 16,
+     "district": "Tebet",
+     "water_depth_cm": 77.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 17,
+     "district": "Tebet",
+     "water_depth_cm": 82.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 18,
+     "district": "Tebet",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 19,
+     "district": "Kalideres",
+     "water_depth_cm": 33.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 20,
+     "district": "Kalideres",
+     "water_depth_cm": 44.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 21,
+     "district": "Cilincing",
+     "water_depth_cm": 105.0,
+     "severity": "HIGH",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 22,
+     "district": "Cilincing",
+     "water_depth_cm": 91.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 23,
+     "district": "Duren Sawit",
+     "water_depth_cm": 56.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 24,
+     "district": "Duren Sawit",
+     "water_depth_cm": 49.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 25,
+     "district": "Kemang",
+     "water_depth_cm": 18.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 26,
+     "district": "Pluit",
+     "water_depth_cm": 69.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 27,
+     "district": "Kapuk",
+     "water_depth_cm": 40.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 28,
+     "district": "Grogol",
+     "water_depth_cm": 73.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 29,
+     "district": "Cawang",
+     "water_depth_cm": 22.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 30,
+     "district": "Kampung Melayu",
+     "water_depth_cm": 101.0,
+     "severity": "HIGH",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 31,
+     "district": "Tebet",
+     "water_depth_cm": 36.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 32,
+     "district": "Kalideres",
+     "water_depth_cm": 58.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 33,
+     "district": "Cilincing",
+     "water_depth_cm": 67.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 34,
+     "district": "Kebayoran Lama",
+     "water_depth_cm": 15.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 35,
+     "district": "Duren Sawit",
+     "water_depth_cm": 84.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 36,
+     "district": "Pluit",
+     "water_depth_cm": 126.0,
+     "severity": "HIGH",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 37,
+     "district": "Grogol",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 38,
+     "district": "Kemang",
+     "water_depth_cm": 50.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 39,
+     "district": "Kapuk",
+     "water_depth_cm": 62.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "road_blocked_candidate"
+     ]
+    },
+    {
+     "row": 40,
+     "district": "Tebet",
+     "water_depth_cm": 28.0,
+     "severity": "LOW",
+     "flags": []
+    }
+   ],
+   "dataset": {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta"
+   }
+  },
+  "GET /api/hazards?dataset_id=88347c41-885a-4e10-ac83-1be18d158361&pack=tsunami": {
+   "data_class": "INFERRED_FACT",
+   "tool": "tsunami_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-earthquake-tsunami-illustrative",
+    "version": "1.0.0",
+    "sha256": "c9307282a221ddc751a3da462b7ba00634795590f0c24bc37fa7b0eead91bae4",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "TSU-R1",
+      "label": "illustrative",
+      "description": "Shallow magnitude 7.0 or larger within 100 km of the coast: tsunami watch candidate, HIGH.",
+      "when": {
+       "magnitude_gte": 7.0,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 100
+      },
+      "then": {
+       "flag": "tsunami_watch_candidate",
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "TSU-R2",
+      "label": "illustrative",
+      "description": "Shallow magnitude 6.5 or larger within 50 km of the coast: MEDIUM.",
+      "when": {
+       "magnitude_gte": 6.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "TSU-R3",
+      "label": "illustrative",
+      "description": "Shallow magnitude 5.5 or larger within 10 km of the coast: LOW.",
+      "when": {
+       "magnitude_gte": 5.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 10
+      },
+      "then": {
+       "severity": "LOW"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 40,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 40
+   },
+   "watch_candidates": 0,
+   "results": [
+    {
+     "row": 1,
+     "area": "Kemang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "area": "Kemang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "area": "Cawang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "area": "Cawang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "area": "Kampung Melayu",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "area": "Kampung Melayu",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "area": "Pluit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "area": "Pluit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "area": "Pluit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "area": "Kapuk",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "area": "Kapuk",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "area": "Grogol",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "area": "Grogol",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "area": "Kebayoran Lama",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "area": "Kebayoran Lama",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 16,
+     "area": "Tebet",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 17,
+     "area": "Tebet",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 18,
+     "area": "Tebet",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 19,
+     "area": "Kalideres",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 20,
+     "area": "Kalideres",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 21,
+     "area": "Cilincing",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 22,
+     "area": "Cilincing",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 23,
+     "area": "Duren Sawit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 24,
+     "area": "Duren Sawit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 25,
+     "area": "Kemang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 26,
+     "area": "Pluit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 27,
+     "area": "Kapuk",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 28,
+     "area": "Grogol",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 29,
+     "area": "Cawang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 30,
+     "area": "Kampung Melayu",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 31,
+     "area": "Tebet",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 32,
+     "area": "Kalideres",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 33,
+     "area": "Cilincing",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 34,
+     "area": "Kebayoran Lama",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 35,
+     "area": "Duren Sawit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 36,
+     "area": "Pluit",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 37,
+     "area": "Grogol",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 38,
+     "area": "Kemang",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 39,
+     "area": "Kapuk",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 40,
+     "area": "Tebet",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta"
+   }
+  },
+  "POST /api/resources/estimate dataset=88347c41-885a-4e10-ac83-1be18d158361": {
+   "data_class": "SIMULATED_FACT",
+   "tool": "resource_estimator",
+   "label": "ILLUSTRATIVE ratios",
+   "rule_pack": {
+    "pack_id": "dce-flood-illustrative",
+    "version": "1.0.0",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+   },
+   "inputs": {
+    "rows_total": 40,
+    "affected_rows": 22,
+    "unknown_depth_rows": 3,
+    "affected_depth_cm_gte": 50
+   },
+   "ratios": {
+    "affected_depth_cm_gte": 50,
+    "people_per_household": 4,
+    "water_packs_per_household": 1,
+    "food_packs_per_household": 1,
+    "shelter_kits_per_household": 0.5,
+    "drinking_water_litres_per_person_per_day": 3,
+    "planning_days": 3
+   },
+   "estimates": {
+    "households_affected": 22,
+    "people_estimated": 88,
+    "water_packs": 22,
+    "food_packs": 22,
+    "shelter_kits": 11,
+    "drinking_water_litres_total": 792
+   },
+   "assumptions": [
+    "Each affected row is treated as one household (illustrative).",
+    "Ratios are illustrative and not validated against an authoritative standard.",
+    "Rows with unknown water depth are not counted as affected."
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta"
+   }
+  },
+  "GET /api/datasets/8f459cb1-01ee-4c5c-806b-baa254ed7edf": {
+   "id": "8f459cb1-01ee-4c5c-806b-baa254ed7edf",
+   "name": "Wildfire watch",
+   "filename": "wildfire_sample.csv",
+   "kind": "CSV",
+   "size_bytes": 249,
+   "sha256": "641934f6e597991535ef6b3ac3e2d14fcc7f1db906ea20d85e053899dd082ec5",
+   "status": "APPROVED",
+   "country_code": "ID",
+   "owner": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "profile": {
+    "columns": [
+     {
+      "dtype": "string",
+      "name": "district",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "distance_km",
+      "nulls": 1
+     },
+     {
+      "dtype": "integer",
+      "name": "wind_kmh",
+      "nulls": 1
+     }
+    ],
+    "preview": [
+     {
+      "distance_km": 1.5,
+      "district": "Attica",
+      "wind_kmh": 32
+     },
+     {
+      "distance_km": 4.2,
+      "district": "Andalusia",
+      "wind_kmh": 18
+     },
+     {
+      "distance_km": 7.8,
+      "district": "Kabylie",
+      "wind_kmh": 25
+     },
+     {
+      "distance_km": 12.4,
+      "district": "Dalmatia",
+      "wind_kmh": 40
+     },
+     {
+      "distance_km": 2.0,
+      "district": "Okanagan",
+      "wind_kmh": 12
+     }
+    ],
+    "rows": 12
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/datasets/8f459cb1-01ee-4c5c-806b-baa254ed7edf/rows?limit=200": {
+   "items": [
+    {
+     "district": "Attica",
+     "distance_km": 1.5,
+     "wind_kmh": 32
+    },
+    {
+     "district": "Andalusia",
+     "distance_km": 4.2,
+     "wind_kmh": 18
+    },
+    {
+     "district": "Kabylie",
+     "distance_km": 7.8,
+     "wind_kmh": 25
+    },
+    {
+     "district": "Dalmatia",
+     "distance_km": 12.4,
+     "wind_kmh": 40
+    },
+    {
+     "district": "Okanagan",
+     "distance_km": 2.0,
+     "wind_kmh": 12
+    },
+    {
+     "district": "Alentejo",
+     "distance_km": 9.5,
+     "wind_kmh": 22
+    },
+    {
+     "district": "Northern Cape",
+     "distance_km": 0.8,
+     "wind_kmh": null
+    },
+    {
+     "district": "Riau Pesisir",
+     "distance_km": 15.0,
+     "wind_kmh": 28
+    },
+    {
+     "district": "Ghat Mountains",
+     "distance_km": 5.0,
+     "wind_kmh": 20
+    },
+    {
+     "district": "Valparaiso Hills",
+     "distance_km": null,
+     "wind_kmh": 35
+    },
+    {
+     "district": "Chiang Mai Highlands",
+     "distance_km": 3.1,
+     "wind_kmh": 9
+    },
+    {
+     "district": "Mugla",
+     "distance_km": 22.0,
+     "wind_kmh": 30
+    }
+   ],
+   "next_offset": null,
+   "total": 12
+  },
+  "GET /api/hazards?dataset_id=8f459cb1-01ee-4c5c-806b-baa254ed7edf&pack=flood": {
+   "data_class": "INFERRED_FACT",
+   "tool": "hazard_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-flood-illustrative",
+    "version": "1.0.0",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "FLOOD-R1",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: road blocked candidate.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "flag": "road_blocked_candidate"
+      }
+     },
+     {
+      "id": "FLOOD-R2",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: at least MEDIUM severity.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "FLOOD-R3",
+      "label": "illustrative",
+      "description": "Water depth at or above 100 cm: HIGH severity.",
+      "when": {
+       "water_depth_cm_gte": 100
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 12,
+   "rows_unknown_depth": 12,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 12
+   },
+   "road_blocked_candidates": 0,
+   "per_district": {
+    "Alentejo": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Andalusia": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Attica": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Chiang Mai Highlands": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Dalmatia": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Ghat Mountains": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Kabylie": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Mugla": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Northern Cape": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Okanagan": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Riau Pesisir": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    },
+    "Valparaiso Hills": {
+     "rows": 1,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 1
+    }
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "Attica",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "district": "Andalusia",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "district": "Kabylie",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "district": "Dalmatia",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "district": "Okanagan",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "district": "Alentejo",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "district": "Northern Cape",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "district": "Riau Pesisir",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "Ghat Mountains",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "district": "Valparaiso Hills",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "Chiang Mai Highlands",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "district": "Mugla",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "dataset": {
+    "id": "8f459cb1-01ee-4c5c-806b-baa254ed7edf",
+    "name": "Wildfire watch"
+   }
+  },
+  "GET /api/hazards?dataset_id=8f459cb1-01ee-4c5c-806b-baa254ed7edf&pack=tsunami": {
+   "data_class": "INFERRED_FACT",
+   "tool": "tsunami_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-earthquake-tsunami-illustrative",
+    "version": "1.0.0",
+    "sha256": "c9307282a221ddc751a3da462b7ba00634795590f0c24bc37fa7b0eead91bae4",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "TSU-R1",
+      "label": "illustrative",
+      "description": "Shallow magnitude 7.0 or larger within 100 km of the coast: tsunami watch candidate, HIGH.",
+      "when": {
+       "magnitude_gte": 7.0,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 100
+      },
+      "then": {
+       "flag": "tsunami_watch_candidate",
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "TSU-R2",
+      "label": "illustrative",
+      "description": "Shallow magnitude 6.5 or larger within 50 km of the coast: MEDIUM.",
+      "when": {
+       "magnitude_gte": 6.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "TSU-R3",
+      "label": "illustrative",
+      "description": "Shallow magnitude 5.5 or larger within 10 km of the coast: LOW.",
+      "when": {
+       "magnitude_gte": 5.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 10
+      },
+      "then": {
+       "severity": "LOW"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 12,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 12
+   },
+   "watch_candidates": 0,
+   "results": [
+    {
+     "row": 1,
+     "area": "Attica",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "area": "Andalusia",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "area": "Kabylie",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "area": "Dalmatia",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "area": "Okanagan",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "area": "Alentejo",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "area": "Northern Cape",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "area": "Riau Pesisir",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "area": "Ghat Mountains",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "area": "Valparaiso Hills",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "area": "Chiang Mai Highlands",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "area": "Mugla",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "8f459cb1-01ee-4c5c-806b-baa254ed7edf",
+    "name": "Wildfire watch"
+   }
+  },
+  "GET /api/hazards?dataset_id=8f459cb1-01ee-4c5c-806b-baa254ed7edf&pack=wildfire": {
+   "data_class": "INFERRED_FACT",
+   "tool": "wildfire_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-wildfire-smoke-illustrative",
+    "version": "1.0.0",
+    "sha256": "72a25fa3d075bbf41cf52cabacef5a9543f4f992465967d5fbda36d5ac3e7c26",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "WF-R1",
+      "label": "illustrative",
+      "description": "Fire 5 km or less from the nearest settlement: MEDIUM.",
+      "when": {
+       "distance_km_lte": 5
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "WF-R2",
+      "label": "illustrative",
+      "description": "Fire 2 km or less from the nearest settlement: HIGH.",
+      "when": {
+       "distance_km_lte": 2
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "WF-R3",
+      "label": "illustrative",
+      "description": "Wind 20 km/h or more and fire 10 km or less from a settlement: smoke exposure candidate.",
+      "when": {
+       "distance_km_lte": 10,
+       "wind_kmh_gte": 20
+      },
+      "then": {
+       "flag": "smoke_exposure_candidate"
+      }
+     }
+    ],
+    "pack_status": "ILLUSTRATIVE. Every threshold in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions or evacuation."
+   },
+   "rows_evaluated": 12,
+   "counts_by_severity": {
+    "HIGH": 3,
+    "LOW": 5,
+    "MEDIUM": 3,
+    "UNKNOWN": 1
+   },
+   "flag_counts": {
+    "smoke_exposure_candidate": 4
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "Attica",
+     "distance_km": 1.5,
+     "wind_kmh": 32.0,
+     "severity": "HIGH",
+     "flags": [
+      "smoke_exposure_candidate"
+     ]
+    },
+    {
+     "row": 2,
+     "district": "Andalusia",
+     "distance_km": 4.2,
+     "wind_kmh": 18.0,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "district": "Kabylie",
+     "distance_km": 7.8,
+     "wind_kmh": 25.0,
+     "severity": "LOW",
+     "flags": [
+      "smoke_exposure_candidate"
+     ]
+    },
+    {
+     "row": 4,
+     "district": "Dalmatia",
+     "distance_km": 12.4,
+     "wind_kmh": 40.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "district": "Okanagan",
+     "distance_km": 2.0,
+     "wind_kmh": 12.0,
+     "severity": "HIGH",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "district": "Alentejo",
+     "distance_km": 9.5,
+     "wind_kmh": 22.0,
+     "severity": "LOW",
+     "flags": [
+      "smoke_exposure_candidate"
+     ]
+    },
+    {
+     "row": 7,
+     "district": "Northern Cape",
+     "distance_km": 0.8,
+     "wind_kmh": null,
+     "severity": "HIGH",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "district": "Riau Pesisir",
+     "distance_km": 15.0,
+     "wind_kmh": 28.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "Ghat Mountains",
+     "distance_km": 5.0,
+     "wind_kmh": 20.0,
+     "severity": "MEDIUM",
+     "flags": [
+      "smoke_exposure_candidate"
+     ]
+    },
+    {
+     "row": 10,
+     "district": "Valparaiso Hills",
+     "distance_km": null,
+     "wind_kmh": 35.0,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "Chiang Mai Highlands",
+     "distance_km": 3.1,
+     "wind_kmh": 9.0,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "district": "Mugla",
+     "distance_km": 22.0,
+     "wind_kmh": 30.0,
+     "severity": "LOW",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "8f459cb1-01ee-4c5c-806b-baa254ed7edf",
+    "name": "Wildfire watch"
+   }
+  },
+  "GET /api/datasets/f8dbe400-990f-4a6e-a162-05213aa4c1db": {
+   "id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+   "name": "Earthquake catalogue",
+   "filename": "earthquake_sample.csv",
+   "kind": "CSV",
+   "size_bytes": 694,
+   "sha256": "3ab5f0beba0172c321385348f6e7f99f6f21f754ad0d24ef84da078cec45a46c",
+   "status": "APPROVED",
+   "country_code": "ID",
+   "owner": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "profile": {
+    "columns": [
+     {
+      "dtype": "string",
+      "name": "area",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "magnitude",
+      "nulls": 1
+     },
+     {
+      "dtype": "integer",
+      "name": "depth_km",
+      "nulls": 1
+     },
+     {
+      "dtype": "integer",
+      "name": "coast_distance_km",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "lat",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "lon",
+      "nulls": 0
+     }
+    ],
+    "preview": [
+     {
+      "area": "Pesisir Padang",
+      "coast_distance_km": 45,
+      "depth_km": 30,
+      "lat": -0.9471,
+      "lon": 100.4172,
+      "magnitude": 7.2
+     },
+     {
+      "area": "Pesisir Bengkulu",
+      "coast_distance_km": 38,
+      "depth_km": 25,
+      "lat": -3.8004,
+      "lon": 102.2655,
+      "magnitude": 6.8
+     },
+     {
+      "area": "Pesisir Pangandaran",
+      "coast_distance_km": 22,
+      "depth_km": 40,
+      "lat": -7.6933,
+      "lon": 108.6503,
+      "magnitude": 6.6
+     },
+     {
+      "area": "Pesisir Mentawai",
+      "coast_distance_km": 8,
+      "depth_km": 20,
+      "lat": -2.06,
+      "lon": 99.51,
+      "magnitude": 5.9
+     },
+     {
+      "area": "Kota Palu",
+      "coast_distance_km": 12,
+      "depth_km": 15,
+      "lat": -0.8917,
+      "lon": 119.8707,
+      "magnitude": 6.1
+     }
+    ],
+    "rows": 15
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/datasets/f8dbe400-990f-4a6e-a162-05213aa4c1db/rows?limit=200": {
+   "items": [
+    {
+     "area": "Pesisir Padang",
+     "magnitude": 7.2,
+     "depth_km": 30,
+     "coast_distance_km": 45,
+     "lat": -0.9471,
+     "lon": 100.4172
+    },
+    {
+     "area": "Pesisir Bengkulu",
+     "magnitude": 6.8,
+     "depth_km": 25,
+     "coast_distance_km": 38,
+     "lat": -3.8004,
+     "lon": 102.2655
+    },
+    {
+     "area": "Pesisir Pangandaran",
+     "magnitude": 6.6,
+     "depth_km": 40,
+     "coast_distance_km": 22,
+     "lat": -7.6933,
+     "lon": 108.6503
+    },
+    {
+     "area": "Pesisir Mentawai",
+     "magnitude": 5.9,
+     "depth_km": 20,
+     "coast_distance_km": 8,
+     "lat": -2.06,
+     "lon": 99.51
+    },
+    {
+     "area": "Kota Palu",
+     "magnitude": 6.1,
+     "depth_km": 15,
+     "coast_distance_km": 12,
+     "lat": -0.8917,
+     "lon": 119.8707
+    },
+    {
+     "area": "Pesisir Lampung",
+     "magnitude": 5.6,
+     "depth_km": 55,
+     "coast_distance_km": 9,
+     "lat": -5.45,
+     "lon": 105.26
+    },
+    {
+     "area": "Pedalaman Jambi",
+     "magnitude": 6.9,
+     "depth_km": 95,
+     "coast_distance_km": 180,
+     "lat": -1.6101,
+     "lon": 103.6131
+    },
+    {
+     "area": "Pesisir Banten",
+     "magnitude": null,
+     "depth_km": 30,
+     "coast_distance_km": 40,
+     "lat": -6.0,
+     "lon": 105.9
+    },
+    {
+     "area": "Pesisir Aceh Barat",
+     "magnitude": 6.7,
+     "depth_km": null,
+     "coast_distance_km": 35,
+     "lat": 4.45,
+     "lon": 96.15
+    },
+    {
+     "area": "Pesisir Sulawesi Utara",
+     "magnitude": 4.8,
+     "depth_km": 18,
+     "coast_distance_km": 5,
+     "lat": 1.49,
+     "lon": 124.84
+    },
+    {
+     "area": "Pesisir Ambon",
+     "magnitude": 6.5,
+     "depth_km": 10,
+     "coast_distance_km": 15,
+     "lat": -3.6954,
+     "lon": 128.1814
+    },
+    {
+     "area": "Pedalaman Bandung",
+     "magnitude": 5.7,
+     "depth_km": 12,
+     "coast_distance_km": 160,
+     "lat": -6.9175,
+     "lon": 107.6191
+    },
+    {
+     "area": "Pesisir Kupang",
+     "magnitude": 5.5,
+     "depth_km": 35,
+     "coast_distance_km": 6,
+     "lat": -10.1772,
+     "lon": 123.607
+    },
+    {
+     "area": "Pesisir Maluku Utara",
+     "magnitude": 7.4,
+     "depth_km": 22,
+     "coast_distance_km": 60,
+     "lat": 0.7893,
+     "lon": 127.38
+    },
+    {
+     "area": "Pesisir Sumba",
+     "magnitude": 6.0,
+     "depth_km": 80,
+     "coast_distance_km": 20,
+     "lat": -9.65,
+     "lon": 120.26
+    }
+   ],
+   "next_offset": null,
+   "total": 15
+  },
+  "GET /api/hazards?dataset_id=f8dbe400-990f-4a6e-a162-05213aa4c1db&pack=flood": {
+   "data_class": "INFERRED_FACT",
+   "tool": "hazard_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-flood-illustrative",
+    "version": "1.0.0",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "FLOOD-R1",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: road blocked candidate.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "flag": "road_blocked_candidate"
+      }
+     },
+     {
+      "id": "FLOOD-R2",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: at least MEDIUM severity.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "FLOOD-R3",
+      "label": "illustrative",
+      "description": "Water depth at or above 100 cm: HIGH severity.",
+      "when": {
+       "water_depth_cm_gte": 100
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 15,
+   "rows_unknown_depth": 15,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 15
+   },
+   "road_blocked_candidates": 0,
+   "per_district": {
+    "unknown": {
+     "rows": 15,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 15
+    }
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "dataset": {
+    "id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+    "name": "Earthquake catalogue"
+   }
+  },
+  "GET /api/hazards?dataset_id=f8dbe400-990f-4a6e-a162-05213aa4c1db&pack=tsunami": {
+   "data_class": "INFERRED_FACT",
+   "tool": "tsunami_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-earthquake-tsunami-illustrative",
+    "version": "1.0.0",
+    "sha256": "c9307282a221ddc751a3da462b7ba00634795590f0c24bc37fa7b0eead91bae4",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "TSU-R1",
+      "label": "illustrative",
+      "description": "Shallow magnitude 7.0 or larger within 100 km of the coast: tsunami watch candidate, HIGH.",
+      "when": {
+       "magnitude_gte": 7.0,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 100
+      },
+      "then": {
+       "flag": "tsunami_watch_candidate",
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "TSU-R2",
+      "label": "illustrative",
+      "description": "Shallow magnitude 6.5 or larger within 50 km of the coast: MEDIUM.",
+      "when": {
+       "magnitude_gte": 6.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "TSU-R3",
+      "label": "illustrative",
+      "description": "Shallow magnitude 5.5 or larger within 10 km of the coast: LOW.",
+      "when": {
+       "magnitude_gte": 5.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 10
+      },
+      "then": {
+       "severity": "LOW"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 15,
+   "counts_by_severity": {
+    "HIGH": 2,
+    "LOW": 8,
+    "MEDIUM": 3,
+    "UNKNOWN": 2
+   },
+   "watch_candidates": 2,
+   "results": [
+    {
+     "row": 1,
+     "area": "Pesisir Padang",
+     "magnitude": 7.2,
+     "depth_km": 30.0,
+     "coast_distance_km": 45.0,
+     "severity": "HIGH",
+     "flags": [
+      "tsunami_watch_candidate"
+     ]
+    },
+    {
+     "row": 2,
+     "area": "Pesisir Bengkulu",
+     "magnitude": 6.8,
+     "depth_km": 25.0,
+     "coast_distance_km": 38.0,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "area": "Pesisir Pangandaran",
+     "magnitude": 6.6,
+     "depth_km": 40.0,
+     "coast_distance_km": 22.0,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "area": "Pesisir Mentawai",
+     "magnitude": 5.9,
+     "depth_km": 20.0,
+     "coast_distance_km": 8.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "area": "Kota Palu",
+     "magnitude": 6.1,
+     "depth_km": 15.0,
+     "coast_distance_km": 12.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "area": "Pesisir Lampung",
+     "magnitude": 5.6,
+     "depth_km": 55.0,
+     "coast_distance_km": 9.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "area": "Pedalaman Jambi",
+     "magnitude": 6.9,
+     "depth_km": 95.0,
+     "coast_distance_km": 180.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "area": "Pesisir Banten",
+     "magnitude": null,
+     "depth_km": 30.0,
+     "coast_distance_km": 40.0,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "area": "Pesisir Aceh Barat",
+     "magnitude": 6.7,
+     "depth_km": null,
+     "coast_distance_km": 35.0,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "area": "Pesisir Sulawesi Utara",
+     "magnitude": 4.8,
+     "depth_km": 18.0,
+     "coast_distance_km": 5.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "area": "Pesisir Ambon",
+     "magnitude": 6.5,
+     "depth_km": 10.0,
+     "coast_distance_km": 15.0,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "area": "Pedalaman Bandung",
+     "magnitude": 5.7,
+     "depth_km": 12.0,
+     "coast_distance_km": 160.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "area": "Pesisir Kupang",
+     "magnitude": 5.5,
+     "depth_km": 35.0,
+     "coast_distance_km": 6.0,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "area": "Pesisir Maluku Utara",
+     "magnitude": 7.4,
+     "depth_km": 22.0,
+     "coast_distance_km": 60.0,
+     "severity": "HIGH",
+     "flags": [
+      "tsunami_watch_candidate"
+     ]
+    },
+    {
+     "row": 15,
+     "area": "Pesisir Sumba",
+     "magnitude": 6.0,
+     "depth_km": 80.0,
+     "coast_distance_km": 20.0,
+     "severity": "LOW",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+    "name": "Earthquake catalogue"
+   }
+  },
+  "GET /api/hazards?dataset_id=f8dbe400-990f-4a6e-a162-05213aa4c1db&pack=earthquake": {
+   "data_class": "INFERRED_FACT",
+   "tool": "earthquake_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-earthquake-illustrative",
+    "version": "1.0.0",
+    "sha256": "64dbea07579dd693806bba055c50b2b4f53d1c534a8bdd4724931d613a1137e8",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "EQ-R1",
+      "label": "illustrative",
+      "description": "Magnitude 5.0 or larger: at least LOW severity.",
+      "when": {
+       "magnitude_gte": 5.0
+      },
+      "then": {
+       "severity": "LOW"
+      }
+     },
+     {
+      "id": "EQ-R2",
+      "label": "illustrative",
+      "description": "Magnitude 6.0 or larger: MEDIUM severity.",
+      "when": {
+       "magnitude_gte": 6.0
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "EQ-R3",
+      "label": "illustrative",
+      "description": "Magnitude 7.0 or larger: HIGH severity.",
+      "when": {
+       "magnitude_gte": 7.0
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "EQ-R4",
+      "label": "illustrative",
+      "description": "Magnitude 7.0 or larger and coastal = true: tsunami check candidate. Not a warning.",
+      "when": {
+       "magnitude_gte": 7.0,
+       "coastal": true
+      },
+      "then": {
+       "flag": "tsunami_check_candidate"
+      }
+     }
+    ],
+    "pack_status": "ILLUSTRATIVE. Every threshold in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions. The tsunami_check_candidate flag is not a tsunami warning."
+   },
+   "rows_evaluated": 15,
+   "counts_by_severity": {
+    "HIGH": 2,
+    "LOW": 5,
+    "MEDIUM": 7,
+    "UNKNOWN": 1
+   },
+   "flag_counts": {
+    "tsunami_check_candidate": 0
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "unknown",
+     "magnitude": 7.2,
+     "coastal": null,
+     "severity": "HIGH",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "district": "unknown",
+     "magnitude": 6.8,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "district": "unknown",
+     "magnitude": 6.6,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "district": "unknown",
+     "magnitude": 5.9,
+     "coastal": null,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "district": "unknown",
+     "magnitude": 6.1,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "district": "unknown",
+     "magnitude": 5.6,
+     "coastal": null,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "district": "unknown",
+     "magnitude": 6.9,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "district": "unknown",
+     "magnitude": null,
+     "coastal": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "unknown",
+     "magnitude": 6.7,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "district": "unknown",
+     "magnitude": 4.8,
+     "coastal": null,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "unknown",
+     "magnitude": 6.5,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "district": "unknown",
+     "magnitude": 5.7,
+     "coastal": null,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "district": "unknown",
+     "magnitude": 5.5,
+     "coastal": null,
+     "severity": "LOW",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "district": "unknown",
+     "magnitude": 7.4,
+     "coastal": null,
+     "severity": "HIGH",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "district": "unknown",
+     "magnitude": 6.0,
+     "coastal": null,
+     "severity": "MEDIUM",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+    "name": "Earthquake catalogue"
+   }
+  },
+  "GET /api/datasets/6527c86d-4bc3-41ae-9071-aef3fd7008da": {
+   "id": "6527c86d-4bc3-41ae-9071-aef3fd7008da",
+   "name": "Logistics sites",
+   "filename": "logistics_sample.csv",
+   "kind": "CSV",
+   "size_bytes": 1402,
+   "sha256": "0e341442f0580baa99552feee22d86428a14e0aa0c1dbd181ea4e90fbdfacf4f",
+   "status": "APPROVED",
+   "country_code": "ID",
+   "owner": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "profile": {
+    "columns": [
+     {
+      "dtype": "string",
+      "name": "name",
+      "nulls": 0
+     },
+     {
+      "dtype": "string",
+      "name": "facility_type",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "latitude",
+      "nulls": 0
+     },
+     {
+      "dtype": "float",
+      "name": "longitude",
+      "nulls": 0
+     },
+     {
+      "dtype": "integer",
+      "name": "capacity",
+      "nulls": 3
+     },
+     {
+      "dtype": "string",
+      "name": "status",
+      "nulls": 0
+     }
+    ],
+    "preview": [
+     {
+      "capacity": 5000,
+      "facility_type": "DEPOT",
+      "latitude": -6.2088,
+      "longitude": 106.8456,
+      "name": "Depot Jakarta Pusat",
+      "status": "ACTIVE"
+     },
+     {
+      "capacity": 3200,
+      "facility_type": "DEPOT",
+      "latitude": -6.9175,
+      "longitude": 107.6191,
+      "name": "Depot Bandung",
+      "status": "ACTIVE"
+     },
+     {
+      "capacity": 4100,
+      "facility_type": "WAREHOUSE",
+      "latitude": -7.2575,
+      "longitude": 112.7521,
+      "name": "Gudang Surabaya",
+      "status": "ACTIVE"
+     },
+     {
+      "capacity": 1800,
+      "facility_type": "WAREHOUSE",
+      "latitude": -7.9666,
+      "longitude": 112.6326,
+      "name": "Gudang Malang",
+      "status": "STANDBY"
+     },
+     {
+      "capacity": 900,
+      "facility_type": "SHELTER",
+      "latitude": -6.2615,
+      "longitude": 106.8106,
+      "name": "Shelter Kemang",
+      "status": "FULL"
+     }
+    ],
+    "rows": 26
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/datasets/6527c86d-4bc3-41ae-9071-aef3fd7008da/rows?limit=200": {
+   "items": [
+    {
+     "name": "Depot Jakarta Pusat",
+     "facility_type": "DEPOT",
+     "latitude": -6.2088,
+     "longitude": 106.8456,
+     "capacity": 5000,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Depot Bandung",
+     "facility_type": "DEPOT",
+     "latitude": -6.9175,
+     "longitude": 107.6191,
+     "capacity": 3200,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Gudang Surabaya",
+     "facility_type": "WAREHOUSE",
+     "latitude": -7.2575,
+     "longitude": 112.7521,
+     "capacity": 4100,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Gudang Malang",
+     "facility_type": "WAREHOUSE",
+     "latitude": -7.9666,
+     "longitude": 112.6326,
+     "capacity": 1800,
+     "status": "STANDBY"
+    },
+    {
+     "name": "Shelter Kemang",
+     "facility_type": "SHELTER",
+     "latitude": -6.2615,
+     "longitude": 106.8106,
+     "capacity": 900,
+     "status": "FULL"
+    },
+    {
+     "name": "Shelter Kampung Melayu",
+     "facility_type": "SHELTER",
+     "latitude": -6.2226,
+     "longitude": 106.8556,
+     "capacity": 650,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Pluit",
+     "facility_type": "SHELTER",
+     "latitude": -6.1222,
+     "longitude": 106.7906,
+     "capacity": 1200,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Hub Cawang",
+     "facility_type": "HUB",
+     "latitude": -6.2442,
+     "longitude": 106.8453,
+     "capacity": null,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Depot Semarang",
+     "facility_type": "DEPOT",
+     "latitude": -6.9667,
+     "longitude": 110.4167,
+     "capacity": 2600,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Semarang Utara",
+     "facility_type": "SHELTER",
+     "latitude": -6.9932,
+     "longitude": 110.4203,
+     "capacity": 700,
+     "status": "STANDBY"
+    },
+    {
+     "name": "Gudang Yogyakarta",
+     "facility_type": "WAREHOUSE",
+     "latitude": -7.7956,
+     "longitude": 110.3695,
+     "capacity": 1500,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Padang",
+     "facility_type": "SHELTER",
+     "latitude": -0.9492,
+     "longitude": 100.3543,
+     "capacity": 800,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Depot Medan",
+     "facility_type": "DEPOT",
+     "latitude": 3.5952,
+     "longitude": 98.6722,
+     "capacity": 3800,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Gudang Palembang",
+     "facility_type": "WAREHOUSE",
+     "latitude": -2.9761,
+     "longitude": 104.7754,
+     "capacity": 2100,
+     "status": "MAINTENANCE"
+    },
+    {
+     "name": "Hub Pekanbaru",
+     "facility_type": "HUB",
+     "latitude": 0.5071,
+     "longitude": 101.4478,
+     "capacity": null,
+     "status": "STANDBY"
+    },
+    {
+     "name": "Depot Pontianak",
+     "facility_type": "DEPOT",
+     "latitude": -0.0263,
+     "longitude": 109.3425,
+     "capacity": 2300,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Banjarmasin",
+     "facility_type": "SHELTER",
+     "latitude": -3.3186,
+     "longitude": 114.5944,
+     "capacity": 950,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Gudang Makassar",
+     "facility_type": "WAREHOUSE",
+     "latitude": -5.1477,
+     "longitude": 119.4327,
+     "capacity": 2900,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Makassar Selatan",
+     "facility_type": "SHELTER",
+     "latitude": -5.12,
+     "longitude": 119.45,
+     "capacity": 500,
+     "status": "FULL"
+    },
+    {
+     "name": "Hub Manado",
+     "facility_type": "HUB",
+     "latitude": 1.4748,
+     "longitude": 124.8421,
+     "capacity": 1100,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Depot Denpasar",
+     "facility_type": "DEPOT",
+     "latitude": -8.6705,
+     "longitude": 115.2126,
+     "capacity": 1700,
+     "status": "STANDBY"
+    },
+    {
+     "name": "Gudang Kupang",
+     "facility_type": "WAREHOUSE",
+     "latitude": -10.1772,
+     "longitude": 123.607,
+     "capacity": 1300,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Jayapura",
+     "facility_type": "SHELTER",
+     "latitude": -2.5337,
+     "longitude": 140.7181,
+     "capacity": 400,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Depot Ambon",
+     "facility_type": "DEPOT",
+     "latitude": -3.6954,
+     "longitude": 128.1814,
+     "capacity": 1000,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Hub Manila",
+     "facility_type": "HUB",
+     "latitude": 14.5995,
+     "longitude": 120.9842,
+     "capacity": 2400,
+     "status": "ACTIVE"
+    },
+    {
+     "name": "Shelter Bangkok Timur",
+     "facility_type": "SHELTER",
+     "latitude": 13.7563,
+     "longitude": 100.5018,
+     "capacity": null,
+     "status": "STANDBY"
+    }
+   ],
+   "next_offset": null,
+   "total": 26
+  },
+  "GET /api/hazards?dataset_id=6527c86d-4bc3-41ae-9071-aef3fd7008da&pack=flood": {
+   "data_class": "INFERRED_FACT",
+   "tool": "hazard_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-flood-illustrative",
+    "version": "1.0.0",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "FLOOD-R1",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: road blocked candidate.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "flag": "road_blocked_candidate"
+      }
+     },
+     {
+      "id": "FLOOD-R2",
+      "label": "illustrative",
+      "description": "Water depth at or above 50 cm: at least MEDIUM severity.",
+      "when": {
+       "water_depth_cm_gte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "FLOOD-R3",
+      "label": "illustrative",
+      "description": "Water depth at or above 100 cm: HIGH severity.",
+      "when": {
+       "water_depth_cm_gte": 100
+      },
+      "then": {
+       "severity": "HIGH"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 26,
+   "rows_unknown_depth": 26,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 26
+   },
+   "road_blocked_candidates": 0,
+   "per_district": {
+    "unknown": {
+     "rows": 26,
+     "road_blocked_candidates": 0,
+     "unknown_depth_rows": 26
+    }
+   },
+   "results": [
+    {
+     "row": 1,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 16,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 17,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 18,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 19,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 20,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 21,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 22,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 23,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 24,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 25,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 26,
+     "district": "unknown",
+     "water_depth_cm": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "dataset": {
+    "id": "6527c86d-4bc3-41ae-9071-aef3fd7008da",
+    "name": "Logistics sites"
+   }
+  },
+  "GET /api/hazards?dataset_id=6527c86d-4bc3-41ae-9071-aef3fd7008da&pack=tsunami": {
+   "data_class": "INFERRED_FACT",
+   "tool": "tsunami_analyzer",
+   "rule_pack": {
+    "pack_id": "dce-earthquake-tsunami-illustrative",
+    "version": "1.0.0",
+    "sha256": "c9307282a221ddc751a3da462b7ba00634795590f0c24bc37fa7b0eead91bae4",
+    "countries": []
+   },
+   "thresholds": {
+    "label": "illustrative",
+    "status": "ILLUSTRATIVE: not validated against an authoritative standard (SDD 11.3)",
+    "rules": [
+     {
+      "id": "TSU-R1",
+      "label": "illustrative",
+      "description": "Shallow magnitude 7.0 or larger within 100 km of the coast: tsunami watch candidate, HIGH.",
+      "when": {
+       "magnitude_gte": 7.0,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 100
+      },
+      "then": {
+       "flag": "tsunami_watch_candidate",
+       "severity": "HIGH"
+      }
+     },
+     {
+      "id": "TSU-R2",
+      "label": "illustrative",
+      "description": "Shallow magnitude 6.5 or larger within 50 km of the coast: MEDIUM.",
+      "when": {
+       "magnitude_gte": 6.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 50
+      },
+      "then": {
+       "severity": "MEDIUM"
+      }
+     },
+     {
+      "id": "TSU-R3",
+      "label": "illustrative",
+      "description": "Shallow magnitude 5.5 or larger within 10 km of the coast: LOW.",
+      "when": {
+       "magnitude_gte": 5.5,
+       "depth_km_lt": 70,
+       "coast_distance_km_lte": 10
+      },
+      "then": {
+       "severity": "LOW"
+      }
+     }
+    ]
+   },
+   "rows_evaluated": 26,
+   "counts_by_severity": {
+    "HIGH": 0,
+    "LOW": 0,
+    "MEDIUM": 0,
+    "UNKNOWN": 26
+   },
+   "watch_candidates": 0,
+   "results": [
+    {
+     "row": 1,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 2,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 3,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 4,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 5,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 6,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 7,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 8,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 9,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 10,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 11,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 12,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 13,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 14,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 15,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 16,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 17,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 18,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 19,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 20,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 21,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 22,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 23,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 24,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 25,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    },
+    {
+     "row": 26,
+     "area": "unknown",
+     "magnitude": null,
+     "depth_km": null,
+     "coast_distance_km": null,
+     "severity": "UNKNOWN",
+     "flags": []
+    }
+   ],
+   "not_for_operational_use": true,
+   "dataset": {
+    "id": "6527c86d-4bc3-41ae-9071-aef3fd7008da",
+    "name": "Logistics sites"
+   }
+  },
+  "GET /api/simulations": [
+   {
+    "id": "8a6f04d5-54a8-40a6-9670-a0a85631ff46",
+    "name": "Surge check 12 h",
+    "dataset": {
+     "id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "name": "Flood incidents Jakarta"
+    },
+    "country_code": "ID",
+    "parameters": {
+     "depth_multiplier": 2.0,
+     "hours": 12,
+     "rise_cm_per_hour": 0.0
+    },
+    "pack_sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "output_sha256": "3b506aa17a7f0ed6ef0c8248db3b71b26333d7993eca8c6f8acb7d1e30ec0c51",
+    "peak": {
+     "hour": 0,
+     "affected_rows": 33
+    },
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "53b7e1c9-3107-4885-9c0c-67f6b68a5712",
+    "name": "Heavy rain 24 h",
+    "dataset": {
+     "id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "name": "Flood incidents Jakarta"
+    },
+    "country_code": "ID",
+    "parameters": {
+     "depth_multiplier": 1.4,
+     "hours": 24,
+     "rise_cm_per_hour": 6.0
+    },
+    "pack_sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+    "output_sha256": "126ddad9b6e3ba6f079066bd30abb888f1f30b1d036296aeef3ee155a76332be",
+    "peak": {
+     "hour": 5,
+     "affected_rows": 37
+    },
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   }
+  ],
+  "GET /api/simulations/8a6f04d5-54a8-40a6-9670-a0a85631ff46": {
+   "id": "8a6f04d5-54a8-40a6-9670-a0a85631ff46",
+   "name": "Surge check 12 h",
+   "dataset": {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta"
+   },
+   "country_code": "ID",
+   "parameters": {
+    "depth_multiplier": 2.0,
+    "hours": 12,
+    "rise_cm_per_hour": 0.0
+   },
+   "pack_sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+   "output_sha256": "3b506aa17a7f0ed6ef0c8248db3b71b26333d7993eca8c6f8acb7d1e30ec0c51",
+   "peak": {
+    "hour": 0,
+    "affected_rows": 33
+   },
+   "created_by": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "created_at": "2026-11-08T12:46:16Z",
+   "dataset_sha256": "d669165d6ace6106daaed6765e1bf6d875b1facc79f1b9901ca82ef8f24d89d1",
+   "pack": {
+    "id": "dce-flood-illustrative",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+   },
+   "simulator_version": "sim-1.0.0",
+   "output": {
+    "affected_depth_cm_gte": 50,
+    "assumptions": [
+     "Depth rises linearly with time at the stated rate. Real flood dynamics are not modelled.",
+     "Each row is one location. Rows with an unknown base depth stay unknown at every hour.",
+     "Severity and road-blocked flags use the illustrative flood rule pack.",
+     "No randomness is used. The same inputs give the same output."
+    ],
+    "data_class": "SIMULATED_FACT",
+    "label": "Simulation — illustrative parameters",
+    "model": "depth(t) = base_depth * depth_multiplier + rise_cm_per_hour * t, for t = 0..hours",
+    "not_for_operational_use": true,
+    "parameters": {
+     "depth_multiplier": 2.0,
+     "hours": 12,
+     "rise_cm_per_hour": 0.0
+    },
+    "peak": {
+     "affected_rows": 33,
+     "hour": 0,
+     "per_district": {
+      "Cawang": {
+       "affected_rows": 2,
+       "road_blocked_candidates": 2,
+       "rows": 3,
+       "top_severity_rows": 1
+      },
+      "Cilincing": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 3
+      },
+      "Duren Sawit": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 2
+      },
+      "Grogol": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Kalideres": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 1
+      },
+      "Kampung Melayu": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 3
+      },
+      "Kapuk": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Kebayoran Lama": {
+       "affected_rows": 1,
+       "road_blocked_candidates": 1,
+       "rows": 3,
+       "top_severity_rows": 0
+      },
+      "Kemang": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Pluit": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 5,
+       "top_severity_rows": 4
+      },
+      "Tebet": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 5,
+       "top_severity_rows": 2
+      }
+     }
+    },
+    "rows_total": 40,
+    "rows_unknown_base_depth": 3,
+    "rule_pack": {
+     "pack_id": "dce-flood-illustrative",
+     "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+     "version": "1.0.0"
+    },
+    "simulator_version": "sim-1.0.0",
+    "timeline": [
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 0,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 1,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 2,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 3,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 4,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 5,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 6,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 7,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 8,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 9,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 10,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 11,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 4,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 12,
+      "road_blocked_candidates": 33
+     }
+    ],
+    "tool": "scenario_simulator"
+   }
+  },
+  "GET /api/planning/allocation?simulation_id=8a6f04d5-54a8-40a6-9670-a0a85631ff46": {
+   "data_class": "SIMULATED_FACT",
+   "label": "Simulation — illustrative parameters",
+   "tool": "response_planner",
+   "basis": {
+    "simulation": {
+     "id": "8a6f04d5-54a8-40a6-9670-a0a85631ff46",
+     "name": "Surge check 12 h"
+    },
+    "peak_hour": 0,
+    "peak_affected_rows": 33,
+    "output_sha256": "3b506aa17a7f0ed6ef0c8248db3b71b26333d7993eca8c6f8acb7d1e30ec0c51",
+    "rule_pack": {
+     "pack_id": "dce-flood-illustrative",
+     "version": "1.0.0",
+     "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+    },
+    "ratios_label": "ILLUSTRATIVE"
+   },
+   "allocations": [
+    {
+     "priority_rank": 1,
+     "district": "Pluit",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 2,
+     "district": "Kapuk",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 3,
+     "district": "Tebet",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 4,
+     "district": "Cilincing",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 5,
+     "district": "Kampung Melayu",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 6,
+     "district": "Duren Sawit",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 7,
+     "district": "Grogol",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 8,
+     "district": "Kemang",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 9,
+     "district": "Kalideres",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 10,
+     "district": "Cawang",
+     "households_affected": 2,
+     "road_blocked_candidates": 2,
+     "people_estimated": 8,
+     "water_packs": 2,
+     "food_packs": 2,
+     "shelter_kits": 1,
+     "drinking_water_litres": 72
+    },
+    {
+     "priority_rank": 11,
+     "district": "Kebayoran Lama",
+     "households_affected": 1,
+     "road_blocked_candidates": 1,
+     "people_estimated": 4,
+     "water_packs": 1,
+     "food_packs": 1,
+     "shelter_kits": 1,
+     "drinking_water_litres": 36
+    }
+   ],
+   "totals": {
+    "households_affected": 33,
+    "people_estimated": 132,
+    "water_packs": 33,
+    "food_packs": 33,
+    "shelter_kits": 20,
+    "drinking_water_litres": 1188
+   },
+   "districts_without_need": 0,
+   "not_estimated": [
+    "Medical supplies",
+    "Rescue teams",
+    "Transportation",
+    "Fuel",
+    "Communication equipment"
+   ],
+   "assumptions": [
+    "Allocation uses the peak-hour snapshot of the simulation, not the full timeline.",
+    "Each affected row is one household. Ratios are illustrative and not validated against a standard.",
+    "Totals add the rounded per-district figures, so they can differ slightly from rounding the total.",
+    "Districts with no affected rows at peak receive no allocation."
+   ],
+   "not_for_operational_use": true,
+   "coverage": [
+    {
+     "district": "Pluit",
+     "priority_rank": 1,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 16,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kapuk",
+     "priority_rank": 2,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 16,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Tebet",
+     "priority_rank": 3,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 150,
+      "vehicle_people": 40,
+      "total_people": 190
+     },
+     "people_gap": 0,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Cilincing",
+     "priority_rank": 4,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kampung Melayu",
+     "priority_rank": 5,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Duren Sawit",
+     "priority_rank": 6,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Grogol",
+     "priority_rank": 7,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kemang",
+     "priority_rank": 8,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 300,
+      "vehicle_people": 0,
+      "total_people": 300
+     },
+     "people_gap": 0,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 1,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kalideres",
+     "priority_rank": 9,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Cawang",
+     "priority_rank": 10,
+     "need": {
+      "people_estimated": 8,
+      "water_packs": 2,
+      "food_packs": 2,
+      "shelter_kits": 1
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 8,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      },
+      {
+       "item": "food_packs",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      },
+      {
+       "item": "shelter_kits",
+       "need": 1,
+       "stock": 0,
+       "shortfall": 1
+      }
+     ]
+    },
+    {
+     "district": "Kebayoran Lama",
+     "priority_rank": 11,
+     "need": {
+      "people_estimated": 4,
+      "water_packs": 1,
+      "food_packs": 1,
+      "shelter_kits": 1
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 4,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 1,
+       "stock": 0,
+       "shortfall": 1
+      },
+      {
+       "item": "food_packs",
+       "need": 1,
+       "stock": 0,
+       "shortfall": 1
+      },
+      {
+       "item": "shelter_kits",
+       "need": 1,
+       "stock": 0,
+       "shortfall": 1
+      }
+     ]
+    }
+   ]
+  },
+  "GET /api/simulations/53b7e1c9-3107-4885-9c0c-67f6b68a5712": {
+   "id": "53b7e1c9-3107-4885-9c0c-67f6b68a5712",
+   "name": "Heavy rain 24 h",
+   "dataset": {
+    "id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "name": "Flood incidents Jakarta"
+   },
+   "country_code": "ID",
+   "parameters": {
+    "depth_multiplier": 1.4,
+    "hours": 24,
+    "rise_cm_per_hour": 6.0
+   },
+   "pack_sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+   "output_sha256": "126ddad9b6e3ba6f079066bd30abb888f1f30b1d036296aeef3ee155a76332be",
+   "peak": {
+    "hour": 5,
+    "affected_rows": 37
+   },
+   "created_by": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "created_at": "2026-11-08T12:46:16Z",
+   "dataset_sha256": "d669165d6ace6106daaed6765e1bf6d875b1facc79f1b9901ca82ef8f24d89d1",
+   "pack": {
+    "id": "dce-flood-illustrative",
+    "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+   },
+   "simulator_version": "sim-1.0.0",
+   "output": {
+    "affected_depth_cm_gte": 50,
+    "assumptions": [
+     "Depth rises linearly with time at the stated rate. Real flood dynamics are not modelled.",
+     "Each row is one location. Rows with an unknown base depth stay unknown at every hour.",
+     "Severity and road-blocked flags use the illustrative flood rule pack.",
+     "No randomness is used. The same inputs give the same output."
+    ],
+    "data_class": "SIMULATED_FACT",
+    "label": "Simulation — illustrative parameters",
+    "model": "depth(t) = base_depth * depth_multiplier + rise_cm_per_hour * t, for t = 0..hours",
+    "not_for_operational_use": true,
+    "parameters": {
+     "depth_multiplier": 1.4,
+     "hours": 24,
+     "rise_cm_per_hour": 6.0
+    },
+    "peak": {
+     "affected_rows": 37,
+     "hour": 5,
+     "per_district": {
+      "Cawang": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 1
+      },
+      "Cilincing": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 3
+      },
+      "Duren Sawit": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 2
+      },
+      "Grogol": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Kalideres": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 1
+      },
+      "Kampung Melayu": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 3
+      },
+      "Kapuk": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Kebayoran Lama": {
+       "affected_rows": 3,
+       "road_blocked_candidates": 3,
+       "rows": 3,
+       "top_severity_rows": 0
+      },
+      "Kemang": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 4,
+       "top_severity_rows": 2
+      },
+      "Pluit": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 5,
+       "top_severity_rows": 4
+      },
+      "Tebet": {
+       "affected_rows": 4,
+       "road_blocked_candidates": 4,
+       "rows": 5,
+       "top_severity_rows": 2
+      }
+     }
+    },
+    "rows_total": 40,
+    "rows_unknown_base_depth": 3,
+    "rule_pack": {
+     "pack_id": "dce-flood-illustrative",
+     "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209",
+     "version": "1.0.0"
+    },
+    "simulator_version": "sim-1.0.0",
+    "timeline": [
+     {
+      "affected_rows": 29,
+      "counts_by_severity": {
+       "HIGH": 11,
+       "LOW": 8,
+       "MEDIUM": 18,
+       "UNKNOWN": 3
+      },
+      "hour": 0,
+      "road_blocked_candidates": 29
+     },
+     {
+      "affected_rows": 31,
+      "counts_by_severity": {
+       "HIGH": 13,
+       "LOW": 6,
+       "MEDIUM": 18,
+       "UNKNOWN": 3
+      },
+      "hour": 1,
+      "road_blocked_candidates": 31
+     },
+     {
+      "affected_rows": 33,
+      "counts_by_severity": {
+       "HIGH": 15,
+       "LOW": 4,
+       "MEDIUM": 18,
+       "UNKNOWN": 3
+      },
+      "hour": 2,
+      "road_blocked_candidates": 33
+     },
+     {
+      "affected_rows": 34,
+      "counts_by_severity": {
+       "HIGH": 17,
+       "LOW": 3,
+       "MEDIUM": 17,
+       "UNKNOWN": 3
+      },
+      "hour": 3,
+      "road_blocked_candidates": 34
+     },
+     {
+      "affected_rows": 35,
+      "counts_by_severity": {
+       "HIGH": 20,
+       "LOW": 2,
+       "MEDIUM": 15,
+       "UNKNOWN": 3
+      },
+      "hour": 4,
+      "road_blocked_candidates": 35
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 22,
+       "LOW": 0,
+       "MEDIUM": 15,
+       "UNKNOWN": 3
+      },
+      "hour": 5,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 24,
+       "LOW": 0,
+       "MEDIUM": 13,
+       "UNKNOWN": 3
+      },
+      "hour": 6,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 26,
+       "LOW": 0,
+       "MEDIUM": 11,
+       "UNKNOWN": 3
+      },
+      "hour": 7,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 28,
+       "LOW": 0,
+       "MEDIUM": 9,
+       "UNKNOWN": 3
+      },
+      "hour": 8,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 31,
+       "LOW": 0,
+       "MEDIUM": 6,
+       "UNKNOWN": 3
+      },
+      "hour": 9,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 32,
+       "LOW": 0,
+       "MEDIUM": 5,
+       "UNKNOWN": 3
+      },
+      "hour": 10,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 33,
+       "LOW": 0,
+       "MEDIUM": 4,
+       "UNKNOWN": 3
+      },
+      "hour": 11,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 35,
+       "LOW": 0,
+       "MEDIUM": 2,
+       "UNKNOWN": 3
+      },
+      "hour": 12,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 36,
+       "LOW": 0,
+       "MEDIUM": 1,
+       "UNKNOWN": 3
+      },
+      "hour": 13,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 14,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 15,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 16,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 17,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 18,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 19,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 20,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 21,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 22,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 23,
+      "road_blocked_candidates": 37
+     },
+     {
+      "affected_rows": 37,
+      "counts_by_severity": {
+       "HIGH": 37,
+       "LOW": 0,
+       "MEDIUM": 0,
+       "UNKNOWN": 3
+      },
+      "hour": 24,
+      "road_blocked_candidates": 37
+     }
+    ],
+    "tool": "scenario_simulator"
+   }
+  },
+  "GET /api/planning/allocation?simulation_id=53b7e1c9-3107-4885-9c0c-67f6b68a5712": {
+   "data_class": "SIMULATED_FACT",
+   "label": "Simulation — illustrative parameters",
+   "tool": "response_planner",
+   "basis": {
+    "simulation": {
+     "id": "53b7e1c9-3107-4885-9c0c-67f6b68a5712",
+     "name": "Heavy rain 24 h"
+    },
+    "peak_hour": 5,
+    "peak_affected_rows": 37,
+    "output_sha256": "126ddad9b6e3ba6f079066bd30abb888f1f30b1d036296aeef3ee155a76332be",
+    "rule_pack": {
+     "pack_id": "dce-flood-illustrative",
+     "version": "1.0.0",
+     "sha256": "6543466f9f82344eacb896f577ec8423dcb602ddeb2d1284a3ef88f13c24d209"
+    },
+    "ratios_label": "ILLUSTRATIVE"
+   },
+   "allocations": [
+    {
+     "priority_rank": 1,
+     "district": "Pluit",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 2,
+     "district": "Kapuk",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 3,
+     "district": "Kemang",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 4,
+     "district": "Tebet",
+     "households_affected": 4,
+     "road_blocked_candidates": 4,
+     "people_estimated": 16,
+     "water_packs": 4,
+     "food_packs": 4,
+     "shelter_kits": 2,
+     "drinking_water_litres": 144
+    },
+    {
+     "priority_rank": 5,
+     "district": "Cilincing",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 6,
+     "district": "Kampung Melayu",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 7,
+     "district": "Duren Sawit",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 8,
+     "district": "Grogol",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 9,
+     "district": "Cawang",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 10,
+     "district": "Kalideres",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    },
+    {
+     "priority_rank": 11,
+     "district": "Kebayoran Lama",
+     "households_affected": 3,
+     "road_blocked_candidates": 3,
+     "people_estimated": 12,
+     "water_packs": 3,
+     "food_packs": 3,
+     "shelter_kits": 2,
+     "drinking_water_litres": 108
+    }
+   ],
+   "totals": {
+    "households_affected": 37,
+    "people_estimated": 148,
+    "water_packs": 37,
+    "food_packs": 37,
+    "shelter_kits": 22,
+    "drinking_water_litres": 1332
+   },
+   "districts_without_need": 0,
+   "not_estimated": [
+    "Medical supplies",
+    "Rescue teams",
+    "Transportation",
+    "Fuel",
+    "Communication equipment"
+   ],
+   "assumptions": [
+    "Allocation uses the peak-hour snapshot of the simulation, not the full timeline.",
+    "Each affected row is one household. Ratios are illustrative and not validated against a standard.",
+    "Totals add the rounded per-district figures, so they can differ slightly from rounding the total.",
+    "Districts with no affected rows at peak receive no allocation."
+   ],
+   "not_for_operational_use": true,
+   "coverage": [
+    {
+     "district": "Pluit",
+     "priority_rank": 1,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 16,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kapuk",
+     "priority_rank": 2,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 16,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kemang",
+     "priority_rank": 3,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 300,
+      "vehicle_people": 0,
+      "total_people": 300
+     },
+     "people_gap": 0,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 1,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Tebet",
+     "priority_rank": 4,
+     "need": {
+      "people_estimated": 16,
+      "water_packs": 4,
+      "food_packs": 4,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 150,
+      "vehicle_people": 40,
+      "total_people": 190
+     },
+     "people_gap": 0,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "food_packs",
+       "need": 4,
+       "stock": 0,
+       "shortfall": 4
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Cilincing",
+     "priority_rank": 5,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kampung Melayu",
+     "priority_rank": 6,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Duren Sawit",
+     "priority_rank": 7,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Grogol",
+     "priority_rank": 8,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Cawang",
+     "priority_rank": 9,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kalideres",
+     "priority_rank": 10,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    },
+    {
+     "district": "Kebayoran Lama",
+     "priority_rank": 11,
+     "need": {
+      "people_estimated": 12,
+      "water_packs": 3,
+      "food_packs": 3,
+      "shelter_kits": 2
+     },
+     "capacity": {
+      "shelter_people": 0,
+      "vehicle_people": 0,
+      "total_people": 0
+     },
+     "people_gap": 12,
+     "stock": {
+      "water_packs": 0,
+      "food_packs": 0,
+      "shelter_kits": 0,
+      "medical_kits": 0
+     },
+     "teams_available": {
+      "RESCUE": 0,
+      "MEDICAL": 0,
+      "TRANSPORT": 0
+     },
+     "gaps": [
+      {
+       "item": "water_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "food_packs",
+       "need": 3,
+       "stock": 0,
+       "shortfall": 3
+      },
+      {
+       "item": "shelter_kits",
+       "need": 2,
+       "stock": 0,
+       "shortfall": 2
+      }
+     ]
+    }
+   ]
+  },
+  "GET /api/missions": [
+   {
+    "id": "ecc9351f-d40a-4e33-8c96-0f3e2bb284ba",
+    "title": "Flood response Jakarta",
+    "objective": "Prioritise districts with the most flooded households.",
+    "source": {
+     "type": "DATASET",
+     "id": "88347c41-885a-4e10-ac83-1be18d158361"
+    },
+    "area_column": "district",
+    "target_areas": [
+     "Cawang",
+     "Cilincing",
+     "Duren Sawit",
+     "Grogol",
+     "Kalideres",
+     "Kampung Melayu",
+     "Kapuk",
+     "Kebayoran Lama",
+     "Kemang",
+     "Pluit",
+     "Tebet"
+    ],
+    "status": "APPROVED",
+    "country_code": "ID",
+    "content_sha256": "2300a67399a5c11c5fae5d8281197f2ca75859f6fbe4cbe1ff8c719f5e9477d7",
+    "approved_content_sha256": "2300a67399a5c11c5fae5d8281197f2ca75859f6fbe4cbe1ff8c719f5e9477d7",
+    "proposer": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "decision": {
+     "decided_by": {
+      "id": "e922db59-ee4b-423c-bf3f-2f195aadc71b",
+      "username": "Approver (demo)"
+     },
+     "role": "Approver",
+     "at": "2026-11-08T12:46:17Z",
+     "note": "Approved for planning."
+    },
+    "created_at": "2026-11-08T12:46:17Z"
+   }
+  ],
+  "GET /api/missions/ecc9351f-d40a-4e33-8c96-0f3e2bb284ba": {
+   "id": "ecc9351f-d40a-4e33-8c96-0f3e2bb284ba",
+   "title": "Flood response Jakarta",
+   "objective": "Prioritise districts with the most flooded households.",
+   "source": {
+    "type": "DATASET",
+    "id": "88347c41-885a-4e10-ac83-1be18d158361"
+   },
+   "area_column": "district",
+   "target_areas": [
+    "Cawang",
+    "Cilincing",
+    "Duren Sawit",
+    "Grogol",
+    "Kalideres",
+    "Kampung Melayu",
+    "Kapuk",
+    "Kebayoran Lama",
+    "Kemang",
+    "Pluit",
+    "Tebet"
+   ],
+   "status": "APPROVED",
+   "country_code": "ID",
+   "content_sha256": "2300a67399a5c11c5fae5d8281197f2ca75859f6fbe4cbe1ff8c719f5e9477d7",
+   "approved_content_sha256": "2300a67399a5c11c5fae5d8281197f2ca75859f6fbe4cbe1ff8c719f5e9477d7",
+   "proposer": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "decision": {
+    "decided_by": {
+     "id": "e922db59-ee4b-423c-bf3f-2f195aadc71b",
+     "username": "Approver (demo)"
+    },
+    "role": "Approver",
+    "at": "2026-11-08T12:46:17Z",
+    "note": "Approved for planning."
+   },
+   "created_at": "2026-11-08T12:46:17Z"
+  },
+  "GET /api/reports": [
+   {
+    "id": "2a99d0aa-ef11-40f8-88a2-a6fe527c6f91",
+    "hazard_type": "WILDFIRE",
+    "location": {
+     "name": "Attica",
+     "latitude": 38.0,
+     "longitude": 23.7
+    },
+    "observed_at": null,
+    "reporter_role": "RESPONDER",
+    "severity_reported": "CRITICAL",
+    "source_reference": null,
+    "notes": "Smoke plume moving north-east.",
+    "status": "VERIFIED_OBSERVATION",
+    "country_code": "GR",
+    "content_sha256": "6e73c515a26a955abbb9bcbe1fb1c25f1cc35833c199b517f45a2692f5ab5c31",
+    "submitter": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "review": {
+     "reviewer": {
+      "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+     },
+     "at": "2026-11-08T12:46:16Z",
+     "note": "Checked by reviewer."
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "53cc9eae-1f0b-4526-b93f-af44f2949b88",
+    "hazard_type": "EARTHQUAKE",
+    "location": {
+     "name": "Sendai",
+     "latitude": 38.27,
+     "longitude": 140.87
+    },
+    "observed_at": null,
+    "reporter_role": "OFFICIAL",
+    "severity_reported": "LOW",
+    "source_reference": null,
+    "notes": "Felt shaking, no damage reported yet.",
+    "status": "VERIFIED_OBSERVATION",
+    "country_code": "JP",
+    "content_sha256": "c57c092b9d1151f7a7814f117ab2b36f02458fe00d61650f06d03c7a2c9dc48d",
+    "submitter": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "review": {
+     "reviewer": {
+      "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+     },
+     "at": "2026-11-08T12:46:16Z",
+     "note": "Checked by reviewer."
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "b388b3c1-bd7a-4ab2-9d73-4b89e5fbcffa",
+    "hazard_type": "LANDSLIDE",
+    "location": {
+     "name": "Bogor",
+     "latitude": -6.6,
+     "longitude": 106.8
+    },
+    "observed_at": null,
+    "reporter_role": "CIVILIAN",
+    "severity_reported": "HIGH",
+    "source_reference": null,
+    "notes": "Slope cracks after rain.",
+    "status": "OBSERVATION",
+    "country_code": "ID",
+    "content_sha256": "60701c110a99bac6a686f52234ae6f132ec3ade409afaa7d16641d4d2506dd9f",
+    "submitter": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "review": null,
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "b78b804b-5fca-4a9b-a09d-e0aa4e61d34c",
+    "hazard_type": "FLOOD",
+    "location": {
+     "name": "Kemang",
+     "latitude": -6.26,
+     "longitude": 106.81
+    },
+    "observed_at": null,
+    "reporter_role": "OFFICIAL",
+    "severity_reported": "HIGH",
+    "source_reference": null,
+    "notes": "Water above knee height on Jl. Kemang Raya.",
+    "status": "VERIFIED_OBSERVATION",
+    "country_code": "ID",
+    "content_sha256": "34c485f45bce50574b317b81b4dd0c1dee7b1d3c384a7372677705787cf96759",
+    "submitter": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "review": {
+     "reviewer": {
+      "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+     },
+     "at": "2026-11-08T12:46:16Z",
+     "note": "Checked by reviewer."
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   },
+   {
+    "id": "c9404901-5004-4723-b757-ba24411cfce4",
+    "hazard_type": "EXTREME_RAINFALL",
+    "location": {
+     "name": "Tebet",
+     "latitude": -6.23,
+     "longitude": 106.85
+    },
+    "observed_at": null,
+    "reporter_role": "VOLUNTEER",
+    "severity_reported": "MEDIUM",
+    "source_reference": null,
+    "notes": "Drainage overflow near the station.",
+    "status": "VERIFIED_OBSERVATION",
+    "country_code": "ID",
+    "content_sha256": "a780f0be2d255312aa7dd8f9aad77a4413363ab6f25ca26590bab6d241aec20d",
+    "submitter": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "review": {
+     "reviewer": {
+      "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+     },
+     "at": "2026-11-08T12:46:16Z",
+     "note": "Checked by reviewer."
+    },
+    "created_at": "2026-11-08T12:46:16Z"
+   }
+  ],
+  "GET /api/reports/2a99d0aa-ef11-40f8-88a2-a6fe527c6f91": {
+   "id": "2a99d0aa-ef11-40f8-88a2-a6fe527c6f91",
+   "hazard_type": "WILDFIRE",
+   "location": {
+    "name": "Attica",
+    "latitude": 38.0,
+    "longitude": 23.7
+   },
+   "observed_at": null,
+   "reporter_role": "RESPONDER",
+   "severity_reported": "CRITICAL",
+   "source_reference": null,
+   "notes": "Smoke plume moving north-east.",
+   "status": "VERIFIED_OBSERVATION",
+   "country_code": "GR",
+   "content_sha256": "6e73c515a26a955abbb9bcbe1fb1c25f1cc35833c199b517f45a2692f5ab5c31",
+   "submitter": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "review": {
+    "reviewer": {
+     "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+    },
+    "at": "2026-11-08T12:46:16Z",
+    "note": "Checked by reviewer."
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/reports/53cc9eae-1f0b-4526-b93f-af44f2949b88": {
+   "id": "53cc9eae-1f0b-4526-b93f-af44f2949b88",
+   "hazard_type": "EARTHQUAKE",
+   "location": {
+    "name": "Sendai",
+    "latitude": 38.27,
+    "longitude": 140.87
+   },
+   "observed_at": null,
+   "reporter_role": "OFFICIAL",
+   "severity_reported": "LOW",
+   "source_reference": null,
+   "notes": "Felt shaking, no damage reported yet.",
+   "status": "VERIFIED_OBSERVATION",
+   "country_code": "JP",
+   "content_sha256": "c57c092b9d1151f7a7814f117ab2b36f02458fe00d61650f06d03c7a2c9dc48d",
+   "submitter": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "review": {
+    "reviewer": {
+     "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+    },
+    "at": "2026-11-08T12:46:16Z",
+    "note": "Checked by reviewer."
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/reports/b388b3c1-bd7a-4ab2-9d73-4b89e5fbcffa": {
+   "id": "b388b3c1-bd7a-4ab2-9d73-4b89e5fbcffa",
+   "hazard_type": "LANDSLIDE",
+   "location": {
+    "name": "Bogor",
+    "latitude": -6.6,
+    "longitude": 106.8
+   },
+   "observed_at": null,
+   "reporter_role": "CIVILIAN",
+   "severity_reported": "HIGH",
+   "source_reference": null,
+   "notes": "Slope cracks after rain.",
+   "status": "OBSERVATION",
+   "country_code": "ID",
+   "content_sha256": "60701c110a99bac6a686f52234ae6f132ec3ade409afaa7d16641d4d2506dd9f",
+   "submitter": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "review": null,
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/reports/b78b804b-5fca-4a9b-a09d-e0aa4e61d34c": {
+   "id": "b78b804b-5fca-4a9b-a09d-e0aa4e61d34c",
+   "hazard_type": "FLOOD",
+   "location": {
+    "name": "Kemang",
+    "latitude": -6.26,
+    "longitude": 106.81
+   },
+   "observed_at": null,
+   "reporter_role": "OFFICIAL",
+   "severity_reported": "HIGH",
+   "source_reference": null,
+   "notes": "Water above knee height on Jl. Kemang Raya.",
+   "status": "VERIFIED_OBSERVATION",
+   "country_code": "ID",
+   "content_sha256": "34c485f45bce50574b317b81b4dd0c1dee7b1d3c384a7372677705787cf96759",
+   "submitter": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "review": {
+    "reviewer": {
+     "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+    },
+    "at": "2026-11-08T12:46:16Z",
+    "note": "Checked by reviewer."
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/reports/c9404901-5004-4723-b757-ba24411cfce4": {
+   "id": "c9404901-5004-4723-b757-ba24411cfce4",
+   "hazard_type": "EXTREME_RAINFALL",
+   "location": {
+    "name": "Tebet",
+    "latitude": -6.23,
+    "longitude": 106.85
+   },
+   "observed_at": null,
+   "reporter_role": "VOLUNTEER",
+   "severity_reported": "MEDIUM",
+   "source_reference": null,
+   "notes": "Drainage overflow near the station.",
+   "status": "VERIFIED_OBSERVATION",
+   "country_code": "ID",
+   "content_sha256": "a780f0be2d255312aa7dd8f9aad77a4413363ab6f25ca26590bab6d241aec20d",
+   "submitter": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+   },
+   "review": {
+    "reviewer": {
+     "id": "700b428b-10f5-4131-a9f2-10d63561df44"
+    },
+    "at": "2026-11-08T12:46:16Z",
+    "note": "Checked by reviewer."
+   },
+   "created_at": "2026-11-08T12:46:16Z"
+  },
+  "GET /api/alerts": [
+   {
+    "id": "16976fbe-bbbb-4883-a16e-e82e521da5f4",
+    "kind": "REPORT_VERIFIED",
+    "severity": "MEDIUM",
+    "country_code": "ID",
+    "district": null,
+    "title": "Verified EXTREME_RAINFALL report: Tebet",
+    "detail": {
+     "hazard_type": "EXTREME_RAINFALL",
+     "location_name": "Tebet",
+     "report_id": "c9404901-5004-4723-b757-ba24411cfce4"
+    },
+    "source": {
+     "type": "report",
+     "id": "c9404901-5004-4723-b757-ba24411cfce4"
+    },
+    "created_at": "2026-11-08T12:46:16Z",
+    "acknowledged": false,
+    "acknowledged_by": null,
+    "acknowledged_at": null
+   },
+   {
+    "id": "2f1b849f-d7f0-48bb-a6d0-4a59bcbec036",
+    "kind": "REPORT_VERIFIED",
+    "severity": "CRITICAL",
+    "country_code": "GR",
+    "district": null,
+    "title": "Verified WILDFIRE report: Attica",
+    "detail": {
+     "hazard_type": "WILDFIRE",
+     "location_name": "Attica",
+     "report_id": "2a99d0aa-ef11-40f8-88a2-a6fe527c6f91"
+    },
+    "source": {
+     "type": "report",
+     "id": "2a99d0aa-ef11-40f8-88a2-a6fe527c6f91"
+    },
+    "created_at": "2026-11-08T12:46:16Z",
+    "acknowledged": false,
+    "acknowledged_by": null,
+    "acknowledged_at": null
+   },
+   {
+    "id": "930ed010-6bfb-4ae9-8106-8aecfb4cddc3",
+    "kind": "REPORT_VERIFIED",
+    "severity": "LOW",
+    "country_code": "JP",
+    "district": null,
+    "title": "Verified EARTHQUAKE report: Sendai",
+    "detail": {
+     "hazard_type": "EARTHQUAKE",
+     "location_name": "Sendai",
+     "report_id": "53cc9eae-1f0b-4526-b93f-af44f2949b88"
+    },
+    "source": {
+     "type": "report",
+     "id": "53cc9eae-1f0b-4526-b93f-af44f2949b88"
+    },
+    "created_at": "2026-11-08T12:46:16Z",
+    "acknowledged": false,
+    "acknowledged_by": null,
+    "acknowledged_at": null
+   },
+   {
+    "id": "ee7a3dba-3140-4d2f-abc8-cff00e97fbec",
+    "kind": "REPORT_VERIFIED",
+    "severity": "HIGH",
+    "country_code": "ID",
+    "district": null,
+    "title": "Verified FLOOD report: Kemang",
+    "detail": {
+     "hazard_type": "FLOOD",
+     "location_name": "Kemang",
+     "report_id": "b78b804b-5fca-4a9b-a09d-e0aa4e61d34c"
+    },
+    "source": {
+     "type": "report",
+     "id": "b78b804b-5fca-4a9b-a09d-e0aa4e61d34c"
+    },
+    "created_at": "2026-11-08T12:46:16Z",
+    "acknowledged": false,
+    "acknowledged_by": null,
+    "acknowledged_at": null
+   }
+  ],
+  "GET /api/alerts/summary": {
+   "country": null,
+   "by_severity": {
+    "LOW": 1,
+    "MEDIUM": 1,
+    "HIGH": 1,
+    "CRITICAL": 1
+   },
+   "by_kind": {
+    "REPORT_VERIFIED": 4,
+    "THRESHOLD_CROSSED": 0,
+    "SYNC_REJECTED": 0,
+    "DECISION_WAITING": 1
+   },
+   "decision_waiting": {
+    "missions_proposed": 0,
+    "reports_observation": 1
+   },
+   "total": 5
+  },
+  "GET /api/timeseries?hours=72": {
+   "country": null,
+   "hours": 72,
+   "buckets": [
+    {
+     "hour": "2026-11-05T15:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T16:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T17:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T18:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T19:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T20:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T21:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T22:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-05T23:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T00:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T01:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T02:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T03:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T04:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T05:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T06:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T07:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T08:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T09:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T10:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T11:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T12:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T13:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T14:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T15:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T16:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T17:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T18:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T19:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T20:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T21:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T22:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-06T23:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T00:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T01:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T02:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T03:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T04:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T05:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T06:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T07:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T08:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T09:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T10:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T11:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T12:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T13:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T14:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T15:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T16:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T17:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T18:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T19:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T20:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T21:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T22:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-07T23:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T00:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T01:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T02:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T03:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T04:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T05:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T06:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T07:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T08:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T09:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T10:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T11:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T12:00:00Z",
+     "reports": 5,
+     "verified": 4,
+     "by_hazard": {
+      "EARTHQUAKE": 1,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 1,
+      "FLOOD": 1,
+      "LANDSLIDE": 1,
+      "WILDFIRE": 1,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T13:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    },
+    {
+     "hour": "2026-11-08T14:00:00Z",
+     "reports": 0,
+     "verified": 0,
+     "by_hazard": {
+      "EARTHQUAKE": 0,
+      "TSUNAMI": 0,
+      "EXTREME_RAINFALL": 0,
+      "FLOOD": 0,
+      "LANDSLIDE": 0,
+      "WILDFIRE": 0,
+      "SMOKE": 0
+     }
+    }
+   ]
+  },
+  "GET /api/logistics/shelters": [
+   {
+    "id": "ddc4107f-5c22-492b-a975-413384cde411",
+    "name": "GOR Kemang shelter",
+    "country_code": "ID",
+    "district": "Kemang",
+    "latitude": -6.27,
+    "longitude": 106.82,
+    "capacity_people": 300,
+    "status": "OPEN",
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:17Z",
+    "updated_at": "2026-11-08T12:46:17Z"
+   },
+   {
+    "id": "bddc61f3-c39e-4953-9275-b7e97a5ab890",
+    "name": "Tebet school hall",
+    "country_code": "ID",
+    "district": "Tebet",
+    "latitude": -6.23,
+    "longitude": 106.84,
+    "capacity_people": 150,
+    "status": "OPEN",
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:17Z",
+    "updated_at": "2026-11-08T12:46:17Z"
+   }
+  ],
+  "GET /api/logistics/supplies": [],
+  "GET /api/logistics/teams": [
+   {
+    "id": "c26662c6-2fc8-48f7-8aa7-bde62c2da35a",
+    "team_type": "RESCUE",
+    "size": 8,
+    "status": "AVAILABLE",
+    "district": "Kemang",
+    "country_code": "ID",
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:17Z",
+    "updated_at": "2026-11-08T12:46:17Z"
+   }
+  ],
+  "GET /api/logistics/vehicles": [
+   {
+    "id": "87a8b7b1-1dca-4384-a982-e0b980ee04e0",
+    "vehicle_type": "Truck",
+    "capacity_people": 40,
+    "status": "AVAILABLE",
+    "district": "Tebet",
+    "country_code": "ID",
+    "created_by": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4"
+    },
+    "created_at": "2026-11-08T12:46:17Z",
+    "updated_at": "2026-11-08T12:46:17Z"
+   }
+  ],
+  "GET /api/situation?limit=500": {
+   "points": [
+    {
+     "kind": "REPORT",
+     "id": "2a99d0aa-ef11-40f8-88a2-a6fe527c6f91",
+     "label": "WILDFIRE · Attica",
+     "lat": 38.0,
+     "lon": 23.7,
+     "status": "VERIFIED_OBSERVATION",
+     "data_class": "VERIFIED_OBSERVATION",
+     "country_code": "GR"
+    },
+    {
+     "kind": "REPORT",
+     "id": "53cc9eae-1f0b-4526-b93f-af44f2949b88",
+     "label": "EARTHQUAKE · Sendai",
+     "lat": 38.27,
+     "lon": 140.87,
+     "status": "VERIFIED_OBSERVATION",
+     "data_class": "VERIFIED_OBSERVATION",
+     "country_code": "JP"
+    },
+    {
+     "kind": "REPORT",
+     "id": "b78b804b-5fca-4a9b-a09d-e0aa4e61d34c",
+     "label": "FLOOD · Kemang",
+     "lat": -6.26,
+     "lon": 106.81,
+     "status": "VERIFIED_OBSERVATION",
+     "data_class": "VERIFIED_OBSERVATION",
+     "country_code": "ID"
+    },
+    {
+     "kind": "REPORT",
+     "id": "c9404901-5004-4723-b757-ba24411cfce4",
+     "label": "EXTREME_RAINFALL · Tebet",
+     "lat": -6.23,
+     "lon": 106.85,
+     "status": "VERIFIED_OBSERVATION",
+     "data_class": "VERIFIED_OBSERVATION",
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 1,
+     "label": "INC-001",
+     "lat": -6.2607,
+     "lon": 106.8133,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 2,
+     "label": "INC-002",
+     "lat": -6.2615,
+     "lon": 106.8129,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 3,
+     "label": "INC-003",
+     "lat": -6.2442,
+     "lon": 106.8453,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 4,
+     "label": "INC-004",
+     "lat": -6.2451,
+     "lon": 106.8462,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 5,
+     "label": "INC-005",
+     "lat": -6.2226,
+     "lon": 106.8556,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 6,
+     "label": "INC-006",
+     "lat": -6.2231,
+     "lon": 106.8549,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 7,
+     "label": "INC-007",
+     "lat": -6.1222,
+     "lon": 106.7906,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 8,
+     "label": "INC-008",
+     "lat": -6.1229,
+     "lon": 106.7915,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 9,
+     "label": "INC-009",
+     "lat": -6.1217,
+     "lon": 106.7898,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 10,
+     "label": "INC-010",
+     "lat": -6.126,
+     "lon": 106.7993,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 12,
+     "label": "INC-012",
+     "lat": -6.1653,
+     "lon": 106.7897,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 13,
+     "label": "INC-013",
+     "lat": -6.1648,
+     "lon": 106.7904,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 14,
+     "label": "INC-014",
+     "lat": -6.24,
+     "lon": 106.78,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 15,
+     "label": "INC-015",
+     "lat": -6.2412,
+     "lon": 106.7817,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 16,
+     "label": "INC-016",
+     "lat": -6.229,
+     "lon": 106.846,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 17,
+     "label": "INC-017",
+     "lat": -6.2297,
+     "lon": 106.8471,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 18,
+     "label": "INC-018",
+     "lat": -6.2284,
+     "lon": 106.8452,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 19,
+     "label": "INC-019",
+     "lat": -6.145,
+     "lon": 106.704,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 20,
+     "label": "INC-020",
+     "lat": -6.1462,
+     "lon": 106.7055,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 21,
+     "label": "INC-021",
+     "lat": -6.1,
+     "lon": 106.94,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 22,
+     "label": "INC-022",
+     "lat": -6.1012,
+     "lon": 106.9388,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 23,
+     "label": "INC-023",
+     "lat": -6.243,
+     "lon": 106.901,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 24,
+     "label": "INC-024",
+     "lat": -6.2437,
+     "lon": 106.9022,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 25,
+     "label": "INC-025",
+     "lat": -6.2599,
+     "lon": 106.814,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 26,
+     "label": "INC-026",
+     "lat": -6.1234,
+     "lon": 106.792,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 27,
+     "label": "INC-027",
+     "lat": -6.1248,
+     "lon": 106.798,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 28,
+     "label": "INC-028",
+     "lat": -6.167,
+     "lon": 106.791,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 29,
+     "label": "INC-029",
+     "lat": -6.246,
+     "lon": 106.844,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 31,
+     "label": "INC-031",
+     "lat": -6.2301,
+     "lon": 106.848,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 32,
+     "label": "INC-032",
+     "lat": -6.144,
+     "lon": 106.7068,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 33,
+     "label": "INC-033",
+     "lat": -6.099,
+     "lon": 106.941,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 34,
+     "label": "INC-034",
+     "lat": -6.2395,
+     "lon": 106.779,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 35,
+     "label": "INC-035",
+     "lat": -6.2421,
+     "lon": 106.9031,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 36,
+     "label": "INC-036",
+     "lat": -6.121,
+     "lon": 106.7885,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 37,
+     "label": "INC-037",
+     "lat": -6.166,
+     "lon": 106.7888,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 38,
+     "label": "INC-038",
+     "lat": -6.262,
+     "lon": 106.8125,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 39,
+     "label": "INC-039",
+     "lat": -6.1268,
+     "lon": 106.8004,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+     "dataset_name": "Flood incidents Jakarta",
+     "row": 40,
+     "label": "INC-040",
+     "lat": -6.2275,
+     "lon": 106.8443,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 1,
+     "label": "Pesisir Padang",
+     "lat": -0.9471,
+     "lon": 100.4172,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 2,
+     "label": "Pesisir Bengkulu",
+     "lat": -3.8004,
+     "lon": 102.2655,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 3,
+     "label": "Pesisir Pangandaran",
+     "lat": -7.6933,
+     "lon": 108.6503,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 4,
+     "label": "Pesisir Mentawai",
+     "lat": -2.06,
+     "lon": 99.51,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 5,
+     "label": "Kota Palu",
+     "lat": -0.8917,
+     "lon": 119.8707,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 6,
+     "label": "Pesisir Lampung",
+     "lat": -5.45,
+     "lon": 105.26,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 7,
+     "label": "Pedalaman Jambi",
+     "lat": -1.6101,
+     "lon": 103.6131,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 8,
+     "label": "Pesisir Banten",
+     "lat": -6.0,
+     "lon": 105.9,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 9,
+     "label": "Pesisir Aceh Barat",
+     "lat": 4.45,
+     "lon": 96.15,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 10,
+     "label": "Pesisir Sulawesi Utara",
+     "lat": 1.49,
+     "lon": 124.84,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 11,
+     "label": "Pesisir Ambon",
+     "lat": -3.6954,
+     "lon": 128.1814,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 12,
+     "label": "Pedalaman Bandung",
+     "lat": -6.9175,
+     "lon": 107.6191,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 13,
+     "label": "Pesisir Kupang",
+     "lat": -10.1772,
+     "lon": 123.607,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 14,
+     "label": "Pesisir Maluku Utara",
+     "lat": 0.7893,
+     "lon": 127.38,
+     "data_class": null,
+     "country_code": "ID"
+    },
+    {
+     "kind": "DATASET_ROW",
+     "dataset_id": "f8dbe400-990f-4a6e-a162-05213aa4c1db",
+     "dataset_name": "Earthquake catalogue",
+     "row": 15,
+     "label": "Pesisir Sumba",
+     "lat": -9.65,
+     "lon": 120.26,
+     "data_class": null,
+     "country_code": "ID"
+    }
+   ],
+   "counts": {
+    "REPORT": 4,
+    "DATASET_ROW": 53
+   },
+   "truncated": false
+  },
+  "GET /api/public/warnings?lang=en": [],
+  "GET /api/public/warnings?lang=id": [],
+  "GET /api/warnings": [],
+  "GET /api/agent/tasks": [
+   {
+    "id": "50283bd5-97a3-4e42-9e3b-5462f4feba38",
+    "instruction": "Analyze this flood incident dataset and count flooded districts.",
+    "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+    "requested_outputs": [
+     "affected_areas",
+     "situation_report"
+    ],
+    "state": "AWAITING_APPROVAL",
+    "plan": {
+     "assumptions": [
+      "Water depth above 30 cm is treated as flooded (illustrative threshold)."
+     ],
+     "data_class": "SIMULATED_FACT",
+     "expected_outputs": [
+      "summary.json",
+      "situation_report.md"
+     ],
+     "limits": {
+      "memory_mb": 512,
+      "pids": 64,
+      "timeout_s": 30
+     },
+     "steps": [
+      {
+       "description": "Profile dataset and count flooded districts",
+       "id": "s1",
+       "tool": "csv_analyzer"
+      },
+      {
+       "description": "Count blocked roads and affected population",
+       "id": "s2",
+       "tool": "csv_analyzer"
+      },
+      {
+       "description": "Plot water depth by district",
+       "id": "s3",
+       "tool": "chart_generator"
+      },
+      {
+       "description": "Write situation report",
+       "id": "s4",
+       "tool": "report_generator"
+      }
+     ],
+     "tools": [
+      "csv_analyzer",
+      "chart_generator",
+      "report_generator"
+     ]
+    },
+    "code_sha256": null,
+    "sandbox": null,
+    "artifacts": [],
+    "approvals": [],
+    "owner": {
+     "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+     "username": "Analyst (demo)"
+    },
+    "error_reason": null,
+    "created_at": "2026-11-08T12:46:17Z",
+    "updated_at": "2026-11-08T12:46:17Z"
+   }
+  ],
+  "GET /api/agent/tasks/50283bd5-97a3-4e42-9e3b-5462f4feba38": {
+   "id": "50283bd5-97a3-4e42-9e3b-5462f4feba38",
+   "instruction": "Analyze this flood incident dataset and count flooded districts.",
+   "dataset_id": "88347c41-885a-4e10-ac83-1be18d158361",
+   "requested_outputs": [
+    "affected_areas",
+    "situation_report"
+   ],
+   "state": "AWAITING_APPROVAL",
+   "plan": {
+    "assumptions": [
+     "Water depth above 30 cm is treated as flooded (illustrative threshold)."
+    ],
+    "data_class": "SIMULATED_FACT",
+    "expected_outputs": [
+     "summary.json",
+     "situation_report.md"
+    ],
+    "limits": {
+     "memory_mb": 512,
+     "pids": 64,
+     "timeout_s": 30
+    },
+    "steps": [
+     {
+      "description": "Profile dataset and count flooded districts",
+      "id": "s1",
+      "tool": "csv_analyzer"
+     },
+     {
+      "description": "Count blocked roads and affected population",
+      "id": "s2",
+      "tool": "csv_analyzer"
+     },
+     {
+      "description": "Plot water depth by district",
+      "id": "s3",
+      "tool": "chart_generator"
+     },
+     {
+      "description": "Write situation report",
+      "id": "s4",
+      "tool": "report_generator"
+     }
+    ],
+    "tools": [
+     "csv_analyzer",
+     "chart_generator",
+     "report_generator"
+    ]
+   },
+   "code_sha256": null,
+   "sandbox": null,
+   "artifacts": [],
+   "approvals": [],
+   "owner": {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)"
+   },
+   "error_reason": null,
+   "created_at": "2026-11-08T12:46:17Z",
+   "updated_at": "2026-11-08T12:46:17Z"
+  },
+  "GET /api/admin/users": [
+   {
+    "id": "7c7dc837-c28c-40f3-8a85-a185056dea5a",
+    "username": "Admin (demo)",
+    "role": "Admin",
+    "email": null,
+    "status": "active",
+    "created_at": "2026-11-08T12:45:45Z"
+   },
+   {
+    "id": "7795c308-4791-46f5-b1f4-8522a3e286c4",
+    "username": "Analyst (demo)",
+    "role": "Analyst",
+    "email": null,
+    "status": "active",
+    "created_at": "2026-11-08T12:45:45Z"
+   },
+   {
+    "id": "e922db59-ee4b-423c-bf3f-2f195aadc71b",
+    "username": "Approver (demo)",
+    "role": "Approver",
+    "email": null,
+    "status": "active",
+    "created_at": "2026-11-08T12:45:45Z"
+   },
+   {
+    "id": "700b428b-10f5-4131-a9f2-10d63561df44",
+    "username": "Reviewer (demo)",
+    "role": "Reviewer",
+    "email": null,
+    "status": "active",
+    "created_at": "2026-11-08T12:45:45Z"
+   },
+   {
+    "id": "ec790d96-cdc7-4cb5-bedd-9770096af445",
+    "username": "Viewer (demo)",
+    "role": "Viewer",
+    "email": null,
+    "status": "active",
+    "created_at": "2026-11-08T12:46:16Z"
+   }
+  ]
+ }
+}

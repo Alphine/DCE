@@ -2,6 +2,8 @@
 // so the app works at "/" and under a sub-path. Every non-2xx response is mapped
 // to ApiError using the contract's error shape. Stack traces are never shown.
 
+import { isSandbox, isSandboxLogin, sandboxRequest } from './demo/sandbox.js';
+
 export class ApiError extends Error {
   constructor(status, code, message, requestId = null) {
     super(message);
@@ -67,6 +69,10 @@ async function toApiError(res) {
 }
 
 async function request(method, path, opts = {}) {
+  // Browser-only demo sandbox (login demo / demo). Nothing is sent to the server while it is on.
+  if (isSandbox() || (path === 'auth/login' && isSandboxLogin(opts.json))) {
+    return sandboxRequest(method, path, opts);
+  }
   const { json, body, query, signal, raw = false, suppressAuthEvent = false } = opts;
   const headers = { Accept: raw ? '*/*' : 'application/json' };
   const init = { method, credentials: 'same-origin', headers, signal, cache: 'no-store' };

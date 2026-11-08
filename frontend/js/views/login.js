@@ -81,7 +81,7 @@ export async function mount(root, ctx) {
     submit,
     h('div', { class: 'row', style: 'margin-top:10px' }, forgotToggle),
     forgotBox,
-    h('p', { class: 'demo-hint' }, 'Use the seeded demo accounts: admin, analyst, reviewer, approver. Ask your operator for the password.'),
+    h('p', { class: 'demo-hint' }, 'Try the demo sandbox: username demo, password demo. Nothing is sent to the server. Operator accounts need the password from your operator.'),
     aboutLink);
 
   root.append(h('div', { class: 'login' },
