@@ -32,7 +32,8 @@ Error codes: `UNAUTHENTICATED`, `FORBIDDEN`, `SELF_APPROVAL_NOT_ALLOWED`, `QUOTA
 | GET | `/api/auth/me` | Viewer | Current user |
 | GET | `/api/admin/users` | Admin | List users (no password material) |
 | POST | `/api/admin/users` | Admin | Create user (201) |
-| PATCH | `/api/admin/users/{id}` | Admin | Change role and/or disabled flag |
+| PATCH | `/api/admin/users/{id}` | Admin | Change role, disabled flag, and/or email (`null` clears it) |
+| POST | `/api/admin/users/{id}/password` | Admin | Set a new password for any account (204). Revokes that account's sessions. Audit `admin.user_password_set` |
 | GET | `/api/admin/api-keys` | Admin (session cookie only) | List API keys (no tokens) |
 | POST | `/api/admin/api-keys` | Admin (session cookie only) | Create API key (201), token shown once |
 | DELETE | `/api/admin/api-keys/{id}` | Admin (session cookie only) | Revoke API key (204) |
@@ -389,7 +390,8 @@ These rules are binding. They extend sections 1 and 2.
 **Admin user management** (Admin role, or an API key owned by an Admin)
 - `GET /api/admin/users`: array of `{"id", "username", "role", "status": "active" | "disabled", "created_at"}`. Never password hashes.
 - `POST /api/admin/users`: body `{"username": "3 to 64 of A-Z a-z 0-9 . _ -", "role": "<role>", "password": "..."}`. Returns `201` with the user object. Duplicate username: `409 CONFLICT`. Audit `admin.user_created` (detail: role only).
-- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}` and/or `{"disabled": true | false}`. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `PATCH /api/admin/users/{id}`: body `{"role": "<role>"}`, `{"disabled": true | false}`, and/or `{"email": "name@example.com" | null}`. Email is stored lowercase and must be unique (`409` if taken). `null` clears it. At least one field is required (`422` otherwise). Unknown user: `404`.
+- `POST /api/admin/users/{id}/password`: body `{"new_password": "..."}`, 12 to 256 characters. Used for recovery when no email delivery exists. The password is never returned or logged.
   - An Admin cannot disable their own account: `403 FORBIDDEN`.
   - The last active Admin cannot be disabled or demoted: `409 CONFLICT`. Disabled accounts do not count as active Admins. The check runs inside the write transaction.
   - Disabling deletes the user's sessions. Re-enabling does not restore them.

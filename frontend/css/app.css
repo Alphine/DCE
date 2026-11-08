@@ -1378,3 +1378,14 @@ details[open] > summary { margin-bottom: 8px; }
 }
 .sim-details summary:hover { color: var(--text); }
 .sim-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- Admin users ---------- */
+.admin-users select, .admin-users input { min-width: 0; width: 100%; }
+.admin-users td { vertical-align: top; }
+.admin-users td:nth-child(3) { min-width: 200px; }
+.admin-actions { min-width: 220px; }
+.admin-password { margin-top: 8px; }
+.admin-password summary { cursor: pointer; color: var(--text-2); font-size: 0.9rem; }
+.admin-password summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+.admin-password .stack { margin-top: 8px; }
+.row-err { margin-top: 6px; }

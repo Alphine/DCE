@@ -32,6 +32,8 @@ const ROUTES = [
     match: (p) => (p[0] === 'tasks' && p[1] ? { id: p[1] } : null), load: () => import('./views/task.js') },
   { name: 'artifacts', title: 'Artifacts', minRole: 'Viewer',
     match: (p) => (p[0] === 'artifacts' ? {} : null), load: () => import('./views/artifacts.js') },
+  { name: 'admin', title: 'Users', minRole: 'Admin',
+    match: (p) => (p[0] === 'admin' ? {} : null), load: () => import('./views/admin-users.js') },
   { name: 'audit', title: 'Audit', minRole: 'Reviewer',
     match: (p) => (p[0] === 'audit' ? {} : null), load: () => import('./views/audit.js') },
   { name: 'about', title: 'Architecture', minRole: 'Viewer',
@@ -57,6 +59,7 @@ const TOOLS_NAV = [
   { route: 'agent', label: 'Agent', href: '#/agent', icon: 'agent', minRole: 'Analyst' },
   { route: 'artifacts', label: 'Artifacts', href: '#/artifacts', icon: 'artifacts', minRole: 'Viewer' },
   { route: 'audit', label: 'Audit', href: '#/audit', icon: 'audit', minRole: 'Reviewer' },
+  { route: 'admin', label: 'Users', href: '#/admin', icon: 'users', minRole: 'Admin' },
   { route: 'about', label: 'Architecture', href: '#/about', icon: 'architecture', minRole: 'Viewer' },
 ];
 

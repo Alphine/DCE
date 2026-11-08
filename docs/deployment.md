@@ -24,7 +24,7 @@ Known gaps to read before you start (details in `docs/security.md`, section 7):
 
 - **Rootless Docker is not wired.** `docker-compose.yml` runs the socket-proxy path. Rootless needs the dispatcher IPC, which does not exist yet.
 - **Login rate limit shares one bucket.** The backend keys on the peer address, which is the Docker gateway behind Caddy. `DCE_TRUSTED_PROXIES` is in `docs/api.md` but not implemented.
-- **The demo password cannot be rotated.** There is no change-password route, and `app.seed` skips existing accounts. See G35.
+- **Passwords can be changed.** Users change their own with `POST /api/auth/password`. An operator resets a locked-out user with `python -m app.reset_password <username>` (see `docs/security.md`, section 6). `app.seed` still skips existing accounts.
 - **Do not copy the laptop database to the VM.** `backend/data/dce.sqlite3` is a development database. The VM must start with an empty `/srv/dce/data`.
 
 ### G1. Record your admin IPv4 (on your laptop)
@@ -393,7 +393,7 @@ Expect `0`. The inspect command prints no other secrets.
 
 ### G35. Demo password (decision, not a command)
 
-The app has no change-password route (`docs/api.md`), and `python -m app.seed` skips accounts that already exist. The password you set at G32 is therefore the working password for the four seed accounts. Make it strong and unique. Any other password change needs a reviewed code change or a one-off procedure approved by the owner, recorded in `docs/security.md`, section 6.
+`python -m app.seed` skips accounts that already exist, so it never changes a password. Signed-in users change their own password through `POST /api/auth/password`. If an account is locked out, the operator runs `python -m app.reset_password <username>` (`docs/security.md`, section 6). Keep at least two active Admins, so that one forgotten password does not lock everyone out. Make every password strong and unique.
 
 ### G36. Set up the nightly backup
 
