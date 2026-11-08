@@ -26,6 +26,8 @@ const LEAFLET_JS = new URL('../../vendor/leaflet/leaflet.js', import.meta.url).h
 const COUNTRIES_URL = new URL('../../data/geo/countries-110m.geojson', import.meta.url).href;
 const WORLD_CENTER = [15, 110];
 const WORLD_ZOOM = 2;
+// Latitudes beyond about 75 N and 58 S are empty ocean or ice, so the view is kept to the inhabited world.
+const WORLD_BOUNDS = [[-58, -170], [78, 180]];
 
 // ---- Pure helpers ----
 
@@ -140,21 +142,23 @@ function radiusFor(p) {
   return Number.isFinite(s) ? Math.min(12, Math.max(6, 5 + s)) : 7;
 }
 
+// Points get a dark ring so they stay readable over dense clusters and over the country fills.
 function markerStyle(p, selected) {
   const meta = LAYERS[layerForPoint(p)];
   return {
     radius: radiusFor(p),
-    color: selected ? '#ffffff' : meta.color,
+    color: selected ? '#ffffff' : '#05080f',
     fillColor: meta.color,
-    fillOpacity: 0.85,
+    fillOpacity: 0.95,
     weight: selected ? 3 : 1.5,
   };
 }
 
+// Country fills are lifted from the background so the outlines read clearly on the dark map.
 function outlineStyle(selected, hover = false) {
-  if (selected) return { color: '#ffb020', weight: 2, fillColor: '#2a2a18', fillOpacity: 0.9 };
-  if (hover) return { color: '#8fa6cf', weight: 1.2, fillColor: '#22325a', fillOpacity: 1 };
-  return { color: '#4b5a7a', weight: 0.6, fillColor: '#16203a', fillOpacity: 1 };
+  if (selected) return { color: '#ffb020', weight: 2, fillColor: '#3a2f12', fillOpacity: 0.95 };
+  if (hover) return { color: '#a9c2ea', weight: 1.2, fillColor: '#2b4272', fillOpacity: 1 };
+  return { color: '#3d5685', weight: 0.8, fillColor: '#18263f', fillOpacity: 1 };
 }
 
 function tooltipElement(p, layerId) {
@@ -194,6 +198,9 @@ export async function createLeafletMap(container, { points = [], layers = {}, co
     minZoom: 1,
     maxZoom: 10,
     worldCopyJump: true,
+    maxBounds: [[-85, -200], [85, 200]],
+    maxBoundsViscosity: 0.6,
+    zoomSnap: 0.25,
     zoomAnimation: !reduceMotion(),
   }).setView(WORLD_CENTER, WORLD_ZOOM);
   map.attributionControl.addAttribution('Countries: Natural Earth (public domain)');
@@ -236,12 +243,8 @@ export async function createLeafletMap(container, { points = [], layers = {}, co
         return;
       }
     }
-    const shown = filterPoints(state.points, { country: state.country });
-    if (shown.length) {
-      map.fitBounds(L.latLngBounds(shown.map((p) => [p.lat, p.lon])), { padding: [24, 24], maxZoom: 6 });
-      return;
-    }
-    map.setView(WORLD_CENTER, WORLD_ZOOM);
+    // Without a country filter the whole world stays in view, so points keep their context.
+    map.fitBounds(WORLD_BOUNDS, { padding: [8, 8] });
   }
 
   function drawPoints() {

@@ -101,15 +101,19 @@
 
 /* ---------- Hero layout: queue left, map centre, assistant and tasks right ---------- */
 .cc-hero {
-  grid-template-columns: minmax(260px, 0.95fr) minmax(0, 2.6fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 2.2fr) minmax(300px, 1fr);
   align-items: start;
+  gap: 16px;
 }
-.cc-hero .cc-centre { position: sticky; top: 12px; }
+.cc-hero .cc-centre { position: static; }
 .cc-hero .panel--map { min-height: 0; }
-.cc-hero .wm-host,
+.cc-hero .wm-host { height: auto; min-height: 0; }
+.cc-hero .wm-host .lm-map,
 .cc-hero .lm-map {
-  height: clamp(360px, 68vh, 680px);
+  height: clamp(460px, 64vh, 640px) !important;
+  min-height: 460px;
 }
+.cc-hero .lm { margin-bottom: 0; }
 @media (max-width: 1100px) {
   .cc-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .cc-hero .cc-centre { grid-column: 1 / -1; order: -1; position: static; }
@@ -117,8 +121,8 @@
 @media (max-width: 720px) {
   .cc-hero { grid-template-columns: minmax(0, 1fr); }
   .cc-hero .cc-centre { order: -1; }
-  .cc-hero .wm-host,
-  .cc-hero .lm-map { height: 320px; }
+  .cc-hero .wm-host .lm-map,
+  .cc-hero .lm-map { height: 320px !important; min-height: 320px; }
 }
 
 /* ---------- Phone navigation: five primary destinations at the bottom ---------- */
