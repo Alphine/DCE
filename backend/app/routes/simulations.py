@@ -10,13 +10,14 @@ import csv
 import json
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app import audit
 from app.auth import CurrentUser, current_user, require_role
 from app.container import services_of
+from app.countries import country_filter, country_or_default, country_query, normalize_country
 from app.errors import AppError
 from app.routes.hazards import COLUMNS_MESSAGE, approved_csv_bytes
 from app.rules import engine
@@ -36,6 +37,13 @@ class RunIn(BaseModel):
                                     allow_inf_nan=False)
     rise_cm_per_hour: float = Field(default=0.0, ge=0.0, le=sim.MAX_RISE_CM_PER_HOUR, allow_inf_nan=False)
     hours: int = Field(default=24, ge=1, le=sim.MAX_HOURS)
+    # Optional. When absent, the run takes its dataset's country.
+    country_code: str | None = None
+
+    @field_validator("country_code")
+    @classmethod
+    def _country(cls, value: str | None) -> str | None:
+        return normalize_country(value)
 
 
 def _summary(row: Any) -> dict[str, Any]:
@@ -43,6 +51,7 @@ def _summary(row: Any) -> dict[str, Any]:
         "id": row["id"],
         "name": row["name"],
         "dataset": {"id": row["dataset_id"], "name": row["dataset_name"]},
+        "country_code": country_or_default(row["country_code"]),
         "parameters": json.loads(row["parameters_json"]),
         "pack_sha256": row["pack_sha256"],
         "output_sha256": row["output_sha256"],
@@ -69,9 +78,13 @@ _SELECT = """
 
 
 @router.get("")
-def list_runs(request: Request, user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
+def list_runs(request: Request, country: str | None = Query(default=None, max_length=2),
+              user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
+    frag, params = country_filter("s", country_query(country))
+    where = f" WHERE {frag}" if frag else ""
     with services_of(request).db.read() as conn:
-        rows = conn.execute(_SELECT + " ORDER BY s.created_at DESC, s.id DESC LIMIT 100").fetchall()
+        rows = conn.execute(_SELECT + where + " ORDER BY s.created_at DESC, s.id DESC LIMIT 100",
+                            tuple(params)).fetchall()
     return [_summary(row) for row in rows]
 
 
@@ -87,12 +100,19 @@ def get_run(run_id: str, request: Request, user: CurrentUser = Depends(current_u
 @router.post("", status_code=201)
 def create_run(body: RunIn, request: Request,
                user: CurrentUser = Depends(require_role("Analyst"))) -> JSONResponse:
+    services = services_of(request)
+    with services.db.transaction() as conn:
+        detail = create_run_in_conn(conn, services, user, body)
+    return JSONResponse(detail, status_code=201)
+
+
+def create_run_in_conn(conn: Any, services: Any, user: CurrentUser, body: RunIn,
+                       audit_extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Compute and store a run inside an open transaction. Shared by the route and /api/sync/batch."""
     name = body.name.strip()
     if not name:
         raise AppError("VALIDATION_FAILED", "Give the scenario a name.")
-    services = services_of(request)
-    with services.db.read() as conn:
-        dataset, data = approved_csv_bytes(services.settings.data_dir, conn, body.dataset_id)
+    dataset, data = approved_csv_bytes(services.settings.data_dir, conn, body.dataset_id)
     try:
         records = engine.records_from_csv_bytes(data)
     except (ValueError, csv.Error):
@@ -113,18 +133,20 @@ def create_run(body: RunIn, request: Request,
 
     run_id = new_id()
     now = utc_now()
-    with services.db.transaction() as conn:
-        conn.execute(
-            """INSERT INTO simulation_runs (id, name, dataset_id, dataset_sha256, pack_id, pack_sha256,
-               simulator_version, parameters_json, output_json, output_sha256, peak_hour,
-               peak_affected_rows, created_by, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (run_id, name, dataset["id"], dataset["sha256"], pack["pack_id"], pack[engine.PACK_HASH_FIELD],
-             sim.SIMULATOR_VERSION, json.dumps(params.as_dict(), sort_keys=True),
-             output_bytes.decode("ascii"), sha256_bytes(output_bytes), output["peak"]["hour"],
-             output["peak"]["affected_rows"], user.id, now))
-        audit.append(conn, actor=user.username, action="simulation.created", subject=run_id, detail={
-            "dataset_id": dataset["id"], "pack_sha256": pack[engine.PACK_HASH_FIELD],
-            "output_sha256": sha256_bytes(output_bytes), "parameters": params.as_dict()})
-        row = conn.execute(_SELECT + " WHERE s.id = ?", (run_id,)).fetchone()
-    return JSONResponse(_detail(row), status_code=201)
+    # A run takes its dataset's country unless the request gives one.
+    country = body.country_code if body.country_code is not None else dataset["country_code"]
+    conn.execute(
+        """INSERT INTO simulation_runs (id, name, dataset_id, dataset_sha256, pack_id, pack_sha256,
+           simulator_version, parameters_json, output_json, output_sha256, peak_hour,
+           peak_affected_rows, created_by, created_at, country_code)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (run_id, name, dataset["id"], dataset["sha256"], pack["pack_id"], pack[engine.PACK_HASH_FIELD],
+         sim.SIMULATOR_VERSION, json.dumps(params.as_dict(), sort_keys=True),
+         output_bytes.decode("ascii"), sha256_bytes(output_bytes), output["peak"]["hour"],
+         output["peak"]["affected_rows"], user.id, now, country))
+    audit.append(conn, actor=user.username, action="simulation.created", subject=run_id, detail={
+        "dataset_id": dataset["id"], "pack_sha256": pack[engine.PACK_HASH_FIELD],
+        "output_sha256": sha256_bytes(output_bytes), "parameters": params.as_dict(),
+        "country_code": country_or_default(country), **(audit_extra or {})})
+    row = conn.execute(_SELECT + " WHERE s.id = ?", (run_id,)).fetchone()
+    return _detail(row)

@@ -5,13 +5,16 @@ import { hasRole } from './session.js';
 import { toast } from './components/toast.js';
 import { h, errorState } from './dom.js';
 import { icon } from './components/icons.js';
+import { start as startSync, subscribe as subscribeSync, rememberUser, forgetUser, cachedUser } from './offline/sync.js';
 
 // Routes that work without a session: sign-in and the emailed password reset.
-const PUBLIC_ROUTES = new Set(['login', 'reset']);
+const PUBLIC_ROUTES = new Set(['login', 'reset', 'public']);
 
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },
   { name: 'reset', title: 'Reset password', match: (p) => (p[0] === 'reset' ? {} : null), load: () => import('./views/reset.js') },
+  { name: 'pending', title: 'Pending', minRole: 'Viewer',
+    match: (p) => (p[0] === 'pending' ? {} : null), load: () => import('./views/pending.js') },
   { name: 'command', title: 'Command Center', minRole: 'Viewer',
     match: (p) => (p.length === 0 || p[0] === 'dashboard' ? {} : null), load: () => import('./views/command-center.js') },
   { name: 'situation', title: 'Situation', minRole: 'Viewer',
@@ -36,6 +39,11 @@ const ROUTES = [
     match: (p) => (p[0] === 'tasks' && p[1] ? { id: p[1] } : null), load: () => import('./views/task.js') },
   { name: 'artifacts', title: 'Artifacts', minRole: 'Viewer',
     match: (p) => (p[0] === 'artifacts' ? {} : null), load: () => import('./views/artifacts.js') },
+  { name: 'public', title: 'Public warnings', match: (p) => (p[0] === 'public' ? {} : null), load: () => import('./views/public-warnings.js') },
+  { name: 'alerts', title: 'Alerts', minRole: 'Viewer',
+    match: (p) => (p[0] === 'alerts' ? {} : null), load: () => import('./views/alerts.js') },
+  { name: 'logistics', title: 'Logistics', minRole: 'Viewer',
+    match: (p) => (p[0] === 'logistics' ? {} : null), load: () => import('./views/logistics.js') },
   { name: 'admin', title: 'Users', minRole: 'Admin',
     match: (p) => (p[0] === 'admin' ? {} : null), load: () => import('./views/admin-users.js') },
   { name: 'audit', title: 'Audit', minRole: 'Reviewer',
@@ -63,6 +71,8 @@ const TOOLS_NAV = [
   { route: 'agent', label: 'Agent', href: '#/agent', icon: 'agent', minRole: 'Analyst' },
   { route: 'artifacts', label: 'Artifacts', href: '#/artifacts', icon: 'artifacts', minRole: 'Viewer' },
   { route: 'audit', label: 'Audit', href: '#/audit', icon: 'audit', minRole: 'Reviewer' },
+  { route: 'alerts', label: 'Alerts', href: '#/alerts', icon: 'alerts', minRole: 'Viewer' },
+  { route: 'logistics', label: 'Logistics', href: '#/logistics', icon: 'logistics', minRole: 'Viewer' },
   { route: 'admin', label: 'Users', href: '#/admin', icon: 'users', minRole: 'Admin' },
   { route: 'about', label: 'Architecture', href: '#/about', icon: 'architecture', minRole: 'Viewer' },
 ];
@@ -78,6 +88,7 @@ const userEmailEl = $('user-email');
 const logoutBtn = $('logout');
 const connPill = $('conn-pill');
 const connText = $('conn-text');
+const syncLink = $('sync-status');
 
 const state = { user: null };
 let booting = true;
@@ -118,15 +129,21 @@ function renderChrome(routeName) {
   toolsNav.replaceChildren(...navLinks(TOOLS_NAV, routeName, 'nav-tool'));
 }
 
-// Connection state from the browser. The API cannot be reached while offline, so the pill says so.
-function renderConnection() {
-  const online = navigator.onLine !== false;
+// Connection state. Offline when the browser is offline or the last sync request could not reach the server.
+// The pending and rejected counts link to the Pending panel.
+function renderConnection(status = null) {
+  const online = status ? status.online : navigator.onLine !== false;
   connPill.dataset.state = online ? 'online' : 'offline';
   connText.textContent = online ? 'Online' : 'Offline';
+  if (status) {
+    syncLink.textContent = `${status.pending} pending · ${status.rejected} rejected`;
+    syncLink.classList.toggle('has-rejected', status.rejected > 0);
+    syncLink.setAttribute('aria-label', `${status.pending} pending and ${status.rejected} rejected offline changes. Open the Pending list.`);
+  }
 }
-window.addEventListener('online', renderConnection);
-window.addEventListener('offline', renderConnection);
-renderConnection();
+window.addEventListener('online', () => renderConnection());
+window.addEventListener('offline', () => renderConnection());
+subscribeSync((status) => renderConnection(status));
 
 function forbidden(route) {
   return h('section', { class: 'state-msg empty state-msg--page', role: 'alert' },
@@ -183,6 +200,7 @@ async function onRoute({ route, params }) {
 
 async function onLogin() {
   state.user = await api.get('auth/me');
+  await rememberUser(state.user);
   go('#/');
 }
 
@@ -208,6 +226,7 @@ logoutBtn.addEventListener('click', async () => {
   }
   state.user = null;
   logoutBtn.disabled = false;
+  await forgetUser();
   teardown();
   go('#/login');
   renderChrome('login');
@@ -219,12 +238,20 @@ const router = createRouter(ROUTES, onRoute);
 async function boot() {
   try {
     state.user = await api.get('auth/me');
+    await rememberUser(state.user);
   } catch (err) {
     state.user = null;
-    if (!(err instanceof ApiError && err.code === 'UNAUTHENTICATED')) toast(err.message, { kind: 'error' });
+    if (err instanceof ApiError && err.status === 0) {
+      // Offline: keep the read-only cache for the last user whose session was valid. Writes queue until sync.
+      state.user = await cachedUser();
+      if (!state.user) toast('You are offline and no saved session was found. Connect once to sign in.', { kind: 'error' });
+    } else if (!(err instanceof ApiError && err.code === 'UNAUTHENTICATED')) {
+      toast(err.message, { kind: 'error' });
+    }
   } finally {
     booting = false;
   }
+  startSync();
   router.start();
 }
 

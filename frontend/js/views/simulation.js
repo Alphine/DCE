@@ -6,6 +6,7 @@ import { toast } from '../components/toast.js';
 import { go } from '../router.js';
 import { hasRole } from '../session.js';
 import { approvedCsvDatasets } from './resources.js';
+import { loadList, cacheNotice } from '../offline/read-cache.js';
 
 // What-if simulation (SDD 14). Every run is SIMULATED_FACT with illustrative parameters (SDD 14.5).
 // Analysts create runs. Everyone can read them. Limits here mirror the server, which checks again.
@@ -77,9 +78,10 @@ export async function mount(root, ctx) {
 
   async function refreshList() {
     try {
-      const runs = listOf(await api.get('simulations', { signal }));
+      const { items: runs, savedAt } = await loadList('simulations', 'simulations', { signal });
       if (signal.aborted) return;
       renderList(runs);
+      if (savedAt) listSlot.prepend(cacheNotice(savedAt));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       listSlot.replaceChildren(errorState(err, refreshList));

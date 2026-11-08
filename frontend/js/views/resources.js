@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { h, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox } from '../dom.js';
+import { h, fmtDate, spinner, errorState, listOf, pageHead, panel, emptyState, alertBox } from '../dom.js';
 import { dataClassBadge } from '../components/badges.js';
 import { hasRole } from '../session.js';
 
@@ -35,8 +35,13 @@ export async function mount(root, ctx) {
   root.append(pageHead('Resource Planner',
     'Illustrative resource estimate from affected rows and the rule pack ratios. Assumptions are shown with the result.'));
 
+  // The estimate sits in its own slot so the coverage section (read by every role) can follow it.
+  const estimateSlot = h('div', { class: 'stack' });
+  root.append(estimateSlot);
+  coverageSection(root, ctx);
+
   if (!hasRole(user, 'Analyst')) {
-    root.append(panel({ title: 'Analyst role needed', style: '--i:1' },
+    estimateSlot.append(panel({ title: 'Analyst role needed', style: '--i:1' },
       alertBox('info', 'An Analyst runs resource estimates. You can read this page, but you cannot start an estimate.'),
       h('p', { class: 'muted' }, 'Ask an Analyst to run an estimate for an approved dataset. The result will appear on this page for them.')));
     return;
@@ -56,7 +61,7 @@ export async function mount(root, ctx) {
     formErr,
     h('div', { class: 'field--wide row' }, runBtn));
 
-  root.append(panel({ title: 'Run an estimate', sub: 'Analyst role. Only approved CSV datasets can be used.', style: '--i:1' }, form), resultSlot);
+  estimateSlot.append(panel({ title: 'Run an estimate', sub: 'Analyst role. Only approved CSV datasets can be used.', style: '--i:1' }, form), resultSlot);
 
   async function loadDatasets() {
     try {
@@ -130,6 +135,119 @@ function pairTable(obj, caption, head) {
       h('tbody', null, entries.map(([key, value]) => h('tr', null,
         h('td', { class: 'wrap-any' }, labelFromKey(key)),
         h('td', { class: 'num mono' }, formatValue(value)))))));
+}
+
+// Every role can read coverage. It needs a stored simulation run, and it uses the same planning endpoint as Planning.
+function coverageSection(root, { signal }) {
+  const runSelect = h('select', { id: 'rs-run' }, h('option', { value: '' }, 'Loading runs…'));
+  const err = h('div', { 'aria-live': 'polite' });
+  const showBtn = h('button', { class: 'btn', type: 'submit', disabled: true }, 'Show coverage');
+  const slot = h('div', { class: 'stack' });
+
+  const form = h('form', { class: 'form-grid', novalidate: true, 'aria-label': 'Show coverage for a simulation run',
+    onsubmit: (e) => {
+      e.preventDefault();
+      show();
+    } },
+  h('div', { class: 'field' }, h('label', { for: 'rs-run' }, 'Simulation run'), runSelect),
+  err,
+  h('div', { class: 'field--wide row' }, showBtn));
+  root.append(panel({ title: 'Coverage', sub: 'Need from a simulation run, compared with logistics stock and capacity.',
+    style: '--i:3' }, form), slot);
+
+  loadRuns();
+
+  async function loadRuns() {
+    try {
+      const runs = listOf(await api.get('simulations', { signal }));
+      if (signal.aborted) return;
+      if (!runs.length) {
+        runSelect.replaceChildren(h('option', { value: '' }, 'No simulation runs yet'));
+        slot.replaceChildren(emptyState('No simulation runs yet', 'Create a run on the Simulation screen first.'));
+        return;
+      }
+      runSelect.replaceChildren(h('option', { value: '' }, 'Choose a run'),
+        runs.map((r) => h('option', { value: r.id }, `${r.name} · ${fmtDate(r.created_at)}`)));
+      showBtn.disabled = false;
+    } catch (loadErr) {
+      if (signal.aborted || loadErr.name === 'AbortError') return;
+      runSelect.replaceChildren(h('option', { value: '' }, 'Could not load runs'));
+      err.replaceChildren(alertBox('error', loadErr.message));
+    }
+  }
+
+  async function show() {
+    err.replaceChildren();
+    const id = runSelect.value;
+    if (!id) {
+      err.replaceChildren(alertBox('error', 'Choose a simulation run first.'));
+      return;
+    }
+    showBtn.disabled = true;
+    slot.replaceChildren(panel({ title: 'Coverage', style: '--i:4' }, spinner('Comparing need with logistics…')));
+    try {
+      const plan = await api.get(`planning/allocation?simulation_id=${encodeURIComponent(id)}`, { signal });
+      if (signal.aborted) return;
+      slot.replaceChildren(coverageView(plan));
+    } catch (showErr) {
+      if (signal.aborted || showErr.name === 'AbortError') return;
+      slot.replaceChildren(panel({ title: 'Coverage', style: '--i:4' }, errorState(showErr, show)));
+    } finally {
+      showBtn.disabled = false;
+    }
+  }
+}
+
+// Flat list of every gap, with its district, in the order the planner ranked the districts.
+export function coverageGaps(coverage) {
+  return (Array.isArray(coverage) ? coverage : [])
+    .flatMap((row) => (Array.isArray(row.gaps) ? row.gaps.map((gap) => ({ district: row.district, ...gap })) : []));
+}
+
+// "need / stock" for one item, with dashes for missing numbers.
+function needOverStock(need, stock) {
+  return `${formatValue(need)} / ${formatValue(stock)}`;
+}
+
+export function coverageView(plan) {
+  const rows = Array.isArray(plan && plan.coverage) ? plan.coverage : [];
+  if (!rows.length) {
+    return panel({ title: 'Coverage', style: '--i:4' },
+      emptyState('No logistics coverage to show',
+        'Add shelters, supplies, vehicles or teams on the Logistics screen. Coverage stays empty until some are recorded.'));
+  }
+  const gaps = coverageGaps(rows);
+  return h('div', { class: 'stack' },
+    panel({ title: 'Coverage', sub: 'Need against stock on hand and matching capacity, by district.',
+      actions: [dataClassBadge('SIMULATED_FACT')], style: '--i:4' },
+    alertBox('warn', 'Need is simulated and illustrative. Stock and capacity are as recorded in the logistics registry.'),
+    h('div', { class: 'table-wrap' },
+      h('table', { class: 'table' },
+        h('caption', { class: 'sr-only' }, 'Coverage by district. Each item shows need / stock.'),
+        h('thead', null, h('tr', null,
+          h('th', { scope: 'col' }, 'District'),
+          h('th', { scope: 'col', class: 'num' }, 'People needed'),
+          h('th', { scope: 'col', class: 'num' }, 'Capacity (people)'),
+          h('th', { scope: 'col', class: 'num' }, 'People short'),
+          h('th', { scope: 'col', class: 'num' }, 'Water packs'),
+          h('th', { scope: 'col', class: 'num' }, 'Food packs'),
+          h('th', { scope: 'col', class: 'num' }, 'Shelter kits'),
+          h('th', { scope: 'col' }, 'Teams (rescue / medical / transport)'))),
+        h('tbody', null, rows.map((row) => h('tr', null,
+          h('td', { class: 'wrap-any' }, row.district),
+          h('td', { class: 'num mono' }, formatValue(row.need.people_estimated)),
+          h('td', { class: 'num mono' }, formatValue(row.capacity.total_people)),
+          h('td', { class: 'num mono' }, formatValue(row.people_gap)),
+          h('td', { class: 'num mono' }, needOverStock(row.need.water_packs, row.stock.water_packs)),
+          h('td', { class: 'num mono' }, needOverStock(row.need.food_packs, row.stock.food_packs)),
+          h('td', { class: 'num mono' }, needOverStock(row.need.shelter_kits, row.stock.shelter_kits)),
+          h('td', { class: 'wrap-any' }, `${row.teams_available.RESCUE} / ${row.teams_available.MEDICAL} / ${row.teams_available.TRANSPORT}`)))))),
+    ),
+    panel({ title: 'Gaps', sub: gaps.length ? `${gaps.length} item(s) below need` : 'No gaps', style: '--i:5' },
+      gaps.length
+        ? h('ul', { class: 'assumption-list' }, gaps.map((gap) => h('li', null,
+          `${gap.district}: ${labelFromKey(gap.item)} short by ${formatValue(gap.shortfall)} (need ${formatValue(gap.need)}, stock ${formatValue(gap.stock)})`)))
+        : h('p', { class: 'muted' }, 'Stock meets the need in every allocated district.')));
 }
 
 function assumptionsView(assumptions) {

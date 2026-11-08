@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app import audit
 from app.auth import CurrentUser, current_user, require_role
 from app.container import services_of
+from app.countries import country_filter, country_or_default, country_query, normalize_country
 from app.datasets import (KIND_CSV, MAX_UPLOAD_BYTES, STORAGE_EXTENSION, clean_name, dataset_file,
                           dataset_kind_for, parse_csv_bytes, parse_geojson_bytes, read_table, typed_row,
                           validate_filename, write_dataset_file)
@@ -36,6 +37,7 @@ def _dataset_view(row: sqlite3.Row) -> dict[str, Any]:
         "size_bytes": row["size_bytes"],
         "sha256": row["sha256"],
         "status": row["status"],
+        "country_code": country_or_default(row["country_code"]),
         "owner": {"id": row["owner_id"], "username": row["owner_username"]},
         "profile": json.loads(row["profile_json"]),
         "created_at": row["created_at"],
@@ -58,9 +60,17 @@ def _visible(user: CurrentUser, status: str) -> bool:
 
 
 @router.get("")
-def list_datasets(request: Request, user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
+def list_datasets(request: Request, country: str | None = Query(default=None, max_length=2),
+                  user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
+    clauses: list[str] = []
+    params: list[str] = []
+    frag, cparams = country_filter("d", country_query(country))
+    if frag:
+        clauses.append(frag)
+        params += cparams
+    where = ("WHERE " + " AND ".join(clauses) + " ") if clauses else ""
     with services_of(request).db.read() as conn:
-        rows = conn.execute(_SELECT + "ORDER BY d.created_at DESC").fetchall()
+        rows = conn.execute(_SELECT + where + "ORDER BY d.created_at DESC", tuple(params)).fetchall()
     return [_dataset_view(r) for r in rows if _visible(user, r["status"])]
 
 
@@ -69,9 +79,14 @@ def upload_dataset(
     request: Request,
     file: UploadFile = File(...),
     name: str | None = Form(default=None),
+    country_code: str | None = Form(default=None, max_length=2),
     user: CurrentUser = Depends(require_role("Analyst")),
 ) -> JSONResponse:
     services = services_of(request)
+    try:
+        country = normalize_country(country_code)
+    except ValueError:
+        raise AppError("VALIDATION_FAILED", "country_code must be a two-letter ISO 3166-1 code.") from None
     filename = validate_filename(file.filename)
     kind = dataset_kind_for(filename)
     data = file.file.read(MAX_UPLOAD_BYTES + 1)
@@ -85,9 +100,10 @@ def upload_dataset(
         with services.db.transaction() as conn:
             conn.execute(
                 "INSERT INTO datasets (id, name, filename, size_bytes, sha256, status, owner_id, storage_name, "
-                "profile_json, created_at, kind) VALUES (?, ?, ?, ?, ?, 'PENDING_VALIDATION', ?, ?, ?, ?, ?)",
+                "profile_json, created_at, kind, country_code) "
+                "VALUES (?, ?, ?, ?, ?, 'PENDING_VALIDATION', ?, ?, ?, ?, ?, ?)",
                 (dataset_id, display_name, filename, parsed.size_bytes, parsed.sha256, user.id, storage_name,
-                 _json(parsed.profile), utc_now(), kind),
+                 _json(parsed.profile), utc_now(), kind, country),
             )
             audit.append(conn, actor=user.username, action="dataset.uploaded", subject=dataset_id, detail={
                 "kind": kind, "sha256": parsed.sha256, "size_bytes": parsed.size_bytes,

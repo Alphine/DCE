@@ -1393,3 +1393,119 @@ details[open] > summary { margin-bottom: 8px; }
 /* ---------- Account email and password reset ---------- */
 .user-email { font-size: 12px; color: var(--text-3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-email.is-empty { font-style: italic; }
+
+/* ---------- Offline status line and Pending panel ---------- */
+.sync-status {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-2);
+  padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; white-space: nowrap;
+}
+.sync-status:hover { color: var(--text); border-color: var(--line-strong); }
+.sync-status:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.sync-status.has-rejected { color: #ff8c99; border-color: rgba(255, 77, 98, 0.5); }
+.pending-item { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 10px; background: var(--bg-2); }
+.pending-item--rejected { border-color: rgba(255, 77, 98, 0.5); }
+.pending-item-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* ---------- Decision queue (Command Center) ---------- */
+.dq-tiles { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 14px; }
+.dq-group { margin-top: 16px; min-width: 0; }
+.dq-group-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.dq-group-title {
+  margin: 0; font: 600 12px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-2);
+}
+.dq-group .alert { margin-top: 10px; }
+.dq-list { list-style: none; margin: 0; padding: 0; }
+.dq-sub {
+  font: 600 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-3); padding: 12px 0 4px;
+}
+.dq-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 2px; border-bottom: 1px solid var(--line);
+}
+.dq-item:last-child { border-bottom: 0; }
+.dq-item--own { opacity: 0.85; }
+.dq-main { display: grid; gap: 3px; min-width: 0; flex: 1 1 260px; }
+.dq-title { overflow-wrap: anywhere; font-size: 14.5px; color: var(--text); }
+.dq-meta { display: flex; gap: 4px 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-3); }
+.dq-group > .small.muted, .dq-group > p.small { margin: 8px 0 0; }
+.dq-group > p a { color: var(--cyan); }
+.dq-group .btn { white-space: nowrap; }
+.dq-group a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+/* ==========================================================================
+   Leaflet map
+   Situation command map (components/leaflet-map.js). Leaflet's own CSS is loaded from vendor/leaflet.
+   ========================================================================== */
+.lm { position: relative; margin-bottom: 12px; }
+.lm-map {
+  height: 360px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-0);
+}
+.lm .lm-map.leaflet-container { background: var(--bg-0); color: var(--text); font-family: inherit; }
+.lm .lm-map:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.lm .leaflet-control-attribution { background: rgba(10, 15, 29, 0.8); color: var(--text-3); }
+.lm .leaflet-control-attribution a { color: var(--text-2); }
+.lm .leaflet-bar a { background: var(--bg-2); color: var(--text); border-color: var(--line-strong); }
+.lm .leaflet-bar a:hover { background: var(--bg-1); color: var(--amber); }
+.lm .leaflet-tooltip { background: var(--bg-2); color: var(--text); border: 1px solid var(--line-strong); box-shadow: none; }
+.lm .leaflet-tooltip::before { display: none; }
+.lm .lm-tip { font-size: 13px; }
+.lm .lm-note { color: var(--amber); margin-bottom: 8px; }
+.situation-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-bottom: 12px; }
+.situation-controls .field { margin-bottom: 0; min-width: 200px; }
+.situation-layers {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  margin: 0;
+  min-width: 0;
+}
+.situation-layers legend { padding: 0 4px; }
+.situation-layer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 14px 4px 0;
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ---------- Alerts and time series ---------- */
+.alerts-summary { display: grid; gap: 14px; }
+.alerts-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.alerts-tile { border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; background: var(--bg-2); display: grid; gap: 2px; }
+.alerts-tile-value { font-family: var(--font-display); font-size: 1.5rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.alerts-tile-label { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.alerts-kinds { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--text-2); font-size: 14px; }
+.alerts-kinds li { display: flex; gap: 8px; align-items: baseline; }
+.alerts-kinds .num { color: var(--text); font-variant-numeric: tabular-nums; }
+.alerts-filter-label { font-size: 13px; color: var(--text-2); display: inline-flex; align-items: center; gap: 6px; }
+#al-country, #al-severity, #al-hours { min-height: 36px; max-width: 220px; }
+.ts { margin: 0; display: grid; gap: 10px; }
+.ts-frame { width: 100%; overflow: hidden; }
+.ts-svg { display: block; width: 100%; height: auto; min-height: 180px; }
+.ts-grid { stroke: rgba(160, 180, 220, 0.12); stroke-width: 1; }
+.ts-axis { fill: var(--text-3); font-family: var(--font-mono); font-size: 11px; }
+.ts-line { stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ts-line--reports { stroke: var(--cyan); }
+.ts-line--verified { stroke: var(--amber); }
+.ts-dot.ts-line--reports { fill: var(--cyan); stroke: none; }
+.ts-dot.ts-line--verified { fill: var(--amber); stroke: none; }
+.ts-legend { list-style: none; margin: 0; padding: 0; display: flex; gap: 16px; font-size: 13px; color: var(--text-2); }
+.ts-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.ts-swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.ts-swatch.ts-line--reports { background: var(--cyan); }
+.ts-swatch.ts-line--verified { background: var(--amber); }
+.ts-table summary { cursor: pointer; color: var(--text-2); font-size: 0.9rem; }
+.ts-table summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+@media (max-width: 600px) {
+  #al-country, #al-severity, #al-hours { max-width: 100%; width: 100%; }
+}

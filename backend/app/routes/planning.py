@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from app.auth import CurrentUser, current_user
 from app.container import services_of
 from app.errors import AppError
+from app.routes.logistics import coverage as logistics_coverage
 from app.rules import engine
 from app.simulation import engine as sim
 
@@ -90,4 +91,9 @@ def allocation(request: Request, simulation_id: str = Query(min_length=36, max_l
         raise AppError("CONFLICT",
                        "The rule pack has changed since this simulation ran. Run a new simulation to plan from it.")
     output = json.loads(row["output_json"])
-    return build_allocation(row, output, pack)
+    plan = build_allocation(row, output, pack)
+    # Added key only: coverage compares the need above with the logistics registry (SDD 15.1). Empty when there is no
+    # logistics data. Coverage uses the registry as it is now.
+    with services.db.read() as conn:
+        plan["coverage"] = logistics_coverage(conn, plan["allocations"])
+    return plan

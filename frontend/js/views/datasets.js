@@ -5,6 +5,7 @@ import { copyButton } from '../components/copy.js';
 import { toast } from '../components/toast.js';
 import { go } from '../router.js';
 import { can, isOwner, hasRole } from '../session.js';
+import { loadList, cacheNotice } from '../offline/read-cache.js';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB, matches docs/api.md §3
 
@@ -34,9 +35,10 @@ export async function mount(root, ctx) {
 
   async function refreshList() {
     try {
-      const datasets = listOf(await api.get('datasets', { signal }));
+      const { items: datasets, savedAt } = await loadList('datasets', 'datasets', { signal });
       if (signal.aborted) return;
       renderList(datasets);
+      if (savedAt) listSlot.prepend(cacheNotice(savedAt));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       listSlot.replaceChildren(errorState(err, refreshList));

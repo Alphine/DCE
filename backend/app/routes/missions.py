@@ -20,6 +20,7 @@ from app import audit
 from app.auth import CurrentUser, current_user, require_role
 from app.container import services_of
 from app.datasets import KIND_CSV, dataset_file, read_table
+from app.countries import country_filter, country_or_default, country_query, normalize_country
 from app.errors import AppError
 from app.util import canonical_json, new_id, sha256_bytes, utc_now
 
@@ -48,6 +49,13 @@ class MissionIn(BaseModel):
     objective: str = Field(min_length=1, max_length=1000)
     # Required for DATASET sources: the CSV column whose distinct values become the target areas.
     area_column: str | None = Field(default=None, min_length=1, max_length=120)
+    # Optional. When absent, the mission takes its source's country (NULL, shown as 'ID', if the source has none).
+    country_code: str | None = None
+
+    @field_validator("country_code")
+    @classmethod
+    def _country(cls, value: str | None) -> str | None:
+        return normalize_country(value)
 
     @field_validator("title")
     @classmethod
@@ -102,6 +110,7 @@ def _view(row: sqlite3.Row) -> dict[str, Any]:
         "area_column": row["area_column"],
         "target_areas": json.loads(row["target_areas_json"]),
         "status": row["status"],
+        "country_code": country_or_default(row["country_code"]),
         "content_sha256": row["content_sha256"],
         "approved_content_sha256": row["approved_content_sha256"],
         "proposer": {"id": row["proposer_id"], "username": row["proposer_username"]},
@@ -145,11 +154,24 @@ def _areas_from_dataset(data_dir: Path, dataset: sqlite3.Row, column: str) -> li
 
 @router.get("")
 def list_missions(request: Request, limit: int = Query(default=200, ge=1, le=500),
+                  country: str | None = Query(default=None, max_length=2),
                   user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
-    where = "" if user.has_at_least("Analyst") else "WHERE m.status = 'APPROVED' "
+    clauses = visible_clause(user)
+    params: list[str] = []
+    frag, cparams = country_filter("m", country_query(country))
+    if frag:
+        clauses.append(frag)
+        params += cparams
+    where = ("WHERE " + " AND ".join(clauses) + " ") if clauses else ""
     with services_of(request).db.read() as conn:
-        rows = conn.execute(_SELECT + where + "ORDER BY m.created_at DESC, m.id LIMIT ?", (limit,)).fetchall()
+        rows = conn.execute(_SELECT + where + "ORDER BY m.created_at DESC, m.id LIMIT ?",
+                            (*params, limit)).fetchall()
     return [_view(r) for r in rows]
+
+
+def visible_clause(user: CurrentUser) -> list[str]:
+    """SQL form of _visible, for list queries and the sync snapshot."""
+    return [] if user.has_at_least("Analyst") else ["m.status = 'APPROVED'"]
 
 
 @router.post("", status_code=201)
@@ -157,47 +179,58 @@ def propose_mission(body: MissionIn, request: Request,
                     user: CurrentUser = Depends(require_role("Analyst"))) -> JSONResponse:
     services = services_of(request)
     with services.db.transaction() as conn:
-        if body.source_type == "DATASET":
-            dataset = conn.execute("SELECT * FROM datasets WHERE id = ?", (body.source_id,)).fetchone()
-            if dataset is None:
-                raise AppError("NOT_FOUND", "Dataset not found.")
-            if dataset["status"] != "APPROVED":
-                raise AppError("INVALID_STATE", "A mission can only use an approved dataset.")
-            if dataset["kind"] != KIND_CSV:
-                raise AppError("VALIDATION_FAILED", "Target areas are derived from CSV datasets only.")
-            if body.area_column is None:
-                raise AppError("VALIDATION_FAILED", "area_column is required for a dataset source.")
-            target_areas = _areas_from_dataset(services.settings.data_dir, dataset, body.area_column)
-            dataset_id, report_id = dataset["id"], None
-        else:
-            if body.area_column is not None:
-                raise AppError("VALIDATION_FAILED", "area_column applies to dataset sources only.")
-            report = conn.execute("SELECT * FROM reports WHERE id = ?", (body.source_id,)).fetchone()
-            if report is None:
-                raise AppError("NOT_FOUND", "Report not found.")
-            if report["status"] != "VERIFIED_OBSERVATION":
-                raise AppError("INVALID_STATE", "A mission can only use a verified report.")
-            if report["location_name"] is None:
-                raise AppError("VALIDATION_FAILED", "The report has no named place to use as a target area.")
-            target_areas = [report["location_name"]]
-            dataset_id, report_id = None, report["id"]
-
-        content_sha = sha256_bytes(
-            _content(body.title, body.objective, body.source_type, body.source_id, target_areas).encode("utf-8"))
-        mission_id = new_id()
-        conn.execute(
-            "INSERT INTO missions (id, title, objective, source_type, dataset_id, report_id, area_column, "
-            "target_areas_json, content_sha256, status, proposer_id, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PROPOSED', ?, ?)",
-            (mission_id, body.title, body.objective, body.source_type, dataset_id, report_id,
-             body.area_column, canonical_json(target_areas), content_sha, user.id, utc_now()),
-        )
-        audit.append(conn, actor=user.username, action="mission.proposed", subject=mission_id, detail={
-            "source_type": body.source_type, "source_id": body.source_id,
-            "target_area_count": len(target_areas), "content_sha256": content_sha,
-        })
-        view = _view(_load(conn, mission_id))
+        view = propose_in_conn(conn, services, user, body)
     return JSONResponse(view, status_code=201)
+
+
+def propose_in_conn(conn: sqlite3.Connection, services: Any, user: CurrentUser, body: MissionIn,
+                    audit_extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Write a proposal and its audit row inside an open transaction. Shared by the route and /api/sync/batch."""
+    if body.source_type == "DATASET":
+        dataset = conn.execute("SELECT * FROM datasets WHERE id = ?", (body.source_id,)).fetchone()
+        if dataset is None:
+            raise AppError("NOT_FOUND", "Dataset not found.")
+        if dataset["status"] != "APPROVED":
+            raise AppError("INVALID_STATE", "A mission can only use an approved dataset.")
+        if dataset["kind"] != KIND_CSV:
+            raise AppError("VALIDATION_FAILED", "Target areas are derived from CSV datasets only.")
+        if body.area_column is None:
+            raise AppError("VALIDATION_FAILED", "area_column is required for a dataset source.")
+        target_areas = _areas_from_dataset(services.settings.data_dir, dataset, body.area_column)
+        dataset_id, report_id = dataset["id"], None
+        source_country = dataset["country_code"]
+    else:
+        if body.area_column is not None:
+            raise AppError("VALIDATION_FAILED", "area_column applies to dataset sources only.")
+        report = conn.execute("SELECT * FROM reports WHERE id = ?", (body.source_id,)).fetchone()
+        if report is None:
+            raise AppError("NOT_FOUND", "Report not found.")
+        if report["status"] != "VERIFIED_OBSERVATION":
+            raise AppError("INVALID_STATE", "A mission can only use a verified report.")
+        if report["location_name"] is None:
+            raise AppError("VALIDATION_FAILED", "The report has no named place to use as a target area.")
+        target_areas = [report["location_name"]]
+        dataset_id, report_id = None, report["id"]
+        source_country = report["country_code"]
+
+    country = body.country_code if body.country_code is not None else source_country
+    content_sha = sha256_bytes(
+        _content(body.title, body.objective, body.source_type, body.source_id, target_areas).encode("utf-8"))
+    mission_id = new_id()
+    conn.execute(
+        "INSERT INTO missions (id, title, objective, source_type, dataset_id, report_id, area_column, "
+        "target_areas_json, content_sha256, status, proposer_id, created_at, country_code) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PROPOSED', ?, ?, ?)",
+        (mission_id, body.title, body.objective, body.source_type, dataset_id, report_id,
+         body.area_column, canonical_json(target_areas), content_sha, user.id, utc_now(), country),
+    )
+    audit.append(conn, actor=user.username, action="mission.proposed", subject=mission_id, detail={
+        "source_type": body.source_type, "source_id": body.source_id,
+        "target_area_count": len(target_areas), "content_sha256": content_sha,
+        "country_code": country_or_default(country),
+        **(audit_extra or {}),
+    })
+    return _view(_load(conn, mission_id))
 
 
 @router.get("/{mission_id}")
@@ -209,6 +242,14 @@ def get_mission(mission_id: str, request: Request, user: CurrentUser = Depends(c
     return _view(row)
 
 
+def mission_content_sha256(row: sqlite3.Row) -> str:
+    """Recompute the content hash from the stored fields. It must equal the proposal hash."""
+    target_areas = json.loads(row["target_areas_json"])
+    source_id = row["dataset_id"] if row["source_type"] == "DATASET" else row["report_id"]
+    return sha256_bytes(_content(row["title"], row["objective"], row["source_type"], source_id,
+                                 target_areas).encode("utf-8"))
+
+
 def _decide(request: Request, user: CurrentUser, mission_id: str, decision: str, note: str | None) -> dict[str, Any]:
     services = services_of(request)
     with services.db.transaction() as conn:
@@ -217,33 +258,37 @@ def _decide(request: Request, user: CurrentUser, mission_id: str, decision: str,
             raise AppError("SELF_APPROVAL_NOT_ALLOWED", "You cannot approve a mission you proposed.")
         if row["status"] != "PROPOSED":
             raise AppError("INVALID_STATE", f"A mission in {row['status']} cannot be decided.")
-        target_areas = json.loads(row["target_areas_json"])
-        source_id = row["dataset_id"] if row["source_type"] == "DATASET" else row["report_id"]
-        content_sha = sha256_bytes(_content(row["title"], row["objective"], row["source_type"], source_id,
-                                            target_areas).encode("utf-8"))
+        content_sha = mission_content_sha256(row)
         if content_sha != row["content_sha256"]:
             raise AppError("CONFLICT", "Mission content no longer matches its proposal hash.")
-        now = utc_now()
-        if decision == "approve":
-            conn.execute(
-                "UPDATE missions SET status = 'APPROVED', decided_by = ?, decided_role = ?, decided_at = ?, "
-                "decision_note = ?, approved_content_sha256 = ? WHERE id = ?",
-                (user.id, user.role, now, note, content_sha, mission_id),
-            )
-            action = "mission.approved"
-        else:
-            conn.execute(
-                "UPDATE missions SET status = 'REJECTED', decided_by = ?, decided_role = ?, decided_at = ?, "
-                "decision_note = ? WHERE id = ?",
-                (user.id, user.role, now, note, mission_id),
-            )
-            action = "mission.rejected"
-        audit.append(conn, actor=user.username, action=action, subject=mission_id, detail={
-            "role": user.role, "content_sha256": content_sha,
-            "note_sha256": sha256_bytes(note.encode("utf-8")) if note else None,
-        })
-        view = _view(_load(conn, mission_id))
-    return view
+        return apply_decision(conn, user, row, decision, note, content_sha)
+
+
+def apply_decision(conn: sqlite3.Connection, user: CurrentUser, row: sqlite3.Row, decision: str,
+                   note: str | None, content_sha: str, audit_extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Write an approve or reject. The caller has already checked role, separation of duties, state and hash."""
+    mission_id = row["id"]
+    now = utc_now()
+    if decision == "approve":
+        conn.execute(
+            "UPDATE missions SET status = 'APPROVED', decided_by = ?, decided_role = ?, decided_at = ?, "
+            "decision_note = ?, approved_content_sha256 = ? WHERE id = ?",
+            (user.id, user.role, now, note, content_sha, mission_id),
+        )
+        action = "mission.approved"
+    else:
+        conn.execute(
+            "UPDATE missions SET status = 'REJECTED', decided_by = ?, decided_role = ?, decided_at = ?, "
+            "decision_note = ? WHERE id = ?",
+            (user.id, user.role, now, note, mission_id),
+        )
+        action = "mission.rejected"
+    audit.append(conn, actor=user.username, action=action, subject=mission_id, detail={
+        "role": user.role, "content_sha256": content_sha,
+        "note_sha256": sha256_bytes(note.encode("utf-8")) if note else None,
+        **(audit_extra or {}),
+    })
+    return _view(_load(conn, mission_id))
 
 
 @router.post("/{mission_id}/approve")

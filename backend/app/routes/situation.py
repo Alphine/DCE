@@ -27,7 +27,7 @@ LABEL_CHARS = 120
 
 def _report_points(conn: sqlite3.Connection, limit: int) -> list[dict[str, Any]]:
     rows = conn.execute(
-        "SELECT id, hazard_type, location_name, latitude, longitude, status FROM reports "
+        "SELECT id, hazard_type, location_name, latitude, longitude, status, country_code FROM reports "
         "WHERE status = 'VERIFIED_OBSERVATION' AND latitude IS NOT NULL AND longitude IS NOT NULL "
         "ORDER BY created_at DESC, id LIMIT ?",
         (limit,),
@@ -40,6 +40,7 @@ def _report_points(conn: sqlite3.Connection, limit: int) -> list[dict[str, Any]]
         "lon": row["longitude"],
         "status": row["status"],
         "data_class": "VERIFIED_OBSERVATION",
+        "country_code": row["country_code"] or "ID",
     } for row in rows]
 
 
@@ -91,6 +92,7 @@ def _dataset_points(data: bytes, dataset: sqlite3.Row, budget: int) -> list[dict
             "lat": lat,
             "lon": lon,
             "data_class": None,
+            "country_code": dataset["country_code"] or "ID",
         })
     return points
 

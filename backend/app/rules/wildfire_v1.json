@@ -1,0 +1,54 @@
+{
+  "pack_id": "dce-wildfire-smoke-illustrative",
+  "version": "1.0.0",
+  "hazard": "wildfire",
+  "author": "Disaster Commander Edge project",
+  "status_note": "ILLUSTRATIVE. Every threshold in this pack is a demonstration value. None is validated against an authoritative standard (SDD 11.3). Do not use for operational decisions or evacuation.",
+  "sources": [
+    "Project illustrative assumptions for demonstration. Replace with an authoritative fire-behaviour and air-quality source before any operational use."
+  ],
+  "countries": [],
+  "thresholds_label": "illustrative",
+  "severity_order": [
+    "LOW",
+    "MEDIUM",
+    "HIGH"
+  ],
+  "rules": [
+    {
+      "id": "WF-R1",
+      "label": "illustrative",
+      "description": "Fire 5 km or less from the nearest settlement: MEDIUM.",
+      "when": {
+        "distance_km_lte": 5
+      },
+      "then": {
+        "severity": "MEDIUM"
+      }
+    },
+    {
+      "id": "WF-R2",
+      "label": "illustrative",
+      "description": "Fire 2 km or less from the nearest settlement: HIGH.",
+      "when": {
+        "distance_km_lte": 2
+      },
+      "then": {
+        "severity": "HIGH"
+      }
+    },
+    {
+      "id": "WF-R3",
+      "label": "illustrative",
+      "description": "Wind 20 km/h or more and fire 10 km or less from a settlement: smoke exposure candidate.",
+      "when": {
+        "distance_km_lte": 10,
+        "wind_kmh_gte": 20
+      },
+      "then": {
+        "flag": "smoke_exposure_candidate"
+      }
+    }
+  ],
+  "pack_sha256": "72a25fa3d075bbf41cf52cabacef5a9543f4f992465967d5fbda36d5ac3e7c26"
+}

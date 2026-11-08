@@ -43,3 +43,6 @@ Thumbs.db
 
 # Raw upstream world map (about 13.6 MB), fetched by scripts/build_world_map.py
 scripts/.cache/
+
+# Desktop build (Tauri)
+src-tauri/target/

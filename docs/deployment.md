@@ -731,3 +731,14 @@ Prices were checked on November 5, 2026 and must be re-verified in the Vultr con
 | **Total, 4 vCPU / 8 GB VM** | about 60 to 70 | Not verified. Needed only for concurrency 2 |
 
 Each participant receives $200 in Vultr credits through the lablab.ai page. With the 2 vCPU VM, the credits cover several months. Extra IPv4 addresses and block storage are billed separately. The inference quota (SDD 20.6) is the main budget control.
+
+## Desktop build (Windows)
+
+The desktop app is a Tauri 2 shell (`src-tauri/`) that opens `https://commander.basyid.dev` in a native window. It is the same origin as the API, so the session cookie works. It is not a separate build of the frontend.
+
+- Prerequisites on the build machine: Node.js, Rust (MSVC toolchain), Visual Studio Build Tools with the C++ workload, and WebView2 on the target machine.
+- Build (from the repo root, PowerShell): `powershell -ExecutionPolicy Bypass -File .\scripts\build-desktop.ps1`. The script loads `vcvars64.bat` from the installed Visual Studio (found with `vswhere`) and then runs `npm run build:desktop`.
+- Output: `src-tauri\target\release\bundle\nsis\` (NSIS `.exe`) and `src-tauri\target\release\bundle\msi\` (`.msi`).
+- If the build fails with `Access denied` on `src-tauri\target` (the repo sits in OneDrive), set `CARGO_TARGET_DIR` to a folder outside OneDrive before running the script. The bundles then appear under `<CARGO_TARGET_DIR>\release\bundle\`.
+- The MSI bundler downloads the WiX 3.14 toolset from GitHub on first use. A GitHub outage (HTTP 504) fails the MSI step. Retry later.
+- Not included: code signing. Windows shows an unknown-publisher warning. The first launch needs network access.

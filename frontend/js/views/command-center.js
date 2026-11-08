@@ -8,6 +8,7 @@ import { verifyBlob, hashStatus } from '../components/hash.js';
 import { icon } from '../components/icons.js';
 import { toast } from '../components/toast.js';
 import { hasRole } from '../session.js';
+import { buildQueue, decisionQueuePanel } from '../components/decision-queue.js';
 
 const FAILED_STATES = new Set(['FAILED_PLANNING', 'FAILED_SANDBOX', 'TIMED_OUT', 'REJECTED_OUTPUT', 'ORPHANED']);
 
@@ -31,6 +32,7 @@ export async function mount(root, ctx) {
   let pointCard = null;
 
   const asOfSlot = h('p', { class: 'small muted', 'aria-live': 'polite' });
+  const queueSlot = h('div', { class: 'stack' }, spinner('Loading decision queue…'));
   const tilesSlot = h('div', { class: 'indicators' }, spinner('Loading summary…'));
   const mapSlot = h('div', { class: 'stack' });
   const chartSlot = h('div', { class: 'stack' });
@@ -45,6 +47,7 @@ export async function mount(root, ctx) {
     pageHead('Command Center',
       'Live overview of datasets, agent tasks, sandbox status and quota. The map and chart use approved datasets only.',
       refreshBtn),
+    queueSlot,
     h('div', { class: 'cc-grid' },
       h('div', { class: 'cc-col cc-left' },
         panel({ title: 'Situational overview', sub: 'Counts and status from the server.', cls: 'panel--overview' },
@@ -354,8 +357,24 @@ export async function mount(root, ctx) {
     };
   }
 
+  // Decision queue. Each request is settled on its own, so one failure leaves the other sections
+  // visible. A failed list is passed as null and shown as a notice in its group.
+  async function loadQueue() {
+    const settled = await Promise.allSettled([
+      api.get('missions', { signal, query: { limit: 500 } }),
+      api.get('reports', { signal, query: { limit: 500 } }),
+      api.get('datasets', { signal }),
+      api.get('agent/tasks', { signal }),
+    ]);
+    if (signal.aborted) return;
+    const pick = (res) => (res.status === 'fulfilled' ? listOf(res.value) : null);
+    const [missions, reports, datasets, tasks] = settled.map(pick);
+    queueSlot.replaceChildren(decisionQueuePanel(buildQueue({ missions, reports, datasets, tasks }, user, Date.now())));
+  }
+
   async function load() {
     refreshBtn.disabled = true;
+    loadQueue();
     try {
       const [summary, tasksRes] = await Promise.all([
         api.get('dashboard/summary', { signal }),

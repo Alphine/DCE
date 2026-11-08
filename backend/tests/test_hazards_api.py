@@ -80,7 +80,7 @@ def test_unauthenticated_read_is_refused(env: Env) -> None:
 
 def test_unknown_pack_is_refused(env: Env) -> None:
     dataset_id = env.approved_dataset()
-    response = _hazards(env, dataset_id, pack="wildfire")
+    response = _hazards(env, dataset_id, pack="volcano")
     assert response.status_code == 422
     assert _error_code(response) == "VALIDATION_FAILED"
 

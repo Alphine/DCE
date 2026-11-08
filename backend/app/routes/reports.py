@@ -14,11 +14,13 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app import alerts as alerts_core
 from app import audit
 from app.auth import CurrentUser, current_user, require_role
 from app.container import services_of
+from app.countries import country_filter, country_or_default, country_query, normalize_country
 from app.errors import AppError
-from app.util import new_id, sha256_bytes, utc_now
+from app.util import canonical_json, new_id, sha256_bytes, utc_now
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -27,6 +29,10 @@ ReporterRole = Literal["CIVILIAN", "VOLUNTEER", "OFFICIAL", "RESPONDER", "OTHER"
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
 MAX_FUTURE_SKEW = timedelta(minutes=5)
+
+# The fields a reviewer reads. The content hash covers exactly these (docs/offline-global.md section 2).
+_CONTENT_FIELDS = ("hazard_type", "location_name", "latitude", "longitude", "observed_at", "reporter_role",
+                   "severity_reported", "source_reference", "notes")
 
 
 def _clean_text(value: str | None, *, allow_newlines: bool = False) -> str | None:
@@ -56,6 +62,7 @@ class ReportIn(BaseModel):
     severity_reported: Severity | None = None
     source_reference: str | None = Field(default=None, max_length=120)
     notes: str | None = Field(default=None, max_length=2000)
+    country_code: str | None = None
 
     @field_validator("latitude", "longitude", mode="before")
     @classmethod
@@ -74,6 +81,11 @@ class ReportIn(BaseModel):
     def _notes(cls, value: str | None) -> str | None:
         return _clean_text(value, allow_newlines=True)
 
+    @field_validator("country_code")
+    @classmethod
+    def _country(cls, value: str | None) -> str | None:
+        return normalize_country(value)
+
 
 class ReviewBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -90,6 +102,12 @@ class ReviewBody(BaseModel):
 _SELECT = "SELECT r.* FROM reports r "
 
 
+def content_sha256(row: sqlite3.Row) -> str:
+    """Hash of what a reviewer reads. An offline decision must quote this value."""
+    content = {key: row[key] for key in _CONTENT_FIELDS}
+    return sha256_bytes(canonical_json(content).encode("utf-8"))
+
+
 def _view(row: sqlite3.Row) -> dict[str, Any]:
     review = None
     if row["reviewed_by"] is not None:
@@ -104,6 +122,8 @@ def _view(row: sqlite3.Row) -> dict[str, Any]:
         "source_reference": row["source_reference"],
         "notes": row["notes"],
         "status": row["status"],
+        "country_code": country_or_default(row["country_code"]),
+        "content_sha256": content_sha256(row),
         "submitter": {"id": row["submitter_id"]},
         "review": review,
         "created_at": row["created_at"],
@@ -120,6 +140,11 @@ def _load(conn: sqlite3.Connection, report_id: str) -> sqlite3.Row:
 def _visible(user: CurrentUser, status: str) -> bool:
     # Viewers read verified observations only (SDD 20.5). Analysts and above see every report.
     return status == "VERIFIED_OBSERVATION" or user.has_at_least("Analyst")
+
+
+def visible_clause(user: CurrentUser) -> list[str]:
+    """SQL form of _visible, for list queries and the sync snapshot."""
+    return [] if user.has_at_least("Analyst") else ["r.status = 'VERIFIED_OBSERVATION'"]
 
 
 def _observed_at(value: str | None) -> str | None:
@@ -143,38 +168,55 @@ def _observed_at(value: str | None) -> str | None:
 
 @router.get("")
 def list_reports(request: Request, limit: int = Query(default=200, ge=1, le=500),
+                 country: str | None = Query(default=None, max_length=2),
                  user: CurrentUser = Depends(current_user)) -> list[dict[str, Any]]:
-    where = "" if user.has_at_least("Analyst") else "WHERE r.status = 'VERIFIED_OBSERVATION' "
+    clauses = visible_clause(user)
+    params: list[str] = []
+    frag, cparams = country_filter("r", country_query(country))
+    if frag:
+        clauses.append(frag)
+        params += cparams
+    where = ("WHERE " + " AND ".join(clauses) + " ") if clauses else ""
     with services_of(request).db.read() as conn:
-        rows = conn.execute(_SELECT + where + "ORDER BY r.created_at DESC, r.id LIMIT ?", (limit,)).fetchall()
+        rows = conn.execute(_SELECT + where + "ORDER BY r.created_at DESC, r.id LIMIT ?",
+                            (*params, limit)).fetchall()
     return [_view(r) for r in rows]
 
 
 @router.post("", status_code=201)
 def create_report(body: ReportIn, request: Request,
                   user: CurrentUser = Depends(require_role("Analyst"))) -> JSONResponse:
+    services = services_of(request)
+    with services.db.transaction() as conn:
+        view = insert_report(conn, user, body)
+    return JSONResponse(view, status_code=201)
+
+
+def insert_report(conn: sqlite3.Connection, user: CurrentUser, body: ReportIn,
+                  audit_extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Write a report and its audit row inside an open transaction. Shared by the route and /api/sync/batch."""
     if (body.latitude is None) != (body.longitude is None):
         raise AppError("VALIDATION_FAILED", "Latitude and longitude must be given together, or both omitted.")
     observed_at = _observed_at(body.observed_at)
     report_id = new_id()
-    services = services_of(request)
-    with services.db.transaction() as conn:
-        conn.execute(
-            "INSERT INTO reports (id, submitter_id, hazard_type, location_name, latitude, longitude, observed_at, "
-            "reporter_role, severity_reported, source_reference, notes, status, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OBSERVATION', ?)",
-            (report_id, user.id, body.hazard_type, body.location_name, body.latitude, body.longitude, observed_at,
-             body.reporter_role, body.severity_reported, body.source_reference, body.notes, utc_now()),
-        )
-        # The audit row stores hashes and flags, never the free text itself (SDD 16.4).
-        audit.append(conn, actor=user.username, action="report.submitted", subject=report_id, detail={
-            "hazard_type": body.hazard_type,
-            "coordinates": body.latitude is not None,
-            "named_place": body.location_name is not None,
-            "notes_sha256": sha256_bytes(body.notes.encode("utf-8")) if body.notes else None,
-        })
-        view = _view(_load(conn, report_id))
-    return JSONResponse(view, status_code=201)
+    conn.execute(
+        "INSERT INTO reports (id, submitter_id, hazard_type, location_name, latitude, longitude, observed_at, "
+        "reporter_role, severity_reported, source_reference, notes, status, created_at, country_code) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OBSERVATION', ?, ?)",
+        (report_id, user.id, body.hazard_type, body.location_name, body.latitude, body.longitude, observed_at,
+         body.reporter_role, body.severity_reported, body.source_reference, body.notes, utc_now(),
+         body.country_code),
+    )
+    # The audit row stores hashes and flags, never the free text itself (SDD 16.4).
+    audit.append(conn, actor=user.username, action="report.submitted", subject=report_id, detail={
+        "hazard_type": body.hazard_type,
+        "coordinates": body.latitude is not None,
+        "named_place": body.location_name is not None,
+        "notes_sha256": sha256_bytes(body.notes.encode("utf-8")) if body.notes else None,
+        "country_code": country_or_default(body.country_code),
+        **(audit_extra or {}),
+    })
+    return _view(_load(conn, report_id))
 
 
 @router.get("/{report_id}")
@@ -196,14 +238,22 @@ def review_report(report_id: str, body: ReviewBody, request: Request,
             raise AppError("SELF_APPROVAL_NOT_ALLOWED", "You cannot review a report you submitted.")
         if row["status"] != "OBSERVATION":
             raise AppError("INVALID_STATE", f"A report in {row['status']} cannot be reviewed.")
-        target = "VERIFIED_OBSERVATION" if body.decision == "approve" else "REJECTED"
-        conn.execute(
-            "UPDATE reports SET status = ?, reviewed_by = ?, reviewed_at = ?, review_note = ? WHERE id = ?",
-            (target, user.id, utc_now(), body.note, report_id),
-        )
-        audit.append(conn, actor=user.username, action="report.reviewed", subject=report_id, detail={
-            "decision": body.decision, "role": user.role, "status": target,
-            "note_sha256": sha256_bytes(body.note.encode("utf-8")) if body.note else None,
-        })
-        view = _view(_load(conn, report_id))
-    return view
+        return apply_review(conn, user, row, body.decision, body.note)
+
+
+def apply_review(conn: sqlite3.Connection, user: CurrentUser, row: sqlite3.Row, decision: str,
+                 note: str | None, audit_extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Write a review decision. The caller has already checked role, separation of duties, and state."""
+    report_id = row["id"]
+    target = "VERIFIED_OBSERVATION" if decision == "approve" else "REJECTED"
+    conn.execute(
+        "UPDATE reports SET status = ?, reviewed_by = ?, reviewed_at = ?, review_note = ? WHERE id = ?",
+        (target, user.id, utc_now(), note, report_id),
+    )
+    audit.append(conn, actor=user.username, action="report.reviewed", subject=report_id, detail={
+        "decision": decision, "role": user.role, "status": target,
+        "note_sha256": sha256_bytes(note.encode("utf-8")) if note else None,
+        **(audit_extra or {}),
+    })
+    alerts_core.write_report_verified(conn, row, target)
+    return _view(_load(conn, report_id))

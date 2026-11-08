@@ -4,6 +4,9 @@ import { chipList } from '../components/badges.js';
 import { toast } from '../components/toast.js';
 import { go } from '../router.js';
 import { hasRole } from '../session.js';
+import { loadList, cacheNotice } from '../offline/read-cache.js';
+import { submitOrQueue, SAVED_OFFLINE_MESSAGE } from '../offline/outbox.js';
+import { countryField, countryOrNull } from '../components/countries.js';
 
 // SDD 15.2 to 15.4. A mission is proposed by an Analyst from approved data, then an Approver who did not
 // propose it approves or rejects it. Approval never starts a sandbox run. "Executed" is not recorded here.
@@ -49,9 +52,10 @@ export async function mount(root, ctx) {
 
   async function refreshList() {
     try {
-      const missions = listOf(await api.get('missions', { signal }));
+      const { items: missions, savedAt } = await loadList('missions', 'missions', { signal });
       if (signal.aborted) return;
       renderList(missions);
+      if (savedAt) listSlot.prepend(cacheNotice(savedAt));
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
       listSlot.replaceChildren(errorState(err, refreshList));
@@ -93,6 +97,7 @@ export async function mount(root, ctx) {
     const title = h('input', { id: 'ms-title', type: 'text', maxlength: '120', required: true });
     const objective = h('textarea', { id: 'ms-objective', rows: '3', maxlength: '1000', required: true });
     const submit = h('button', { class: 'btn btn-primary', type: 'submit' }, 'Propose mission');
+    const country = countryField('ms-country');
     const columnField = h('div', { class: 'field', id: 'ms-column-field' }, h('label', { for: 'ms-column' }, 'Target-area column'), column);
     const hint = h('p', { class: 'small muted' }, 'Target areas are the distinct values of the column you choose. You do not type them in.');
     const sourceField = h('div', { class: 'field' }, h('label', { for: 'ms-source' }, 'Source'), sourceSel);
@@ -149,15 +154,21 @@ export async function mount(root, ctx) {
       const problem = validateProposal(values);
       if (problem) { err.replaceChildren(alertBox('error', problem)); return; }
       const body = { source_type: values.source_type, source_id: values.source_id, title: values.title.trim(),
-        objective: values.objective.trim(), area_column: values.source_type === 'DATASET' ? values.area_column : null };
+        objective: values.objective.trim(), area_column: values.source_type === 'DATASET' ? values.area_column : null,
+        country_code: countryOrNull(country.select.value) };
       submit.disabled = true;
       try {
-        const created = await api.post('missions', body, { signal });
-        toast('Mission proposed. It waits for an approver.');
+        const out = await submitOrQueue('MISSION_PROPOSE', body, () => api.post('missions', body, { signal }));
         form.reset();
         refillSources();
+        if (out.queued) {
+          toast(SAVED_OFFLINE_MESSAGE);
+          await refreshList();
+          return;
+        }
+        toast('Mission proposed. It waits for an approver.');
         await refreshList();
-        go(`#/missions/${encodeURIComponent(created.id)}`);
+        go(`#/missions/${encodeURIComponent(out.result.id)}`);
       } catch (error) {
         if (error.name === 'AbortError') return;
         err.replaceChildren(alertBox('error', error.message));
@@ -167,6 +178,7 @@ export async function mount(root, ctx) {
     } },
       h('div', { class: 'field' }, h('label', { for: 'ms-type' }, 'Source type'), sourceType),
       sourceField,
+      country.field,
       columnField,
       hint,
       h('div', { class: 'field' }, h('label', { for: 'ms-title' }, 'Title'), title),
@@ -193,10 +205,24 @@ export async function mount(root, ctx) {
     const canDecide = m.status === 'PROPOSED' && hasRole(user, 'Approver') && m.proposer.id !== user.id;
     const note = h('textarea', { id: 'md-note', rows: '2', maxlength: '500', 'aria-label': 'Decision note (optional)' });
     const decideErr = h('div', { 'aria-live': 'polite' });
+    const approveBtn = h('button', { class: 'btn btn-primary', type: 'button', onclick: () => decide('approve') }, 'Approve mission');
+    const rejectBtn = h('button', { class: 'btn', type: 'button', onclick: () => decide('reject') }, 'Reject');
     const decide = async (action) => {
       decideErr.replaceChildren();
+      const noteText = note.value.trim() || null;
       try {
-        await api.post(`missions/${encodeURIComponent(m.id)}/${action}`, { note: note.value.trim() || null }, { signal });
+        const out = await submitOrQueue('MISSION_DECISION',
+          { mission_id: m.id, decision: action, content_sha256: m.content_sha256 || null, note: noteText },
+          () => api.post(`missions/${encodeURIComponent(m.id)}/${action}`, { note: noteText }, { signal }));
+        if (out.queued) {
+          // A pending decision is not effective until the server accepts it. Keep the buttons off until it is sent.
+          approveBtn.disabled = true;
+          rejectBtn.disabled = true;
+          toast(SAVED_OFFLINE_MESSAGE);
+          decideErr.replaceChildren(alertBox('info', 'Your decision is saved on this device. It takes effect only when the server accepts it.'));
+          await refreshList();
+          return;
+        }
         toast(action === 'approve' ? 'Mission approved.' : 'Mission rejected.');
         await refreshList();
         await renderDetail(m.id);
@@ -223,9 +249,7 @@ export async function mount(root, ctx) {
         h('label', { for: 'md-note' }, 'Decision note (optional)'),
         note,
         decideErr,
-        h('div', { class: 'row' },
-          h('button', { class: 'btn btn-primary', type: 'button', onclick: () => decide('approve') }, 'Approve mission'),
-          h('button', { class: 'btn', type: 'button', onclick: () => decide('reject') }, 'Reject'))) : null,
+        h('div', { class: 'row' }, approveBtn, rejectBtn)) : null,
       m.status === 'PROPOSED' && hasRole(user, 'Approver') && m.proposer.id === user.id
         ? alertBox('info', 'You proposed this mission, so another approver must decide it.') : null,
       m.status === 'PROPOSED' && !hasRole(user, 'Approver')

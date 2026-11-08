@@ -9,6 +9,8 @@ import { parseHash } from '../router.js';
 export const PACKS = [
   { id: 'flood', label: 'Flood' },
   { id: 'tsunami', label: 'Tsunami' },
+  { id: 'earthquake', label: 'Earthquake' },
+  { id: 'wildfire', label: 'Wildfire and smoke' },
 ];
 export const RESULT_ROW_LIMIT = 200;
 const SEVERITY_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];

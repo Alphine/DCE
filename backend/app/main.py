@@ -24,8 +24,9 @@ from app.db import Db
 from app.errors import AppError, install_error_handlers
 from app.middleware import RequestContextMiddleware
 from app.ratelimit import SlidingWindowLimiter
-from app.routes import (admin, agent, artifacts, auth, datasets, governance, hazards, missions, reports,
-                        planning, resources, simulations, situation)
+from app.routes import (admin, agent, alerts, artifacts, auth, datasets, governance, hazards, logistics, missions,
+                        planning, reports, resources, simulations, situation, sync)
+from app.routes import warnings as warnings_routes
 
 logger = logging.getLogger("dce.app")
 LOGIN_LIMIT_PER_MINUTE = 10
@@ -89,10 +90,14 @@ def create_app(settings: Settings | None = None, *, runner: Any | None = None,
     api.include_router(situation.router)
     api.include_router(resources.router)
     api.include_router(simulations.router)
+    api.include_router(sync.router)
     api.include_router(planning.router)
     api.include_router(agent.router)
     api.include_router(artifacts.router)
     api.include_router(admin.router)
+    api.include_router(alerts.router)
+    api.include_router(logistics.router)
+    api.include_router(warnings_routes.router)
 
     @api.api_route("/{rest:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"], include_in_schema=False)
     def _unknown(rest: str) -> None:
