@@ -6,10 +6,6 @@ import { toast } from './components/toast.js';
 import { h, errorState } from './dom.js';
 import { icon } from './components/icons.js';
 
-// Screens that are not built yet. Each one routes to an honest "Coming soon" view (views/coming-soon.js).
-const soon = (key, title) => ({ name: key, title, minRole: 'Viewer',
-  match: (p) => (p[0] === key ? { key } : null), load: () => import('./views/coming-soon.js') });
-
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },
   { name: 'command', title: 'Command Center', minRole: 'Viewer',
@@ -18,12 +14,14 @@ const ROUTES = [
     match: (p) => (p[0] === 'situation' ? {} : null), load: () => import('./views/situation.js') },
   { name: 'analysis', title: 'Hazard Intelligence', minRole: 'Viewer',
     match: (p) => (p[0] === 'analysis' ? {} : null), load: () => import('./views/hazards.js') },
-  soon('planning', 'Planning'),
+  { name: 'planning', title: 'Planning', minRole: 'Viewer',
+    match: (p) => (p[0] === 'planning' ? { id: p[1] || null } : null), load: () => import('./views/planning.js') },
   { name: 'resources', title: 'Resource Planner', minRole: 'Viewer',
     match: (p) => (p[0] === 'resources' ? {} : null), load: () => import('./views/resources.js') },
   { name: 'missions', title: 'Missions', minRole: 'Viewer',
     match: (p) => (p[0] === 'missions' ? { id: p[1] || null } : null), load: () => import('./views/missions.js') },
-  soon('simulation', 'Simulation'),
+  { name: 'simulation', title: 'Simulation', minRole: 'Viewer',
+    match: (p) => (p[0] === 'simulation' ? { id: p[1] || null } : null), load: () => import('./views/simulation.js') },
   { name: 'reports', title: 'Reports', minRole: 'Viewer',
     match: (p) => (p[0] === 'reports' ? { id: p[1] || null } : null), load: () => import('./views/reports.js') },
   { name: 'datasets', title: 'Datasets', minRole: 'Viewer',

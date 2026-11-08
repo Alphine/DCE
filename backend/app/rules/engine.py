@@ -137,10 +137,27 @@ def records_from_csv_bytes(data: bytes) -> list[dict[str, Any]]:
     return records
 
 
+def classify_depth(depth: float | None, pack: dict[str, Any]) -> tuple[str, set[str]]:
+    """Severity and flags for one water depth under a verified pack. None (unknown depth) gives UNKNOWN."""
+    if depth is None:
+        return "UNKNOWN", set()
+    order: list[str] = pack["severity_order"]
+    rank = {level: index for index, level in enumerate(order)}
+    severity = order[0]
+    flags: set[str] = set()
+    for rule in pack["rules"]:
+        if depth >= rule["when"]["water_depth_cm_gte"]:
+            action = rule["then"]
+            if "flag" in action:
+                flags.add(action["flag"])
+            if "severity" in action and rank[action["severity"]] > rank[severity]:
+                severity = action["severity"]
+    return severity, flags
+
+
 def evaluate_hazards(records: list[dict[str, Any]], pack: dict[str, Any]) -> dict[str, Any]:
     """Apply the verified pack's rules to each record. Pure and deterministic."""
     order: list[str] = pack["severity_order"]
-    rank = {level: index for index, level in enumerate(order)}
     counts: dict[str, int] = {level: 0 for level in order}
     counts["UNKNOWN"] = 0
     per_district: dict[str, dict[str, int]] = {}
@@ -148,18 +165,7 @@ def evaluate_hazards(records: list[dict[str, Any]], pack: dict[str, Any]) -> dic
 
     for record in sorted(records, key=lambda item: item["row"]):
         depth = record["water_depth_cm"]
-        flags: set[str] = set()
-        if depth is None:
-            severity = "UNKNOWN"
-        else:
-            severity = order[0]
-            for rule in pack["rules"]:
-                if depth >= rule["when"]["water_depth_cm_gte"]:
-                    action = rule["then"]
-                    if "flag" in action:
-                        flags.add(action["flag"])
-                    if "severity" in action and rank[action["severity"]] > rank[severity]:
-                        severity = action["severity"]
+        severity, flags = classify_depth(depth, pack)
         counts[severity] += 1
         district = per_district.setdefault(record["district"], {
             "rows": 0, "road_blocked_candidates": 0, "unknown_depth_rows": 0,
