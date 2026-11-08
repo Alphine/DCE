@@ -60,7 +60,10 @@ def validate_plan(raw: Any, ceiling: dict[str, int], dataset_kind: str = "CSV") 
     try:
         plan = Plan.model_validate(raw)
     except ValidationError as exc:
-        raise PlanError("PLAN_INVALID_SCHEMA", f"Plan failed schema validation ({len(exc.errors())} errors).") from exc
+        # Field paths only (never the values), so the message is safe to feed back to the planner and to log.
+        paths = sorted({".".join(str(part) for part in err["loc"]) or "(root)" for err in exc.errors()})[:12]
+        raise PlanError("PLAN_INVALID_SCHEMA",
+                        f"Plan failed schema validation. Fields with errors: {', '.join(paths)}.") from exc
 
     for tool in plan.tools:
         if tool not in TOOL_REGISTRY:

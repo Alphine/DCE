@@ -57,13 +57,6 @@
   <!-- CDN dependencies (see frontend/README.md). Chart.js is loaded as a classic script so the global Chart exists for ES modules. -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
   <script type="module" src="js/app.js"></script>
-  <script>
-    // Service worker: caches the app shell and serves saved list data when offline. Failure is not fatal.
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
-    }
-  </script>
+  <script src="js/sw-register.js"></script>
 </body>
 </html>

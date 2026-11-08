@@ -68,6 +68,8 @@ class PlanRequest:
     dataset_name: str
     profile: dict[str, Any]
     limits: dict[str, int]        # ceiling; the planner may lower these
+    # Field names that failed schema validation on the previous attempt. Field names only, never user data.
+    feedback: str | None = None
 
 
 @dataclass(frozen=True)
@@ -275,6 +277,7 @@ class VultrInference:
                 _data_block("requested_outputs", request.requested_outputs),
                 _data_block("dataset", {"name": request.dataset_name, "profile": request.profile}),
                 _data_block("limit_ceiling", request.limits),
+                *([_data_block("previous_attempt_errors", request.feedback)] if request.feedback else []),
             ])},
         ]
         # qwen3.8-flash-next is a reasoning model: its reasoning tokens count against max_tokens, so a small
