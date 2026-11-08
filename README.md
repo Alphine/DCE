@@ -155,7 +155,7 @@ The official submission deadline is not published on the event page. Confirm it 
 
 ## License
 
-MIT License. Copyright (c) 2026 Kawalight Studio. See `LICENSE`.
+MIT License. Copyright (c) 2026 Fakhrurrozi Basyid. See `LICENSE`.
 
 The copyright holder name is taken from the SDD. It can be changed in `LICENSE` and in this README if the legal entity differs.
 
