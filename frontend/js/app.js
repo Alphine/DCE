@@ -7,8 +7,13 @@ import { h, errorState } from './dom.js';
 import { icon } from './components/icons.js';
 import { start as startSync, subscribe as subscribeSync, rememberUser, forgetUser, cachedUser } from './offline/sync.js';
 
-// Routes that work without a session: sign-in and the emailed password reset.
-const PUBLIC_ROUTES = new Set(['login', 'reset', 'public', 'about']);
+// Routes that work without a session: sign-in, the emailed password reset, public warnings, About and the landing page.
+// Public routes skip the minRole check, so a visitor (no role) can open them.
+const PUBLIC_ROUTES = new Set(['login', 'reset', 'public', 'about', 'landing']);
+
+// A visitor (not signed in) at the command route sees the landing page. Signed-in users, and the demo sandbox
+// (which signs in as a demo user), keep the Command Center.
+const LANDING_ROUTE = { name: 'landing', title: 'Welcome', load: () => import('./views/landing.js') };
 
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },
@@ -168,9 +173,11 @@ function notFound() {
     h('a', { href: '#/' }, 'Back to Command Center'));
 }
 
-async function onRoute({ route, params }) {
+async function onRoute({ route: matched, params }) {
   const token = ++routeToken;
   teardown();
+
+  const route = !state.user && matched.name === 'command' ? LANDING_ROUTE : matched;
 
   if (!state.user && !PUBLIC_ROUTES.has(route.name)) return go('#/login');
   if (state.user && route.name === 'login') return go('#/');
@@ -180,7 +187,7 @@ async function onRoute({ route, params }) {
   main.replaceChildren();
 
   if (!route.load) return main.append(notFound());
-  if (route.minRole && !hasRole(state.user, route.minRole)) return main.append(forbidden(route));
+  if (route.minRole && !PUBLIC_ROUTES.has(route.name) && !hasRole(state.user, route.minRole)) return main.append(forbidden(route));
 
   const controller = new AbortController();
   active.controller = controller;

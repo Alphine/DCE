@@ -1,112 +1,136 @@
-import { h, pageHead, panel } from '../dom.js';
+import { h, svg, pageHead, panel } from '../dom.js';
 
-// Static content only: no user or API data is interpolated into this markup.
-const TRUST_SVG = `
-<svg viewBox="0 0 960 360" role="img" aria-labelledby="trust-title trust-desc" xmlns="http://www.w3.org/2000/svg">
-  <title id="trust-title">Trust boundary between the trusted app domain and the untrusted sandbox</title>
-  <desc id="trust-desc">The trusted domain holds the frontend, API, database, audit log and inference adapter. The untrusted sandbox domain runs generated code in a container with no network. Only named inputs go in and only validated files come out.</desc>
-  <defs>
-    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrow-amber"/></marker>
-    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrow-red"/></marker>
-  </defs>
-  <rect x="20" y="20" width="400" height="320" rx="16" class="zone-trusted"/>
-  <text x="40" y="52" class="svg-kicker">TRUSTED DOMAIN · app host</text>
-  <rect x="50" y="80" width="150" height="58" rx="10" class="node"/>
-  <text x="125" y="105" text-anchor="middle" class="svg-t">Frontend</text>
-  <text x="125" y="124" text-anchor="middle" class="svg-s">static, /api only</text>
-  <rect x="240" y="80" width="150" height="58" rx="10" class="node"/>
-  <text x="315" y="105" text-anchor="middle" class="svg-t">FastAPI app</text>
-  <text x="315" y="124" text-anchor="middle" class="svg-s">auth, plan gates, state</text>
-  <rect x="50" y="176" width="150" height="58" rx="10" class="node"/>
-  <text x="125" y="201" text-anchor="middle" class="svg-t">Audit + SQLite</text>
-  <text x="125" y="220" text-anchor="middle" class="svg-s">hash-chained, append-only</text>
-  <rect x="240" y="176" width="150" height="58" rx="10" class="node"/>
-  <text x="315" y="201" text-anchor="middle" class="svg-t">Inference adapter</text>
-  <text x="315" y="220" text-anchor="middle" class="svg-s">key never leaves here</text>
-  <line x1="200" y1="109" x2="240" y2="109" class="edge"/>
-  <line x1="125" y1="138" x2="125" y2="176" class="edge"/>
-  <line x1="315" y1="138" x2="315" y2="176" class="edge-dash"/>
-  <text x="125" y="290" class="svg-s">Plan and code are never run in this domain.</text>
+// Static content only, built with h() and svg(). No session or API data is needed to render this page,
+// so visitors who are not signed in see the same content as operators.
 
-  <line x1="430" y1="20" x2="430" y2="340" class="boundary"/>
-  <text x="446" y="36" class="svg-boundary">TRUST BOUNDARY</text>
+function trustFigure() {
+  return svg('svg', { viewBox: '0 0 960 360', role: 'img', 'aria-labelledby': 'trust-title trust-desc' },
+    svg('title', { id: 'trust-title' }, 'Trust boundary between the trusted app domain and the untrusted sandbox'),
+    svg('desc', { id: 'trust-desc' }, 'The trusted domain holds the frontend, API, database, audit log and inference adapter. The untrusted sandbox domain runs generated code in a container with no network. Only named inputs go in and only validated files come out.'),
+    svg('defs', null,
+      svg('marker', { id: 'arrow-amber', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' },
+        svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'arrow-amber' })),
+      svg('marker', { id: 'arrow-red', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' },
+        svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'arrow-red' }))),
+    svg('rect', { x: '20', y: '20', width: '400', height: '320', rx: '16', class: 'zone-trusted' }),
+    svg('text', { x: '40', y: '52', class: 'svg-kicker' }, 'TRUSTED DOMAIN · app host'),
+    svg('rect', { x: '50', y: '80', width: '150', height: '58', rx: '10', class: 'node' }),
+    svg('text', { x: '125', y: '105', 'text-anchor': 'middle', class: 'svg-t' }, 'Frontend'),
+    svg('text', { x: '125', y: '124', 'text-anchor': 'middle', class: 'svg-s' }, 'static, /api only'),
+    svg('rect', { x: '240', y: '80', width: '150', height: '58', rx: '10', class: 'node' }),
+    svg('text', { x: '315', y: '105', 'text-anchor': 'middle', class: 'svg-t' }, 'FastAPI app'),
+    svg('text', { x: '315', y: '124', 'text-anchor': 'middle', class: 'svg-s' }, 'auth, plan gates, state'),
+    svg('rect', { x: '50', y: '176', width: '150', height: '58', rx: '10', class: 'node' }),
+    svg('text', { x: '125', y: '201', 'text-anchor': 'middle', class: 'svg-t' }, 'Audit + SQLite'),
+    svg('text', { x: '125', y: '220', 'text-anchor': 'middle', class: 'svg-s' }, 'hash-chained, append-only'),
+    svg('rect', { x: '240', y: '176', width: '150', height: '58', rx: '10', class: 'node' }),
+    svg('text', { x: '315', y: '201', 'text-anchor': 'middle', class: 'svg-t' }, 'Inference adapter'),
+    svg('text', { x: '315', y: '220', 'text-anchor': 'middle', class: 'svg-s' }, 'key never leaves here'),
+    svg('line', { x1: '200', y1: '109', x2: '240', y2: '109', class: 'edge' }),
+    svg('line', { x1: '125', y1: '138', x2: '125', y2: '176', class: 'edge' }),
+    svg('line', { x1: '315', y1: '138', x2: '315', y2: '176', class: 'edge-dash' }),
+    svg('text', { x: '125', y: '290', class: 'svg-s' }, 'Plan and code are never run in this domain.'),
+    svg('line', { x1: '430', y1: '20', x2: '430', y2: '340', class: 'boundary' }),
+    svg('text', { x: '446', y: '36', class: 'svg-boundary' }, 'TRUST BOUNDARY'),
+    svg('rect', { x: '540', y: '20', width: '400', height: '320', rx: '16', class: 'zone-untrusted' }),
+    svg('text', { x: '560', y: '52', class: 'svg-kicker svg-kicker--red' }, 'UNTRUSTED DOMAIN · sandbox'),
+    svg('rect', { x: '580', y: '80', width: '320', height: '82', rx: '10', class: 'node node--red' }),
+    svg('text', { x: '740', y: '108', 'text-anchor': 'middle', class: 'svg-t' }, 'Sandbox container'),
+    svg('text', { x: '740', y: '128', 'text-anchor': 'middle', class: 'svg-s' }, 'no network · read-only root · non-root user'),
+    svg('text', { x: '740', y: '146', 'text-anchor': 'middle', class: 'svg-s' }, 'memory, pids and time limits from the plan'),
+    svg('rect', { x: '580', y: '196', width: '320', height: '58', rx: '10', class: 'node node--red' }),
+    svg('text', { x: '740', y: '221', 'text-anchor': 'middle', class: 'svg-t' }, 'Generated task.py'),
+    svg('text', { x: '740', y: '240', 'text-anchor': 'middle', class: 'svg-s' }, 'its SHA-256 is recorded before the run'),
+    svg('line', { x1: '740', y1: '162', x2: '740', y2: '196', class: 'edge-dash' }),
+    svg('path', { d: 'M400 110 C 470 110, 500 110, 580 110', class: 'flow-in', 'marker-end': 'url(#arrow-amber)' }),
+    svg('text', { x: '488', y: '96', 'text-anchor': 'middle', class: 'svg-s' }, 'named inputs only'),
+    svg('path', { d: 'M580 150 C 520 150, 500 150, 400 150', class: 'flow-out', 'marker-end': 'url(#arrow-red)' }),
+    svg('text', { x: '488', y: '170', 'text-anchor': 'middle', class: 'svg-s' }, 'stdout, files in /out'),
+    svg('text', { x: '740', y: '300', 'text-anchor': 'middle', class: 'svg-s' }, 'Outputs return only as hashed files.'),
+    svg('text', { x: '740', y: '320', 'text-anchor': 'middle', class: 'svg-s' }, 'Hash checked and validated before they are shown.'));
+}
 
-  <rect x="540" y="20" width="400" height="320" rx="16" class="zone-untrusted"/>
-  <text x="560" y="52" class="svg-kicker svg-kicker--red">UNTRUSTED DOMAIN · sandbox</text>
-  <rect x="580" y="80" width="320" height="82" rx="10" class="node node--red"/>
-  <text x="740" y="108" text-anchor="middle" class="svg-t">Sandbox container</text>
-  <text x="740" y="128" text-anchor="middle" class="svg-s">no network · read-only root · non-root user</text>
-  <text x="740" y="146" text-anchor="middle" class="svg-s">memory, pids and time limits from the plan</text>
-  <rect x="580" y="196" width="320" height="58" rx="10" class="node node--red"/>
-  <text x="740" y="221" text-anchor="middle" class="svg-t">Generated task.py</text>
-  <text x="740" y="240" text-anchor="middle" class="svg-s">its SHA-256 is recorded before the run</text>
-  <line x1="740" y1="162" x2="740" y2="196" class="edge-dash"/>
+function stateFigure() {
+  return svg('svg', { viewBox: '0 0 960 300', role: 'img', 'aria-labelledby': 'fsm-title fsm-desc' },
+    svg('title', { id: 'fsm-title' }, 'Task state machine'),
+    svg('desc', { id: 'fsm-desc' }, 'Main flow: PLANNING, AWAITING_APPROVAL (gate A), QUEUED, RUNNING, OUTPUT_VALIDATING, AWAITING_REVIEW (gate B), COMPLETED. Branches: FAILED_PLANNING, REJECTED, TIMED_OUT, FAILED_SANDBOX, REJECTED_OUTPUT.'),
+    svg('defs', null,
+      svg('marker', { id: 'arr', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto' },
+        svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'arrow-amber' })),
+      svg('marker', { id: 'arr-red', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto' },
+        svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'arrow-red' }))),
+    svg('g', { class: 'fsm-main' },
+      svg('rect', { x: '20', y: '30', width: '114', height: '46', rx: '10', class: 'node' }),
+      svg('text', { x: '77', y: '58', 'text-anchor': 'middle', class: 'svg-s' }, 'PLANNING'),
+      svg('rect', { x: '164', y: '30', width: '114', height: '46', rx: '10', class: 'node node--gate' }),
+      svg('text', { x: '221', y: '50', 'text-anchor': 'middle', class: 'svg-s' }, 'AWAITING_APPROVAL'),
+      svg('text', { x: '221', y: '66', 'text-anchor': 'middle', class: 'svg-gate' }, 'gate A'),
+      svg('rect', { x: '308', y: '30', width: '114', height: '46', rx: '10', class: 'node' }),
+      svg('text', { x: '365', y: '58', 'text-anchor': 'middle', class: 'svg-s' }, 'QUEUED'),
+      svg('rect', { x: '452', y: '30', width: '114', height: '46', rx: '10', class: 'node' }),
+      svg('text', { x: '509', y: '58', 'text-anchor': 'middle', class: 'svg-s' }, 'RUNNING'),
+      svg('rect', { x: '596', y: '30', width: '114', height: '46', rx: '10', class: 'node' }),
+      svg('text', { x: '653', y: '50', 'text-anchor': 'middle', class: 'svg-s' }, 'OUTPUT_'),
+      svg('text', { x: '653', y: '66', 'text-anchor': 'middle', class: 'svg-s' }, 'VALIDATING'),
+      svg('rect', { x: '740', y: '30', width: '96', height: '46', rx: '10', class: 'node node--gate' }),
+      svg('text', { x: '788', y: '50', 'text-anchor': 'middle', class: 'svg-s' }, 'AWAITING_'),
+      svg('text', { x: '788', y: '66', 'text-anchor': 'middle', class: 'svg-gate' }, 'REVIEW · gate B'),
+      svg('rect', { x: '860', y: '30', width: '80', height: '46', rx: '10', class: 'node node--ok' }),
+      svg('text', { x: '900', y: '58', 'text-anchor': 'middle', class: 'svg-s' }, 'COMPLETED')),
+    svg('g', { class: 'fsm-edges' },
+      svg('line', { x1: '134', y1: '53', x2: '162', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' }),
+      svg('line', { x1: '278', y1: '53', x2: '306', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' }),
+      svg('line', { x1: '422', y1: '53', x2: '450', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' }),
+      svg('line', { x1: '566', y1: '53', x2: '594', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' }),
+      svg('line', { x1: '710', y1: '53', x2: '738', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' }),
+      svg('line', { x1: '836', y1: '53', x2: '858', y2: '53', 'marker-end': 'url(#arr)', class: 'edge' })),
+    svg('g', { class: 'fsm-branch' },
+      svg('line', { x1: '77', y1: '76', x2: '77', y2: '150', 'marker-end': 'url(#arr-red)', class: 'edge-red' }),
+      svg('rect', { x: '20', y: '150', width: '114', height: '42', rx: '10', class: 'node node--red' }),
+      svg('text', { x: '77', y: '175', 'text-anchor': 'middle', class: 'svg-s' }, 'FAILED_PLANNING'),
+      svg('line', { x1: '221', y1: '76', x2: '221', y2: '150', 'marker-end': 'url(#arr-red)', class: 'edge-red' }),
+      svg('rect', { x: '164', y: '150', width: '114', height: '42', rx: '10', class: 'node node--red' }),
+      svg('text', { x: '221', y: '175', 'text-anchor': 'middle', class: 'svg-s' }, 'REJECTED'),
+      svg('line', { x1: '500', y1: '76', x2: '450', y2: '150', 'marker-end': 'url(#arr-red)', class: 'edge-red' }),
+      svg('rect', { x: '370', y: '150', width: '114', height: '42', rx: '10', class: 'node node--red' }),
+      svg('text', { x: '427', y: '175', 'text-anchor': 'middle', class: 'svg-s' }, 'TIMED_OUT'),
+      svg('line', { x1: '520', y1: '76', x2: '540', y2: '150', 'marker-end': 'url(#arr-red)', class: 'edge-red' }),
+      svg('rect', { x: '520', y: '150', width: '130', height: '42', rx: '10', class: 'node node--red' }),
+      svg('text', { x: '585', y: '175', 'text-anchor': 'middle', class: 'svg-s' }, 'FAILED_SANDBOX'),
+      svg('line', { x1: '653', y1: '76', x2: '653', y2: '150', 'marker-end': 'url(#arr-red)', class: 'edge-red' }),
+      svg('rect', { x: '596', y: '150', width: '114', height: '42', rx: '10', class: 'node node--red' }),
+      svg('text', { x: '653', y: '168', 'text-anchor': 'middle', class: 'svg-s' }, 'REJECTED_'),
+      svg('text', { x: '653', y: '184', 'text-anchor': 'middle', class: 'svg-s' }, 'OUTPUT')),
+    svg('text', { x: '20', y: '235', class: 'svg-s' }, 'Dashed red nodes are terminal branches. Any non-terminal state can also move to CANCELLED (owner or admin), and a lost run can end as ORPHANED.'),
+    svg('text', { x: '20', y: '258', class: 'svg-s' }, 'Gate A approves the plan and limits. Code is generated after gate A, inside QUEUED. Gate B releases validated outputs as results.'),
+    svg('text', { x: '20', y: '281', class: 'svg-s' }, 'Invalid transitions return 409 INVALID_STATE. Every transition is written to the audit log.'));
+}
 
-  <path d="M400 110 C 470 110, 500 110, 580 110" class="flow-in" marker-end="url(#arrow-amber)"/>
-  <text x="488" y="96" text-anchor="middle" class="svg-s">named inputs only</text>
-  <path d="M580 150 C 520 150, 500 150, 400 150" class="flow-out" marker-end="url(#arrow-red)"/>
-  <text x="488" y="170" text-anchor="middle" class="svg-s">stdout, files in /out</text>
-  <text x="740" y="300" text-anchor="middle" class="svg-s">Outputs return only as hashed files.</text>
-  <text x="740" y="320" text-anchor="middle" class="svg-s">Hash checked and validated before they are shown.</text>
-</svg>`;
-
-const STATE_SVG = `
-<svg viewBox="0 0 960 300" role="img" aria-labelledby="fsm-title fsm-desc" xmlns="http://www.w3.org/2000/svg">
-  <title id="fsm-title">Task state machine</title>
-  <desc id="fsm-desc">Main flow: PLANNING, AWAITING_APPROVAL (gate A), QUEUED, RUNNING, OUTPUT_VALIDATING, AWAITING_REVIEW (gate B), COMPLETED. Branches: FAILED_PLANNING, REJECTED, TIMED_OUT, FAILED_SANDBOX, REJECTED_OUTPUT.</desc>
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrow-amber"/></marker>
-    <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrow-red"/></marker>
-  </defs>
-  <g class="fsm-main">
-    <rect x="20" y="30" width="114" height="46" rx="10" class="node"/><text x="77" y="58" text-anchor="middle" class="svg-s">PLANNING</text>
-    <rect x="164" y="30" width="114" height="46" rx="10" class="node node--gate"/><text x="221" y="50" text-anchor="middle" class="svg-s">AWAITING_APPROVAL</text><text x="221" y="66" text-anchor="middle" class="svg-gate">gate A</text>
-    <rect x="308" y="30" width="114" height="46" rx="10" class="node"/><text x="365" y="58" text-anchor="middle" class="svg-s">QUEUED</text>
-    <rect x="452" y="30" width="114" height="46" rx="10" class="node"/><text x="509" y="58" text-anchor="middle" class="svg-s">RUNNING</text>
-    <rect x="596" y="30" width="114" height="46" rx="10" class="node"/><text x="653" y="50" text-anchor="middle" class="svg-s">OUTPUT_</text><text x="653" y="66" text-anchor="middle" class="svg-s">VALIDATING</text>
-    <rect x="740" y="30" width="96" height="46" rx="10" class="node node--gate"/><text x="788" y="50" text-anchor="middle" class="svg-s">AWAITING_</text><text x="788" y="66" text-anchor="middle" class="svg-gate">REVIEW · gate B</text>
-    <rect x="860" y="30" width="80" height="46" rx="10" class="node node--ok"/><text x="900" y="58" text-anchor="middle" class="svg-s">COMPLETED</text>
-  </g>
-  <g class="fsm-edges">
-    <line x1="134" y1="53" x2="162" y2="53" marker-end="url(#arr)" class="edge"/>
-    <line x1="278" y1="53" x2="306" y2="53" marker-end="url(#arr)" class="edge"/>
-    <line x1="422" y1="53" x2="450" y2="53" marker-end="url(#arr)" class="edge"/>
-    <line x1="566" y1="53" x2="594" y2="53" marker-end="url(#arr)" class="edge"/>
-    <line x1="710" y1="53" x2="738" y2="53" marker-end="url(#arr)" class="edge"/>
-    <line x1="836" y1="53" x2="858" y2="53" marker-end="url(#arr)" class="edge"/>
-  </g>
-  <g class="fsm-branch">
-    <line x1="77" y1="76" x2="77" y2="150" marker-end="url(#arr-red)" class="edge-red"/>
-    <rect x="20" y="150" width="114" height="42" rx="10" class="node node--red"/><text x="77" y="175" text-anchor="middle" class="svg-s">FAILED_PLANNING</text>
-    <line x1="221" y1="76" x2="221" y2="150" marker-end="url(#arr-red)" class="edge-red"/>
-    <rect x="164" y="150" width="114" height="42" rx="10" class="node node--red"/><text x="221" y="175" text-anchor="middle" class="svg-s">REJECTED</text>
-    <line x1="500" y1="76" x2="450" y2="150" marker-end="url(#arr-red)" class="edge-red"/>
-    <rect x="370" y="150" width="114" height="42" rx="10" class="node node--red"/><text x="427" y="175" text-anchor="middle" class="svg-s">TIMED_OUT</text>
-    <line x1="520" y1="76" x2="540" y2="150" marker-end="url(#arr-red)" class="edge-red"/>
-    <rect x="520" y="150" width="130" height="42" rx="10" class="node node--red"/><text x="585" y="175" text-anchor="middle" class="svg-s">FAILED_SANDBOX</text>
-    <line x1="653" y1="76" x2="653" y2="150" marker-end="url(#arr-red)" class="edge-red"/>
-    <rect x="596" y="150" width="114" height="42" rx="10" class="node node--red"/><text x="653" y="168" text-anchor="middle" class="svg-s">REJECTED_</text><text x="653" y="184" text-anchor="middle" class="svg-s">OUTPUT</text>
-  </g>
-  <text x="20" y="235" class="svg-s">Dashed red nodes are terminal branches. Any non-terminal state can also move to CANCELLED (owner or admin), and a lost run can end as ORPHANED.</text>
-  <text x="20" y="258" class="svg-s">Gate A approves the plan and limits. Code is generated after gate A, inside QUEUED. Gate B releases validated outputs as results.</text>
-  <text x="20" y="281" class="svg-s">Invalid transitions return 409 INVALID_STATE. Every transition is written to the audit log.</text>
-</svg>`;
-
-export async function mount(root, ctx) {
-  // Static markup above, no interpolated data.
-  const figureTrust = h('figure', { class: 'arch-figure' });
-  figureTrust.innerHTML = TRUST_SVG;
-  figureTrust.append(h('figcaption', null, 'The sandbox receives only the inputs named in the approved plan. It never receives the inference key, the database or the audit log.'));
-  const figureFsm = h('figure', { class: 'arch-figure' });
-  figureFsm.innerHTML = STATE_SVG;
-
+export async function mount(root) {
   root.append(
     pageHead('Architecture',
       'Blast Radius Zero: generated code runs in a box with no route to the app, the key or the data. Only hashed outputs come back.'),
+    panel({ title: 'What this is', sub: 'Disaster Commander Edge (DCE) in brief.', style: '--i:0' },
+      h('p', null, 'Disaster Commander Edge is a multi-hazard situational awareness and response tool. It puts hazards, shelters, stock, teams, alerts and public warnings on one picture, and it keeps every decision with a person.'),
+      h('p', null, 'It is offline-first: with the network off it still works with data you have already seen. It is built to be used across countries.'),
+      h('ul', { class: 'about-list' },
+        h('li', null, 'Built by Fakhrurrozi Basyid.'),
+        h('li', null, 'Released under the MIT licence. See the LICENSE file in the repository.'),
+        h('li', null, 'Repository: ',
+          h('a', { href: 'https://github.com/Alphine/DCE', target: '_blank', rel: 'noopener noreferrer' }, 'github.com/Alphine/DCE')))),
+    panel({ title: 'Try it', sub: 'The demo sandbox runs in this browser. Nothing is sent to the server.', style: '--i:0' },
+      h('ul', { class: 'about-list' },
+        h('li', null, 'Sign in with username demo and password demo to open the demo sandbox.'),
+        h('li', null, 'While the sandbox is on, an orange DEMO SANDBOX banner shows at the top. Reset sandbox data restores the sample data. Exit demo leaves the sandbox.'),
+        h('li', null, 'Sample data comes from a recorded review server. Changes you make stay in this browser only.'),
+        h('li', null, 'Simulated in the sandbox: new simulations use a simple browser model, planning shows the newest recorded allocation, and agent runs are turned off. Approvals are simulated, and nothing reaches the production server.')),
+      h('p', { style: 'margin-top:14px' }, h('a', { class: 'btn btn-primary btn-sm', href: '#/login' }, 'Try the demo'))),
     panel({ title: 'Trust boundary', sub: 'What crosses the line, and what never does.', style: '--i:1' },
-      figureTrust),
+      h('figure', { class: 'arch-figure' },
+        trustFigure(),
+        h('figcaption', null, 'The sandbox receives only the inputs named in the approved plan. It never receives the inference key, the database or the audit log.'))),
     panel({ title: 'Task state machine', sub: 'Two human gates. Failures are visible branches, not silent errors.', style: '--i:2' },
-      figureFsm),
+      h('figure', { class: 'arch-figure' }, stateFigure())),
     h('div', { class: 'about-grid' },
       panel({ title: 'Data classes', style: '--i:3' },
         h('table', { class: 'table dc-table' },
