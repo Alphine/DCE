@@ -66,6 +66,7 @@ export async function mount(root, ctx) {
       forgotToggle.setAttribute('aria-expanded', String(!forgotBox.hidden));
       if (!forgotBox.hidden) forgotEmail.focus();
     } }, 'Forgot password?');
+  const aboutLink = h('p', { class: 'demo-hint' }, h('a', { href: '/welcome/' }, 'What is Disaster Commander Edge?'));
 
   const form = h('form', { class: 'login-card panel', novalidate: false, onsubmit: onSubmit, 'aria-labelledby': 'login-title' },
     h('h2', { id: 'login-title', class: 'panel-title' }, 'Operator sign-in'),
@@ -80,7 +81,8 @@ export async function mount(root, ctx) {
     submit,
     h('div', { class: 'row', style: 'margin-top:10px' }, forgotToggle),
     forgotBox,
-    h('p', { class: 'demo-hint' }, 'Use the seeded demo accounts: admin, analyst, reviewer, approver. Ask your operator for the password.'));
+    h('p', { class: 'demo-hint' }, 'Use the seeded demo accounts: admin, analyst, reviewer, approver. Ask your operator for the password.'),
+    aboutLink);
 
   root.append(h('div', { class: 'login' },
     h('div', { class: 'login-wrap' },

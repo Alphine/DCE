@@ -160,7 +160,10 @@ def _observed_at(value: str | None) -> str | None:
         raise AppError("VALIDATION_FAILED", "observed_at must be an ISO 8601 timestamp.") from exc
     if parsed.tzinfo is None:
         raise AppError("VALIDATION_FAILED", "observed_at must include a time zone offset or Z.")
-    utc = parsed.astimezone(UTC)
+    try:
+        utc = parsed.astimezone(UTC)
+    except (OverflowError, ValueError) as exc:  # e.g. year 0001 with a +14:00 offset falls before year 1
+        raise AppError("VALIDATION_FAILED", "observed_at is out of range.") from exc
     if utc > datetime.now(UTC) + MAX_FUTURE_SKEW:
         raise AppError("VALIDATION_FAILED", "observed_at cannot be in the future.")
     return utc.strftime("%Y-%m-%dT%H:%M:%SZ")

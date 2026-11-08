@@ -49,7 +49,9 @@ async def dashboard_summary(request: Request, user: CurrentUser = Depends(curren
 
 
 @router.get("/audit")
-def list_audit(request: Request, limit: int = Query(default=100, ge=1, le=500), offset: int = Query(default=0, ge=0),
+def list_audit(request: Request, limit: int = Query(default=100, ge=1, le=500),
+               # Bounded so a huge offset is a 422, not an SQLite integer overflow (500).
+               offset: int = Query(default=0, ge=0, le=10**12),
                user: CurrentUser = Depends(require_role("Reviewer"))) -> dict[str, Any]:
     with services_of(request).db.read() as conn:
         records = audit.list_records(conn, limit + 1, offset)  # one extra row tells us whether a next page exists

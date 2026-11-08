@@ -8,7 +8,7 @@ import { icon } from './components/icons.js';
 import { start as startSync, subscribe as subscribeSync, rememberUser, forgetUser, cachedUser } from './offline/sync.js';
 
 // Routes that work without a session: sign-in and the emailed password reset.
-const PUBLIC_ROUTES = new Set(['login', 'reset', 'public']);
+const PUBLIC_ROUTES = new Set(['login', 'reset', 'public', 'about']);
 
 const ROUTES = [
   { name: 'login', title: 'Sign in', match: (p) => (p[0] === 'login' ? {} : null), load: () => import('./views/login.js') },

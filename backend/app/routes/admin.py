@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 from app import audit
 from app.auth import CurrentUser, require_role, require_session_role
@@ -37,7 +37,7 @@ EMAIL_PATTERN = r"(?i)^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$"  # stored lowe
 class UpdateUserBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     role: Role | None = None
-    disabled: bool | None = None
+    disabled: StrictBool | None = None  # strict: "yes" or 1 is a 422, not a disable
     # Sent as null, the email is cleared. Not sent at all, it is left unchanged.
     email: str | None = Field(default=None, max_length=254, pattern=EMAIL_PATTERN)
 
@@ -191,9 +191,10 @@ def list_api_keys(request: Request, user: CurrentUser = Depends(require_session_
 
 
 @router.post("/api-keys", status_code=201)
-def create_api_key(body: CreateApiKeyBody, request: Request,
+def create_api_key(request: Request, body: CreateApiKeyBody | None = None,
                    user: CurrentUser = Depends(require_session_role("Admin"))) -> dict[str, Any]:
-    owner_id = body.user_id or user.id
+    # The body is optional (docs/api.md section 13): no body means the caller owns the key.
+    owner_id = (body.user_id if body is not None else None) or user.id
     token = new_api_key_token()  # shown once in this response; only the hash is stored
     key_id = new_id()
     created_at = utc_now()

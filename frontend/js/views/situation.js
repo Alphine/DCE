@@ -54,8 +54,9 @@ export function toMapPoint(p) {
 // Shelter rows from GET /api/logistics/shelters. Field names are read defensively.
 export function toShelterPoint(s, index = 0) {
   if (!s) return null;
-  const lat = toNumber(s.lat);
-  const lon = toNumber(s.lon);
+  // The registry returns latitude, longitude and capacity_people (see backend/app/routes/logistics.py).
+  const lat = toNumber(s.latitude ?? s.lat);
+  const lon = toNumber(s.longitude ?? s.lon);
   const ok = isValidCoord(lat, lon);
   return {
     id: `SHELTER:${s.id ?? index}`,
@@ -68,7 +69,7 @@ export function toShelterPoint(s, index = 0) {
     data_class: null,
     layer: 'shelters',
     type: KIND_LABEL.SHELTER,
-    details: [{ label: 'Capacity', value: s.capacity ?? '—' }, { label: 'Status', value: s.status || '—' }],
+    details: [{ label: 'Capacity', value: s.capacity_people ?? s.capacity ?? '—' }, { label: 'Status', value: s.status || '—' }],
   };
 }
 

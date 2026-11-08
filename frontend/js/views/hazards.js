@@ -152,11 +152,20 @@ export async function mount(root, ctx) {
       panel({ title: 'Rows', sub: resultsSub(r.results), style: '--i:3' }, resultsTable(listOf(r.results))));
   }
 
+  // The flood pack sends road_blocked_candidates and the tsunami pack sends watch_candidates as counts, not lists.
+  // A list is shown as a table; a count is shown as a number.
   function candidatePanels(r) {
     return Object.keys(CANDIDATE_TITLES)
-      .filter((key) => Array.isArray(r[key]))
-      .map((key, i) => panel({ title: CANDIDATE_TITLES[key], sub: `${r[key].length} listed`, style: `--i:${3 + i}` },
-        genericTable(r[key], 'Candidates')));
+      .filter((key) => r[key] !== undefined && r[key] !== null)
+      .map((key, i) => {
+        const value = r[key];
+        if (Array.isArray(value)) {
+          return panel({ title: CANDIDATE_TITLES[key], sub: `${value.length} listed`, style: `--i:${3 + i}` },
+            genericTable(value, 'Candidates'));
+        }
+        return panel({ title: CANDIDATE_TITLES[key], sub: 'Count from the rule pack', style: `--i:${3 + i}` },
+          h('dl', { class: 'kv-list' }, kv('Rows flagged', Number.isFinite(Number(value)) ? Number(value).toLocaleString() : '—')));
+      });
   }
 
   await loadDatasets();

@@ -190,7 +190,7 @@ export async function mount(root, ctx) {
     try {
       await api.postEmpty(`alerts/${encodeURIComponent(alert.id)}/acknowledge`, { signal });
       if (signal.aborted) return;
-      toast('Alert acknowledged.', { kind: 'ok' });
+      toast('Alert acknowledged.', { kind: 'success' });
       await loadAll();
     } catch (err) {
       if (signal.aborted || err.name === 'AbortError') return;
